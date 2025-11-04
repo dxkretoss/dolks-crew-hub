@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Users, Building2, LogOut, Menu, X, Briefcase, ShieldCheck } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import dolksLogo from "@/assets/dolks-logo.png";
 
 const AdminLayout = () => {
   const navigate = useNavigate();
@@ -80,10 +81,7 @@ const AdminLayout = () => {
       {/* Mobile Header */}
       <div className="lg:hidden flex items-center justify-between p-4 border-b bg-card">
         <div className="flex items-center gap-2">
-          <div className="h-8 w-8 rounded bg-primary flex items-center justify-center">
-            <span className="text-sm font-bold text-primary-foreground">D</span>
-          </div>
-          <span className="font-bold text-lg">DOLKS Admin</span>
+          <img src={dolksLogo} alt="DOLKS" className="h-8 w-auto" />
         </div>
         <Button
           variant="ghost"
@@ -97,13 +95,10 @@ const AdminLayout = () => {
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
         <div className="lg:hidden fixed inset-0 z-50 bg-background/80 backdrop-blur-sm">
-          <div className="fixed inset-y-0 left-0 w-72 bg-card border-r shadow-lg">
+        <div className="fixed inset-y-0 left-0 w-72 bg-card border-r shadow-lg">
             <div className="p-4 border-b">
-              <div className="flex items-center gap-2">
-                <div className="h-8 w-8 rounded bg-primary flex items-center justify-center">
-                  <span className="text-sm font-bold text-primary-foreground">D</span>
-                </div>
-                <span className="font-bold text-lg">DOLKS Admin</span>
+              <div className="flex items-center">
+                <img src={dolksLogo} alt="DOLKS" className="h-10 w-auto" />
               </div>
             </div>
             <nav className="p-4 space-y-2">
@@ -142,14 +137,8 @@ const AdminLayout = () => {
       {/* Desktop Sidebar */}
       <aside className="hidden lg:block fixed left-0 top-0 bottom-0 w-64 bg-card border-r">
         <div className="p-6 border-b">
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-lg bg-primary flex items-center justify-center">
-              <span className="text-xl font-bold text-primary-foreground">D</span>
-            </div>
-            <div>
-              <h1 className="font-bold text-xl">DOLKS</h1>
-              <p className="text-xs text-muted-foreground">Admin Panel</p>
-            </div>
+          <div className="flex items-center justify-center">
+            <img src={dolksLogo} alt="DOLKS" className="h-12 w-auto" />
           </div>
         </div>
 

@@ -124,6 +124,7 @@ const CompanyRoles = () => {
         toast({
           title: "Success",
           description: "Role updated successfully",
+          variant: "success",
         });
       } else {
         const { error } = await supabase.from("company_roles").insert({
@@ -134,6 +135,7 @@ const CompanyRoles = () => {
         toast({
           title: "Success",
           description: "Role added successfully",
+          variant: "success",
         });
       }
       handleCloseDialog();
@@ -160,6 +162,7 @@ const CompanyRoles = () => {
       toast({
         title: "Success",
         description: "Role deleted successfully",
+        variant: "success",
       });
       setIsDeleteDialogOpen(false);
       setDeletingRole(null);

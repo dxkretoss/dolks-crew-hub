@@ -125,6 +125,7 @@ const CompanyServices = () => {
         toast({
           title: "Success",
           description: "Service updated successfully",
+          variant: "success",
         });
       } else {
         const { error } = await supabase.from("company_services").insert({
@@ -135,6 +136,7 @@ const CompanyServices = () => {
         toast({
           title: "Success",
           description: "Service added successfully",
+          variant: "success",
         });
       }
       handleCloseDialog();
@@ -161,6 +163,7 @@ const CompanyServices = () => {
       toast({
         title: "Success",
         description: "Service deleted successfully",
+        variant: "success",
       });
       setIsDeleteDialogOpen(false);
       setDeletingService(null);
