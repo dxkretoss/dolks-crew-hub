@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Outlet, useNavigate, NavLink, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Users, Building2, LogOut, Menu, X, Briefcase } from "lucide-react";
+import { Users, Building2, LogOut, Menu, X, Briefcase, ShieldCheck } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 const AdminLayout = () => {
@@ -72,6 +72,7 @@ const AdminLayout = () => {
     { path: "/admin/crew", label: "Crew List", icon: Users },
     { path: "/admin/services", label: "Service List", icon: Building2 },
     { path: "/admin/company-services", label: "Company Services", icon: Briefcase },
+    { path: "/admin/company-roles", label: "Company Roles", icon: ShieldCheck },
   ];
 
   return (

@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Table,
   TableBody,
@@ -35,43 +34,43 @@ import {
 } from "@/components/ui/alert-dialog";
 import type { Tables } from "@/integrations/supabase/types";
 
-type CompanyService = Tables<"company_services">;
+type CompanyRole = Tables<"company_roles">;
 
-const CompanyServices = () => {
-  const [services, setServices] = useState<CompanyService[]>([]);
-  const [filteredServices, setFilteredServices] = useState<CompanyService[]>([]);
+const CompanyRoles = () => {
+  const [roles, setRoles] = useState<CompanyRole[]>([]);
+  const [filteredRoles, setFilteredRoles] = useState<CompanyRole[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [editingService, setEditingService] = useState<CompanyService | null>(null);
-  const [deletingService, setDeletingService] = useState<CompanyService | null>(null);
+  const [editingRole, setEditingRole] = useState<CompanyRole | null>(null);
+  const [deletingRole, setDeletingRole] = useState<CompanyRole | null>(null);
   const [formData, setFormData] = useState({
     name: "",
   });
 
   useEffect(() => {
-    fetchServices();
+    fetchRoles();
   }, []);
 
   useEffect(() => {
-    const filtered = services.filter((service) => {
+    const filtered = roles.filter((role) => {
       const searchLower = searchTerm.toLowerCase();
-      return service.name.toLowerCase().includes(searchLower);
+      return role.name.toLowerCase().includes(searchLower);
     });
-    setFilteredServices(filtered);
-  }, [searchTerm, services]);
+    setFilteredRoles(filtered);
+  }, [searchTerm, roles]);
 
-  const fetchServices = async () => {
+  const fetchRoles = async () => {
     try {
       const { data, error } = await supabase
-        .from("company_services")
+        .from("company_roles")
         .select("*")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setServices(data || []);
-      setFilteredServices(data || []);
+      setRoles(data || []);
+      setFilteredRoles(data || []);
     } catch (error: any) {
       toast({
         title: "Error",
@@ -83,14 +82,14 @@ const CompanyServices = () => {
     }
   };
 
-  const handleOpenDialog = (service?: CompanyService) => {
-    if (service) {
-      setEditingService(service);
+  const handleOpenDialog = (role?: CompanyRole) => {
+    if (role) {
+      setEditingRole(role);
       setFormData({
-        name: service.name,
+        name: role.name,
       });
     } else {
-      setEditingService(null);
+      setEditingRole(null);
       setFormData({ name: "" });
     }
     setIsDialogOpen(true);
@@ -98,7 +97,7 @@ const CompanyServices = () => {
 
   const handleCloseDialog = () => {
     setIsDialogOpen(false);
-    setEditingService(null);
+    setEditingRole(null);
     setFormData({ name: "" });
   };
 
@@ -106,39 +105,39 @@ const CompanyServices = () => {
     if (!formData.name.trim()) {
       toast({
         title: "Error",
-        description: "Service name is required",
+        description: "Role name is required",
         variant: "destructive",
       });
       return;
     }
 
     try {
-      if (editingService) {
+      if (editingRole) {
         const { error } = await supabase
-          .from("company_services")
+          .from("company_roles")
           .update({
             name: formData.name,
           })
-          .eq("id", editingService.id);
+          .eq("id", editingRole.id);
 
         if (error) throw error;
         toast({
           title: "Success",
-          description: "Service updated successfully",
+          description: "Role updated successfully",
         });
       } else {
-        const { error } = await supabase.from("company_services").insert({
+        const { error } = await supabase.from("company_roles").insert({
           name: formData.name,
         });
 
         if (error) throw error;
         toast({
           title: "Success",
-          description: "Service added successfully",
+          description: "Role added successfully",
         });
       }
       handleCloseDialog();
-      fetchServices();
+      fetchRoles();
     } catch (error: any) {
       toast({
         title: "Error",
@@ -149,22 +148,22 @@ const CompanyServices = () => {
   };
 
   const handleDelete = async () => {
-    if (!deletingService) return;
+    if (!deletingRole) return;
 
     try {
       const { error } = await supabase
-        .from("company_services")
+        .from("company_roles")
         .delete()
-        .eq("id", deletingService.id);
+        .eq("id", deletingRole.id);
 
       if (error) throw error;
       toast({
         title: "Success",
-        description: "Service deleted successfully",
+        description: "Role deleted successfully",
       });
       setIsDeleteDialogOpen(false);
-      setDeletingService(null);
-      fetchServices();
+      setDeletingRole(null);
+      fetchRoles();
     } catch (error: any) {
       toast({
         title: "Error",
@@ -186,14 +185,14 @@ const CompanyServices = () => {
     <div className="p-6 lg:p-8 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Company Services</h1>
+          <h1 className="text-3xl font-bold">Company Roles</h1>
           <p className="text-muted-foreground mt-1">
-            Manage all company services
+            Manage all company roles
           </p>
         </div>
         <Button onClick={() => handleOpenDialog()}>
           <Plus className="h-4 w-4 mr-2" />
-          Add Service
+          Add Role
         </Button>
       </div>
 
@@ -203,7 +202,7 @@ const CompanyServices = () => {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search services..."
+                placeholder="Search roles..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-9"
@@ -214,35 +213,35 @@ const CompanyServices = () => {
         <CardContent>
           {loading ? (
             <div className="text-center py-8 text-muted-foreground">
-              Loading services...
+              Loading roles...
             </div>
-          ) : filteredServices.length === 0 ? (
+          ) : filteredRoles.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              No services found
+              No roles found
             </div>
           ) : (
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Service Name</TableHead>
+                    <TableHead>Role Name</TableHead>
                     <TableHead>Created At</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredServices.map((service) => (
-                    <TableRow key={service.id}>
+                  {filteredRoles.map((role) => (
+                    <TableRow key={role.id}>
                       <TableCell className="font-medium">
-                        {service.name}
+                        {role.name}
                       </TableCell>
-                      <TableCell>{formatDate(service.created_at)}</TableCell>
+                      <TableCell>{formatDate(role.created_at)}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => handleOpenDialog(service)}
+                            onClick={() => handleOpenDialog(role)}
                           >
                             <Pencil className="h-4 w-4 mr-2" />
                             Edit
@@ -251,7 +250,7 @@ const CompanyServices = () => {
                             size="sm"
                             variant="destructive"
                             onClick={() => {
-                              setDeletingService(service);
+                              setDeletingRole(role);
                               setIsDeleteDialogOpen(true);
                             }}
                           >
@@ -273,24 +272,24 @@ const CompanyServices = () => {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {editingService ? "Edit Service" : "Add New Service"}
+              {editingRole ? "Edit Role" : "Add New Role"}
             </DialogTitle>
             <DialogDescription>
-              {editingService
-                ? "Update the service details below"
-                : "Fill in the details to add a new service"}
+              {editingRole
+                ? "Update the role details below"
+                : "Fill in the details to add a new role"}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Service Name *</Label>
+              <Label htmlFor="name">Role Name *</Label>
               <Input
                 id="name"
                 value={formData.name}
                 onChange={(e) =>
                   setFormData({ ...formData, name: e.target.value })
                 }
-                placeholder="Enter service name"
+                placeholder="Enter role name"
               />
             </div>
           </div>
@@ -299,7 +298,7 @@ const CompanyServices = () => {
               Cancel
             </Button>
             <Button onClick={handleSave}>
-              {editingService ? "Update" : "Add"} Service
+              {editingRole ? "Update" : "Add"} Role
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -313,7 +312,7 @@ const CompanyServices = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete the service "{deletingService?.name}".
+              This will permanently delete the role "{deletingRole?.name}".
               This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -329,4 +328,4 @@ const CompanyServices = () => {
   );
 };
 
-export default CompanyServices;
+export default CompanyRoles;
