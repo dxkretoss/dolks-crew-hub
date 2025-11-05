@@ -27,6 +27,7 @@ const CrewDetail = () => {
   const navigate = useNavigate();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     fetchProfile();
@@ -56,6 +57,7 @@ const CrewDetail = () => {
   };
 
   const handleDelete = async () => {
+    setDeleting(true);
     try {
       // First delete the profile
       const { error: profileError } = await supabase
@@ -85,6 +87,8 @@ const CrewDetail = () => {
         description: error.message,
         variant: "destructive",
       });
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -143,8 +147,8 @@ const CrewDetail = () => {
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>No</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                Yes, Delete
+              <AlertDialogAction onClick={handleDelete} disabled={deleting} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                {deleting ? "Deleting..." : "Yes, Delete"}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
