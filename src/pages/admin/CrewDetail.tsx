@@ -57,12 +57,20 @@ const CrewDetail = () => {
 
   const handleDelete = async () => {
     try {
-      const { error } = await supabase
+      // First delete the profile
+      const { error: profileError } = await supabase
         .from("profiles")
         .delete()
         .eq("id", id!);
 
-      if (error) throw error;
+      if (profileError) throw profileError;
+
+      // Then delete from auth.users via edge function
+      const { error: authError } = await supabase.functions.invoke('delete-user', {
+        body: { userId: profile?.user_id }
+      });
+
+      if (authError) throw authError;
 
       toast({
         title: "Success",
