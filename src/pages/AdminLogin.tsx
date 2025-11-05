@@ -26,7 +26,7 @@ const AdminLogin = () => {
           .single();
         
         if (roles) {
-          navigate("/admin/crew");
+          navigate("/admin/dashboard");
         }
       }
     };
@@ -67,7 +67,7 @@ const AdminLogin = () => {
           title: "Welcome!",
           description: "Successfully logged in",
         });
-        navigate("/admin/crew");
+        navigate("/admin/dashboard");
       }
     } catch (error: any) {
       toast({
