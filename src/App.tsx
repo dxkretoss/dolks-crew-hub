@@ -7,6 +7,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import AdminLogin from "./pages/AdminLogin";
 import AdminLayout from "./components/admin/AdminLayout";
+import Dashboard from "./pages/admin/Dashboard";
 import CrewList from "./pages/admin/CrewList";
 import ServiceList from "./pages/admin/ServiceList";
 import CrewDetail from "./pages/admin/CrewDetail";
@@ -26,6 +27,8 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin" element={<AdminLayout />}>
+            <Route index element={<Dashboard />} />
+            <Route path="dashboard" element={<Dashboard />} />
             <Route path="crew" element={<CrewList />} />
             <Route path="crew/:id" element={<CrewDetail />} />
             <Route path="services" element={<ServiceList />} />
