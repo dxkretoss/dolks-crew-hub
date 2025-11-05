@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { supabaseUrl } from "@/integrations/supabase/client";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -69,32 +68,12 @@ const ServiceDetail = () => {
 
   const handleDelete = async () => {
     try {
-      // First delete the profile from the database
-      const { error: profileError } = await supabase
+      const { error } = await supabase
         .from("profiles")
         .delete()
         .eq("id", id!);
 
-      if (profileError) throw profileError;
-
-      // Then delete the user from Supabase Auth
-      const { data: { session } } = await supabase.auth.getSession();
-      const response = await fetch(
-        `${supabaseUrl}/functions/v1/delete-user`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${session?.access_token}`,
-          },
-          body: JSON.stringify({ userId: profile?.user_id }),
-        }
-      );
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to delete user from authentication');
-      }
+      if (error) throw error;
 
       toast({
         title: "Success",
