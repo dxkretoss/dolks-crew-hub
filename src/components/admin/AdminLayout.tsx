@@ -53,12 +53,15 @@ const AdminLayout = () => {
   }, [navigate]);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    toast({
-      title: "Logged out",
-      description: "Successfully signed out",
-    });
-    navigate("/admin/login");
+    try {
+      await supabase.auth.signOut();
+      toast({
+        title: "Logged out",
+        description: "Successfully signed out",
+      });
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
   };
 
   if (isLoading) {
