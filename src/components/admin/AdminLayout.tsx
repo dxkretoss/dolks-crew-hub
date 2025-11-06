@@ -76,7 +76,8 @@ const AdminLayout = () => {
     { path: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { path: "/admin/crew", label: "Crew Members", icon: Users },
     { path: "/admin/services", label: "Docks Members", icon: Building2 },
-    { path: "/admin/list-management", label: "List Management", icon: Briefcase },
+    { path: "/admin/company-services-roles", label: "Company Services & Roles", icon: Briefcase },
+    { path: "/admin/interests-skills", label: "Interests & Skills", icon: ShieldCheck },
   ];
 
   return (

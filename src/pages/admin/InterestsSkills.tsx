@@ -1,0 +1,417 @@
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Plus, Pencil, Trash2, Search } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
+
+type Hobby = {
+  id: string;
+  name: string;
+  created_at: string;
+  updated_at: string;
+};
+
+type Skill = {
+  id: string;
+  name: string;
+  created_at: string;
+  updated_at: string;
+};
+
+const InterestsSkills = () => {
+  const [hobbies, setHobbies] = useState<Hobby[]>([]);
+  const [skills, setSkills] = useState<Skill[]>([]);
+  const [filteredHobbies, setFilteredHobbies] = useState<Hobby[]>([]);
+  const [filteredSkills, setFilteredSkills] = useState<Skill[]>([]);
+  const [hobbySearch, setHobbySearch] = useState("");
+  const [skillSearch, setSkillSearch] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [currentType, setCurrentType] = useState<"hobbies" | "skills">("hobbies");
+  const [editingItem, setEditingItem] = useState<Hobby | Skill | null>(null);
+  const [deleteItem, setDeleteItem] = useState<Hobby | Skill | null>(null);
+  const [formData, setFormData] = useState({ name: "" });
+
+  useEffect(() => {
+    fetchAllData();
+  }, []);
+
+  useEffect(() => {
+    setFilteredHobbies(
+      hobbies.filter((hobby) =>
+        hobby.name.toLowerCase().includes(hobbySearch.toLowerCase())
+      )
+    );
+  }, [hobbySearch, hobbies]);
+
+  useEffect(() => {
+    setFilteredSkills(
+      skills.filter((skill) =>
+        skill.name.toLowerCase().includes(skillSearch.toLowerCase())
+      )
+    );
+  }, [skillSearch, skills]);
+
+  const fetchAllData = async () => {
+    setIsLoading(true);
+    await Promise.all([fetchHobbies(), fetchSkills()]);
+    setIsLoading(false);
+  };
+
+  const fetchHobbies = async () => {
+    const { data, error } = await supabase
+      .from("hobbies")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to fetch hobbies",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setHobbies(data || []);
+  };
+
+  const fetchSkills = async () => {
+    const { data, error } = await supabase
+      .from("skills")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: "Failed to fetch skills",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSkills(data || []);
+  };
+
+  const handleOpenDialog = (type: "hobbies" | "skills", item?: Hobby | Skill) => {
+    setCurrentType(type);
+    setEditingItem(item || null);
+    setFormData({
+      name: item?.name || "",
+    });
+    setIsDialogOpen(true);
+  };
+
+  const handleCloseDialog = () => {
+    setIsDialogOpen(false);
+    setEditingItem(null);
+    setFormData({ name: "" });
+  };
+
+  const handleSave = async () => {
+    if (!formData.name.trim()) {
+      toast({
+        title: "Error",
+        description: "Name is required",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const table = currentType === "hobbies" ? "hobbies" : "skills";
+    const payload = { name: formData.name };
+
+    if (editingItem) {
+      const { error } = await supabase
+        .from(table)
+        .update(payload)
+        .eq("id", editingItem.id);
+
+      if (error) {
+        toast({
+          title: "Error",
+          description: `Failed to update ${currentType === "hobbies" ? "hobby" : "skill"}`,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Success",
+        description: `${currentType === "hobbies" ? "Hobby" : "Skill"} updated successfully`,
+      });
+    } else {
+      const { error } = await supabase.from(table).insert([payload]);
+
+      if (error) {
+        toast({
+          title: "Error",
+          description: `Failed to add ${currentType === "hobbies" ? "hobby" : "skill"}`,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Success",
+        description: `${currentType === "hobbies" ? "Hobby" : "Skill"} added successfully`,
+      });
+    }
+
+    if (currentType === "hobbies") {
+      await fetchHobbies();
+    } else {
+      await fetchSkills();
+    }
+    handleCloseDialog();
+  };
+
+  const handleDelete = async () => {
+    if (!deleteItem) return;
+
+    const table = currentType === "hobbies" ? "hobbies" : "skills";
+
+    const { error } = await supabase.from(table).delete().eq("id", deleteItem.id);
+
+    if (error) {
+      toast({
+        title: "Error",
+        description: `Failed to delete ${currentType === "hobbies" ? "hobby" : "skill"}`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({
+      title: "Success",
+      description: `${currentType === "hobbies" ? "Hobby" : "Skill"} deleted successfully`,
+    });
+
+    if (currentType === "hobbies") {
+      await fetchHobbies();
+    } else {
+      await fetchSkills();
+    }
+    setIsDeleteDialogOpen(false);
+    setDeleteItem(null);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-pulse text-muted-foreground">Loading...</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-6 space-y-6">
+      <h1 className="text-3xl font-bold">Interests & Skills</h1>
+
+      {/* Hobbies/Interests Section */}
+      <div className="bg-card rounded-lg border p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold">Hobbies/Interests</h2>
+          <Button onClick={() => handleOpenDialog("hobbies")} size="sm">
+            <Plus className="h-4 w-4 mr-2" />
+            Add Hobby
+          </Button>
+        </div>
+        <div className="mb-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search hobbies..."
+              value={hobbySearch}
+              onChange={(e) => setHobbySearch(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+        </div>
+        <ScrollArea className="h-[400px] rounded-md border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead className="w-[100px]">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredHobbies.map((hobby) => (
+                <TableRow key={hobby.id}>
+                  <TableCell className="font-medium">{hobby.name}</TableCell>
+                  <TableCell>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleOpenDialog("hobbies", hobby)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          setCurrentType("hobbies");
+                          setDeleteItem(hobby);
+                          setIsDeleteDialogOpen(true);
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </ScrollArea>
+      </div>
+
+      {/* Skills Section */}
+      <div className="bg-card rounded-lg border p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-semibold">Skills</h2>
+          <Button onClick={() => handleOpenDialog("skills")} size="sm">
+            <Plus className="h-4 w-4 mr-2" />
+            Add Skill
+          </Button>
+        </div>
+        <div className="mb-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search skills..."
+              value={skillSearch}
+              onChange={(e) => setSkillSearch(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+        </div>
+        <ScrollArea className="h-[400px] rounded-md border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead className="w-[100px]">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredSkills.map((skill) => (
+                <TableRow key={skill.id}>
+                  <TableCell className="font-medium">{skill.name}</TableCell>
+                  <TableCell>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleOpenDialog("skills", skill)}
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => {
+                          setCurrentType("skills");
+                          setDeleteItem(skill);
+                          setIsDeleteDialogOpen(true);
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </ScrollArea>
+      </div>
+
+      {/* Add/Edit Dialog */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {editingItem ? "Edit" : "Add"}{" "}
+              {currentType === "hobbies" ? "Hobby" : "Skill"}
+            </DialogTitle>
+            <DialogDescription>
+              {editingItem ? "Update" : "Create"} a{" "}
+              {currentType === "hobbies" ? "hobby/interest" : "skill"}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="name">Name</Label>
+              <Input
+                id="name"
+                value={formData.name}
+                onChange={(e) => setFormData({ name: e.target.value })}
+                placeholder="Enter name"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={handleCloseDialog}>
+              Cancel
+            </Button>
+            <Button onClick={handleSave}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the{" "}
+              {currentType === "hobbies" ? "hobby" : "skill"}.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+};
+
+export default InterestsSkills;
