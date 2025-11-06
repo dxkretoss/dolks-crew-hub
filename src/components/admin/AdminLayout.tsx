@@ -74,8 +74,8 @@ const AdminLayout = () => {
 
   const navItems = [
     { path: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { path: "/admin/crew", label: "Docks Members", icon: Users },
-    { path: "/admin/services", label: "Docks & Service Providers", icon: Building2 },
+    { path: "/admin/crew", label: "Crew Members", icon: Users },
+    { path: "/admin/services", label: "Docks Members", icon: Building2 },
     { path: "/admin/list-management", label: "List Management", icon: Briefcase },
   ];
 
