@@ -268,33 +268,41 @@ const InterestsSkills = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredHobbies.map((hobby) => (
-                <TableRow key={hobby.id}>
-                  <TableCell className="font-medium">{hobby.name}</TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleOpenDialog("hobbies", hobby)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => {
-                          setCurrentType("hobbies");
-                          setDeleteItem(hobby);
-                          setIsDeleteDialogOpen(true);
-                        }}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
+              {filteredHobbies.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={2} className="text-center py-8 text-muted-foreground">
+                    No Hobbies/Interests Added
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                filteredHobbies.map((hobby) => (
+                  <TableRow key={hobby.id} className="border-b">
+                    <TableCell className="font-medium">{hobby.name}</TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleOpenDialog("hobbies", hobby)}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            setCurrentType("hobbies");
+                            setDeleteItem(hobby);
+                            setIsDeleteDialogOpen(true);
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </ScrollArea>
@@ -329,33 +337,41 @@ const InterestsSkills = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredSkills.map((skill) => (
-                <TableRow key={skill.id}>
-                  <TableCell className="font-medium">{skill.name}</TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleOpenDialog("skills", skill)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => {
-                          setCurrentType("skills");
-                          setDeleteItem(skill);
-                          setIsDeleteDialogOpen(true);
-                        }}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
+              {filteredSkills.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={2} className="text-center py-8 text-muted-foreground">
+                    No Skills Added
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                filteredSkills.map((skill) => (
+                  <TableRow key={skill.id} className="border-b">
+                    <TableCell className="font-medium">{skill.name}</TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleOpenDialog("skills", skill)}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            setCurrentType("skills");
+                            setDeleteItem(skill);
+                            setIsDeleteDialogOpen(true);
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </ScrollArea>

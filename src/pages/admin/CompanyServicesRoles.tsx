@@ -275,34 +275,42 @@ const CompanyServicesRoles = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredServices.map((service) => (
-                <TableRow key={service.id}>
-                  <TableCell className="font-medium">{service.name}</TableCell>
-                  <TableCell>{service.description || "-"}</TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleOpenDialog("services", service)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => {
-                          setCurrentType("services");
-                          setDeleteItem(service);
-                          setIsDeleteDialogOpen(true);
-                        }}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
+              {filteredServices.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={3} className="text-center py-8 text-muted-foreground">
+                    No Company Services Added
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                filteredServices.map((service) => (
+                  <TableRow key={service.id} className="border-b">
+                    <TableCell className="font-medium">{service.name}</TableCell>
+                    <TableCell>{service.description || "-"}</TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleOpenDialog("services", service)}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            setCurrentType("services");
+                            setDeleteItem(service);
+                            setIsDeleteDialogOpen(true);
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </ScrollArea>
@@ -337,33 +345,41 @@ const CompanyServicesRoles = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredRoles.map((role) => (
-                <TableRow key={role.id}>
-                  <TableCell className="font-medium">{role.name}</TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleOpenDialog("roles", role)}
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => {
-                          setCurrentType("roles");
-                          setDeleteItem(role);
-                          setIsDeleteDialogOpen(true);
-                        }}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
+              {filteredRoles.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={2} className="text-center py-8 text-muted-foreground">
+                    No Company Roles Added
                   </TableCell>
                 </TableRow>
-              ))}
+              ) : (
+                filteredRoles.map((role) => (
+                  <TableRow key={role.id} className="border-b">
+                    <TableCell className="font-medium">{role.name}</TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleOpenDialog("roles", role)}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            setCurrentType("roles");
+                            setDeleteItem(role);
+                            setIsDeleteDialogOpen(true);
+                          }}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </ScrollArea>
