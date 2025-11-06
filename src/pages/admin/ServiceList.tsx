@@ -76,9 +76,9 @@ const ServiceList = () => {
     <div className="p-6 lg:p-8 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Service Providers</h1>
+          <h1 className="text-3xl font-bold">Docks & Service Providers</h1>
           <p className="text-muted-foreground mt-1">
-            Manage and view all service providers
+            Manage and view all Docks Members
           </p>
         </div>
       </div>
@@ -100,11 +100,11 @@ const ServiceList = () => {
         <CardContent>
           {loading ? (
             <div className="text-center py-8 text-muted-foreground">
-              Loading service providers...
+              Loading Docks Members...
             </div>
           ) : filteredProfiles.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              No service providers found
+              No Docks Members found
             </div>
           ) : (
             <div className="overflow-x-auto">

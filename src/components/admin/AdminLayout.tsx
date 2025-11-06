@@ -74,10 +74,9 @@ const AdminLayout = () => {
 
   const navItems = [
     { path: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { path: "/admin/crew", label: "Crew List", icon: Users },
-    { path: "/admin/services", label: "Service List", icon: Building2 },
-    { path: "/admin/company-services", label: "Company Services", icon: Briefcase },
-    { path: "/admin/company-roles", label: "Company Roles", icon: ShieldCheck },
+    { path: "/admin/crew", label: "Docks Members", icon: Users },
+    { path: "/admin/services", label: "Docks & Service Providers", icon: Building2 },
+    { path: "/admin/list-management", label: "List Management", icon: Briefcase },
   ];
 
   return (
