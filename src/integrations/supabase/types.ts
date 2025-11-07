@@ -146,6 +146,7 @@ export type Database = {
           is_allowed: boolean | null
           link_to_dolk_profile: boolean
           location: string | null
+          meeting_url: string | null
           short_description: string
           tags: string[] | null
           title: string
@@ -163,6 +164,7 @@ export type Database = {
           is_allowed?: boolean | null
           link_to_dolk_profile?: boolean
           location?: string | null
+          meeting_url?: string | null
           short_description: string
           tags?: string[] | null
           title: string
@@ -180,6 +182,7 @@ export type Database = {
           is_allowed?: boolean | null
           link_to_dolk_profile?: boolean
           location?: string | null
+          meeting_url?: string | null
           short_description?: string
           tags?: string[] | null
           title?: string

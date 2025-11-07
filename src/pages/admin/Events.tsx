@@ -29,6 +29,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Trash2, Edit, Check, X, Search } from "lucide-react";
 import { format } from "date-fns";
+import { z } from "zod";
 
 interface Event {
   id: string;
@@ -41,6 +42,7 @@ interface Event {
   link_to_dolk_profile: boolean;
   where_to_host: string | null;
   location: string | null;
+  meeting_url: string | null;
   tags: string[] | null;
   is_allowed: boolean | null;
   user_id: string;
@@ -73,6 +75,7 @@ export default function Events() {
     link_to_dolk_profile: false,
     where_to_host: "",
     location: "",
+    meeting_url: "",
     tags: "",
   });
 
@@ -129,22 +132,48 @@ export default function Events() {
     e.preventDefault();
 
     try {
+      // Validate meeting URL if provided
+      if (formData.meeting_url) {
+        const urlSchema = z.string().url({ message: "Invalid URL format" });
+        const result = urlSchema.safeParse(formData.meeting_url.trim());
+        if (!result.success) {
+          toast({
+            title: "Validation Error",
+            description: "Please enter a valid meeting URL",
+            variant: "destructive",
+          });
+          return;
+        }
+      }
+
+      // Validate meeting URL is required for online events
+      if (formData.where_to_host === "online" && !formData.meeting_url.trim()) {
+        toast({
+          title: "Validation Error",
+          description: "Meeting URL is required for online events",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("User not authenticated");
 
       const eventData = {
-        title: formData.title,
+        title: formData.title.trim(),
         event_date: formData.event_date,
         event_time: formData.event_time,
-        short_description: formData.short_description,
-        type: formData.type,
-        full_description: formData.full_description,
+        short_description: formData.short_description.trim(),
+        type: formData.type.trim(),
+        full_description: formData.full_description.trim(),
         link_to_dolk_profile: formData.link_to_dolk_profile,
         where_to_host: formData.where_to_host || null,
-        location: formData.location || null,
+        location: formData.location.trim() || null,
+        meeting_url: formData.meeting_url.trim() || null,
         tags: formData.tags ? formData.tags.split(",").map((t) => t.trim()) : null,
         user_id: user.id,
-        is_allowed: true,
+        // For updates: require re-approval, for new: auto-approve
+        is_allowed: editingEvent ? null : true,
       };
 
       let eventId: string;
@@ -157,7 +186,10 @@ export default function Events() {
 
         if (error) throw error;
         eventId = editingEvent.id;
-        toast({ title: "Success", description: "Event updated successfully" });
+        toast({ 
+          title: "Success", 
+          description: "Event updated successfully. Pending admin approval." 
+        });
       } else {
         const { data, error } = await supabase
           .from("events")
@@ -264,6 +296,7 @@ export default function Events() {
       link_to_dolk_profile: event.link_to_dolk_profile,
       where_to_host: event.where_to_host || "",
       location: event.location || "",
+      meeting_url: event.meeting_url || "",
       tags: event.tags ? event.tags.join(", ") : "",
     });
     setIsDialogOpen(true);
@@ -280,6 +313,7 @@ export default function Events() {
       link_to_dolk_profile: false,
       where_to_host: "",
       location: "",
+      meeting_url: "",
       tags: "",
     });
     setEditingEvent(null);
@@ -416,17 +450,36 @@ export default function Events() {
                 </Select>
               </div>
 
-              <div>
-                <Label htmlFor="location">Location</Label>
-                <Input
-                  id="location"
-                  value={formData.location}
-                  onChange={(e) =>
-                    setFormData({ ...formData, location: e.target.value })
-                  }
-                  placeholder="Enter location if in-person"
-                />
-              </div>
+              {formData.where_to_host === "in-person" && (
+                <div>
+                  <Label htmlFor="location">Location *</Label>
+                  <Input
+                    id="location"
+                    value={formData.location}
+                    onChange={(e) =>
+                      setFormData({ ...formData, location: e.target.value })
+                    }
+                    placeholder="Enter event location"
+                    required
+                  />
+                </div>
+              )}
+
+              {formData.where_to_host === "online" && (
+                <div>
+                  <Label htmlFor="meeting_url">Meeting URL *</Label>
+                  <Input
+                    id="meeting_url"
+                    type="url"
+                    value={formData.meeting_url}
+                    onChange={(e) =>
+                      setFormData({ ...formData, meeting_url: e.target.value })
+                    }
+                    placeholder="https://zoom.us/j/... or https://meet.google.com/..."
+                    required
+                  />
+                </div>
+              )}
 
               <div>
                 <Label htmlFor="tags">Tags (comma-separated)</Label>
