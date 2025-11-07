@@ -70,6 +70,7 @@ interface InterestedUser {
   id: string;
   full_name: string | null;
   email: string;
+  interest_type: string;
 }
 
 export default function Events() {
@@ -330,7 +331,7 @@ export default function Events() {
       // Query event_interests and then fetch profiles separately
       const { data: interests, error: interestsError } = await supabase
         .from("event_interests")
-        .select("user_id")
+        .select("user_id, interest_type")
         .eq("event_id", eventId);
 
       if (interestsError) throw interestsError;
@@ -350,11 +351,16 @@ export default function Events() {
 
       if (profilesError) throw profilesError;
 
-      const users = profiles.map((profile: any) => ({
-        id: profile.user_id,
-        full_name: profile.full_name,
-        email: profile.email,
-      }));
+      // Merge interests with profiles
+      const users = interests.map((interest: any) => {
+        const profile = profiles.find((p: any) => p.user_id === interest.user_id);
+        return {
+          id: interest.user_id,
+          full_name: profile?.full_name || null,
+          email: profile?.email || "N/A",
+          interest_type: interest.interest_type,
+        };
+      });
 
       setInterestedUsers(users);
     } catch (error: any) {
@@ -813,6 +819,7 @@ export default function Events() {
                     <TableRow>
                       <TableHead>Name</TableHead>
                       <TableHead>Email</TableHead>
+                      <TableHead>Interest</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -820,6 +827,17 @@ export default function Events() {
                       <TableRow key={user.id}>
                         <TableCell>{user.full_name || "N/A"}</TableCell>
                         <TableCell>{user.email}</TableCell>
+                        <TableCell>
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            user.interest_type === 'yes' 
+                              ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
+                              : user.interest_type === 'no'
+                              ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                              : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                          }`}>
+                            {user.interest_type.charAt(0).toUpperCase() + user.interest_type.slice(1)}
+                          </span>
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
