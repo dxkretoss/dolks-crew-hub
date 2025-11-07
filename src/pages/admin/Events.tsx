@@ -12,6 +12,16 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Table,
   TableBody,
   TableCell,
@@ -63,6 +73,11 @@ export default function Events() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    open: boolean;
+    type: 'delete' | 'approve' | 'reject' | null;
+    eventId: string | null;
+  }>({ open: false, type: null, eventId: null });
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
@@ -105,12 +120,14 @@ export default function Events() {
     }
   };
 
-  const handleApproval = async (eventId: string, isAllowed: boolean) => {
+  const handleApproval = async (isAllowed: boolean) => {
+    if (!confirmDialog.eventId) return;
+    
     try {
       const { error } = await supabase
         .from("events")
         .update({ is_allowed: isAllowed })
-        .eq("id", eventId);
+        .eq("id", confirmDialog.eventId);
 
       if (error) throw error;
 
@@ -125,6 +142,8 @@ export default function Events() {
         description: error.message,
         variant: "destructive",
       });
+    } finally {
+      setConfirmDialog({ open: false, type: null, eventId: null });
     }
   };
 
@@ -133,7 +152,7 @@ export default function Events() {
 
     try {
       // Validate meeting URL if provided
-      if (formData.meeting_url) {
+      if (formData.meeting_url && formData.meeting_url.trim()) {
         const urlSchema = z.string().url({ message: "Invalid URL format" });
         const result = urlSchema.safeParse(formData.meeting_url.trim());
         if (!result.success) {
@@ -144,16 +163,6 @@ export default function Events() {
           });
           return;
         }
-      }
-
-      // Validate meeting URL is required for online events
-      if (formData.where_to_host === "online" && !formData.meeting_url.trim()) {
-        toast({
-          title: "Validation Error",
-          description: "Meeting URL is required for online events",
-          variant: "destructive",
-        });
-        return;
       }
 
       const { data: { user } } = await supabase.auth.getUser();
@@ -265,11 +274,11 @@ export default function Events() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this event?")) return;
+  const handleDelete = async () => {
+    if (!confirmDialog.eventId) return;
 
     try {
-      const { error } = await supabase.from("events").delete().eq("id", id);
+      const { error } = await supabase.from("events").delete().eq("id", confirmDialog.eventId);
 
       if (error) throw error;
 
@@ -281,6 +290,18 @@ export default function Events() {
         description: error.message,
         variant: "destructive",
       });
+    } finally {
+      setConfirmDialog({ open: false, type: null, eventId: null });
+    }
+  };
+
+  const handleConfirmAction = () => {
+    if (confirmDialog.type === 'delete') {
+      handleDelete();
+    } else if (confirmDialog.type === 'approve') {
+      handleApproval(true);
+    } else if (confirmDialog.type === 'reject') {
+      handleApproval(false);
     }
   };
 
@@ -467,7 +488,7 @@ export default function Events() {
 
               {formData.where_to_host === "online" && (
                 <div>
-                  <Label htmlFor="meeting_url">Meeting URL *</Label>
+                  <Label htmlFor="meeting_url">Meeting URL</Label>
                   <Input
                     id="meeting_url"
                     type="url"
@@ -476,7 +497,6 @@ export default function Events() {
                       setFormData({ ...formData, meeting_url: e.target.value })
                     }
                     placeholder="https://zoom.us/j/... or https://meet.google.com/..."
-                    required
                   />
                 </div>
               )}
@@ -590,7 +610,7 @@ export default function Events() {
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => handleApproval(event.id, true)}
+                              onClick={() => setConfirmDialog({ open: true, type: 'approve', eventId: event.id })}
                               className="text-green-600 hover:text-green-700"
                             >
                               <Check className="h-4 w-4" />
@@ -598,7 +618,7 @@ export default function Events() {
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => handleApproval(event.id, false)}
+                              onClick={() => setConfirmDialog({ open: true, type: 'reject', eventId: event.id })}
                               className="text-red-600 hover:text-red-700"
                             >
                               <X className="h-4 w-4" />
@@ -615,7 +635,7 @@ export default function Events() {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => handleDelete(event.id)}
+                          onClick={() => setConfirmDialog({ open: true, type: 'delete', eventId: event.id })}
                           className="text-red-600 hover:text-red-700"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -629,6 +649,31 @@ export default function Events() {
           </div>
         )}
       </div>
+
+      <AlertDialog open={confirmDialog.open} onOpenChange={(open) => !open && setConfirmDialog({ open: false, type: null, eventId: null })}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {confirmDialog.type === 'delete' && 'Delete Event'}
+              {confirmDialog.type === 'approve' && 'Approve Event'}
+              {confirmDialog.type === 'reject' && 'Reject Event'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirmDialog.type === 'delete' && 'Are you sure you want to delete this event? This action cannot be undone.'}
+              {confirmDialog.type === 'approve' && 'Are you sure you want to approve this event? It will be visible to all users.'}
+              {confirmDialog.type === 'reject' && 'Are you sure you want to reject this event? The creator will be notified.'}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmAction}>
+              {confirmDialog.type === 'delete' && 'Delete'}
+              {confirmDialog.type === 'approve' && 'Approve'}
+              {confirmDialog.type === 'reject' && 'Reject'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
