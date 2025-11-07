@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Outlet, useNavigate, NavLink, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Users, Building2, LogOut, Menu, X, Briefcase, ShieldCheck, LayoutDashboard } from "lucide-react";
+import { Users, Building2, LogOut, Menu, X, Briefcase, ShieldCheck, LayoutDashboard, Calendar } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import dolksLogo from "@/assets/dolks-logo.png";
 
@@ -76,6 +76,7 @@ const AdminLayout = () => {
     { path: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { path: "/admin/crew", label: "Crew Members", icon: Users },
     { path: "/admin/services", label: "Docks Members", icon: Building2 },
+    { path: "/admin/events", label: "Events", icon: Calendar },
     { path: "/admin/company-services-roles", label: "Company Services & Roles", icon: Briefcase },
     { path: "/admin/interests-skills", label: "Interests & Skills", icon: ShieldCheck },
   ];

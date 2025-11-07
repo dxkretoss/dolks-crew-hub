@@ -104,6 +104,92 @@ export type Database = {
         }
         Relationships: []
       }
+      event_documents: {
+        Row: {
+          created_at: string
+          document_type: string
+          document_url: string
+          event_id: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          document_type: string
+          document_url: string
+          event_id: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          document_type?: string
+          document_url?: string
+          event_id?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_documents_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          created_at: string
+          event_date: string
+          event_time: string
+          full_description: string
+          id: string
+          is_allowed: boolean | null
+          link_to_dolk_profile: boolean
+          location: string | null
+          short_description: string
+          tags: string[] | null
+          title: string
+          type: string
+          updated_at: string
+          user_id: string
+          where_to_host: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_date: string
+          event_time: string
+          full_description: string
+          id?: string
+          is_allowed?: boolean | null
+          link_to_dolk_profile?: boolean
+          location?: string | null
+          short_description: string
+          tags?: string[] | null
+          title: string
+          type: string
+          updated_at?: string
+          user_id: string
+          where_to_host?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_date?: string
+          event_time?: string
+          full_description?: string
+          id?: string
+          is_allowed?: boolean | null
+          link_to_dolk_profile?: boolean
+          location?: string | null
+          short_description?: string
+          tags?: string[] | null
+          title?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+          where_to_host?: string | null
+        }
+        Relationships: []
+      }
       hobbies: {
         Row: {
           created_at: string

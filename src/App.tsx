@@ -14,6 +14,7 @@ import CrewDetail from "./pages/admin/CrewDetail";
 import ServiceDetail from "./pages/admin/ServiceDetail";
 import CompanyServicesRoles from "./pages/admin/CompanyServicesRoles";
 import InterestsSkills from "./pages/admin/InterestsSkills";
+import Events from "./pages/admin/Events";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +34,7 @@ const App = () => (
             <Route path="crew/:id" element={<CrewDetail />} />
             <Route path="services" element={<ServiceList />} />
             <Route path="services/:id" element={<ServiceDetail />} />
+            <Route path="events" element={<Events />} />
             <Route path="company-services-roles" element={<CompanyServicesRoles />} />
             <Route path="interests-skills" element={<InterestsSkills />} />
           </Route>
