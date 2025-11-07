@@ -37,7 +37,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Edit, Check, X, Search, Users } from "lucide-react";
+import { Plus, Trash2, Edit, Check, X, Search, Users, Eye } from "lucide-react";
 import { format } from "date-fns";
 import { z } from "zod";
 
@@ -91,6 +91,12 @@ export default function Events() {
   }>({ open: false, eventId: null, eventTitle: "" });
   const [interestedUsers, setInterestedUsers] = useState<InterestedUser[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
+  const [eventDetailsDialog, setEventDetailsDialog] = useState<{
+    open: boolean;
+    event: Event | null;
+  }>({ open: false, event: null });
+  const [eventDocuments, setEventDocuments] = useState<EventDocument[]>([]);
+  const [loadingDocuments, setLoadingDocuments] = useState(false);
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
@@ -321,23 +327,33 @@ export default function Events() {
   const fetchInterestedUsers = async (eventId: string) => {
     setLoadingUsers(true);
     try {
-      const { data, error } = await supabase
+      // Query event_interests and then fetch profiles separately
+      const { data: interests, error: interestsError } = await supabase
         .from("event_interests")
-        .select(`
-          user_id,
-          profiles!inner(
-            full_name,
-            email
-          )
-        `)
+        .select("user_id")
         .eq("event_id", eventId);
 
-      if (error) throw error;
+      if (interestsError) throw interestsError;
 
-      const users = data.map((item: any) => ({
-        id: item.user_id,
-        full_name: item.profiles.full_name,
-        email: item.profiles.email,
+      if (!interests || interests.length === 0) {
+        setInterestedUsers([]);
+        return;
+      }
+
+      const userIds = interests.map(i => i.user_id);
+
+      // Fetch profiles for these users
+      const { data: profiles, error: profilesError } = await supabase
+        .from("profiles")
+        .select("user_id, full_name, email")
+        .in("user_id", userIds);
+
+      if (profilesError) throw profilesError;
+
+      const users = profiles.map((profile: any) => ({
+        id: profile.user_id,
+        full_name: profile.full_name,
+        email: profile.email,
       }));
 
       setInterestedUsers(users);
@@ -359,6 +375,36 @@ export default function Events() {
       eventTitle: event.title,
     });
     await fetchInterestedUsers(event.id);
+  };
+
+  const fetchEventDocuments = async (eventId: string) => {
+    setLoadingDocuments(true);
+    try {
+      const { data, error } = await supabase
+        .from("event_documents")
+        .select("*")
+        .eq("event_id", eventId);
+
+      if (error) throw error;
+
+      setEventDocuments(data || []);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingDocuments(false);
+    }
+  };
+
+  const handleViewEventDetails = async (event: Event) => {
+    setEventDetailsDialog({
+      open: true,
+      event: event,
+    });
+    await fetchEventDocuments(event.id);
   };
 
   const handleEdit = (event: Event) => {
@@ -671,6 +717,13 @@ export default function Events() {
                     </TableCell>
                     <TableCell>
                       <div className="flex space-x-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleViewEventDetails(event)}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
                         {event.is_allowed === null && (
                           <>
                             <Button
@@ -774,6 +827,135 @@ export default function Events() {
               </div>
             )}
           </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={eventDetailsDialog.open} onOpenChange={(open) => !open && setEventDetailsDialog({ open: false, event: null })}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Event Details</DialogTitle>
+          </DialogHeader>
+          {eventDetailsDialog.event && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-muted-foreground">Title</Label>
+                  <p className="font-medium">{eventDetailsDialog.event.title}</p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Type</Label>
+                  <p className="font-medium">{eventDetailsDialog.event.type}</p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Date</Label>
+                  <p className="font-medium">
+                    {format(new Date(eventDetailsDialog.event.event_date), "MMM dd, yyyy")}
+                  </p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Time</Label>
+                  <p className="font-medium">{eventDetailsDialog.event.event_time}</p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Status</Label>
+                  <div className="mt-1">{getApprovalBadge(eventDetailsDialog.event.is_allowed)}</div>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Where to Host</Label>
+                  <p className="font-medium capitalize">{eventDetailsDialog.event.where_to_host || "N/A"}</p>
+                </div>
+              </div>
+
+              {eventDetailsDialog.event.location && (
+                <div>
+                  <Label className="text-muted-foreground">Location</Label>
+                  <p className="font-medium">{eventDetailsDialog.event.location}</p>
+                </div>
+              )}
+
+              {eventDetailsDialog.event.meeting_url && (
+                <div>
+                  <Label className="text-muted-foreground">Meeting URL</Label>
+                  <a 
+                    href={eventDetailsDialog.event.meeting_url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline font-medium"
+                  >
+                    {eventDetailsDialog.event.meeting_url}
+                  </a>
+                </div>
+              )}
+
+              <div>
+                <Label className="text-muted-foreground">Short Description</Label>
+                <p className="font-medium">{eventDetailsDialog.event.short_description}</p>
+              </div>
+
+              <div>
+                <Label className="text-muted-foreground">Full Description</Label>
+                <p className="whitespace-pre-wrap">{eventDetailsDialog.event.full_description}</p>
+              </div>
+
+              {eventDetailsDialog.event.tags && eventDetailsDialog.event.tags.length > 0 && (
+                <div>
+                  <Label className="text-muted-foreground">Tags</Label>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {eventDetailsDialog.event.tags.map((tag, index) => (
+                      <span 
+                        key={index}
+                        className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div>
+                <Label className="text-muted-foreground">Link to DOLK Profile</Label>
+                <p className="font-medium">{eventDetailsDialog.event.link_to_dolk_profile ? "Yes" : "No"}</p>
+              </div>
+
+              <div>
+                <Label className="text-muted-foreground">Uploaded Documents</Label>
+                {loadingDocuments ? (
+                  <div className="p-4 text-center">Loading documents...</div>
+                ) : eventDocuments.length === 0 ? (
+                  <p className="text-muted-foreground">No documents uploaded</p>
+                ) : (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-2">
+                    {eventDocuments.map((doc) => (
+                      <a
+                        key={doc.id}
+                        href={doc.document_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="border rounded-lg p-4 hover:bg-accent transition-colors"
+                      >
+                        {doc.document_type.startsWith('image/') ? (
+                          <img 
+                            src={doc.document_url} 
+                            alt="Event document" 
+                            className="w-full h-32 object-cover rounded"
+                          />
+                        ) : (
+                          <div className="w-full h-32 flex items-center justify-center bg-muted rounded">
+                            <span className="text-sm text-muted-foreground">Document</span>
+                          </div>
+                        )}
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="text-sm text-muted-foreground">
+                <p>Created: {format(new Date(eventDetailsDialog.event.created_at), "MMM dd, yyyy 'at' hh:mm a")}</p>
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
