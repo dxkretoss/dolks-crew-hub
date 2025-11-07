@@ -37,7 +37,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Edit, Check, X, Search } from "lucide-react";
+import { Plus, Trash2, Edit, Check, X, Search, Users } from "lucide-react";
 import { format } from "date-fns";
 import { z } from "zod";
 
@@ -66,6 +66,12 @@ interface EventDocument {
   document_type: string;
 }
 
+interface InterestedUser {
+  id: string;
+  full_name: string | null;
+  email: string;
+}
+
 export default function Events() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
@@ -78,6 +84,13 @@ export default function Events() {
     type: 'delete' | 'approve' | 'reject' | null;
     eventId: string | null;
   }>({ open: false, type: null, eventId: null });
+  const [interestedUsersDialog, setInterestedUsersDialog] = useState<{
+    open: boolean;
+    eventId: string | null;
+    eventTitle: string;
+  }>({ open: false, eventId: null, eventTitle: "" });
+  const [interestedUsers, setInterestedUsers] = useState<InterestedUser[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
@@ -303,6 +316,49 @@ export default function Events() {
     } else if (confirmDialog.type === 'reject') {
       handleApproval(false);
     }
+  };
+
+  const fetchInterestedUsers = async (eventId: string) => {
+    setLoadingUsers(true);
+    try {
+      const { data, error } = await supabase
+        .from("event_interests")
+        .select(`
+          user_id,
+          profiles!inner(
+            full_name,
+            email
+          )
+        `)
+        .eq("event_id", eventId);
+
+      if (error) throw error;
+
+      const users = data.map((item: any) => ({
+        id: item.user_id,
+        full_name: item.profiles.full_name,
+        email: item.profiles.email,
+      }));
+
+      setInterestedUsers(users);
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
+
+  const handleViewInterestedUsers = async (event: Event) => {
+    setInterestedUsersDialog({
+      open: true,
+      eventId: event.id,
+      eventTitle: event.title,
+    });
+    await fetchInterestedUsers(event.id);
   };
 
   const handleEdit = (event: Event) => {
@@ -590,6 +646,7 @@ export default function Events() {
                   <TableHead>Type</TableHead>
                   <TableHead>Date & Time</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Interested</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
               </TableHeader>
@@ -603,6 +660,15 @@ export default function Events() {
                       {event.event_time}
                     </TableCell>
                     <TableCell>{getApprovalBadge(event.is_allowed)}</TableCell>
+                    <TableCell>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleViewInterestedUsers(event)}
+                      >
+                        <Users className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
                     <TableCell>
                       <div className="flex space-x-2">
                         {event.is_allowed === null && (
@@ -674,6 +740,42 @@ export default function Events() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={interestedUsersDialog.open} onOpenChange={(open) => !open && setInterestedUsersDialog({ open: false, eventId: null, eventTitle: "" })}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Interested Users - {interestedUsersDialog.eventTitle}</DialogTitle>
+          </DialogHeader>
+          <div className="mt-4">
+            {loadingUsers ? (
+              <div className="p-8 text-center">Loading interested users...</div>
+            ) : interestedUsers.length === 0 ? (
+              <div className="p-8 text-center text-muted-foreground">
+                No users have shown interest in this event yet.
+              </div>
+            ) : (
+              <div className="border rounded-lg">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Email</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {interestedUsers.map((user) => (
+                      <TableRow key={user.id}>
+                        <TableCell>{user.full_name || "N/A"}</TableCell>
+                        <TableCell>{user.email}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
