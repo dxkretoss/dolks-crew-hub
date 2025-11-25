@@ -80,14 +80,17 @@ const AdminLayout = () => {
 
   const navItems = [
     { path: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { path: "/admin/events", label: "Events", icon: Calendar },
-    { path: "/admin/company-services-roles", label: "Company Services & Roles", icon: Briefcase },
-    { path: "/admin/interests-skills", label: "Interests & Skills", icon: ShieldCheck },
   ];
 
   const memberItems = [
     { path: "/admin/crew", label: "Crew", icon: Users },
     { path: "/admin/services", label: "Company", icon: Building2 },
+  ];
+
+  const otherNavItems = [
+    { path: "/admin/events", label: "Events", icon: Calendar },
+    { path: "/admin/company-services-roles", label: "Company Services & Roles", icon: Briefcase },
+    { path: "/admin/interests-skills", label: "Interests & Skills", icon: ShieldCheck },
   ];
 
   const isMembersActive = location.pathname === "/admin/crew" || location.pathname === "/admin/services";
@@ -169,6 +172,24 @@ const AdminLayout = () => {
                   ))}
                 </DropdownMenuContent>
               </DropdownMenu>
+              
+              {otherNavItems.map((item) => (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                      isActive
+                        ? "bg-primary text-primary-foreground"
+                        : "text-foreground hover:bg-muted"
+                    }`
+                  }
+                >
+                  <item.icon className="h-5 w-5" />
+                  <span className="font-medium">{item.label}</span>
+                </NavLink>
+              ))}
             </nav>
             <div className="absolute bottom-0 left-0 right-0 p-4 border-t">
               <Button
@@ -242,6 +263,23 @@ const AdminLayout = () => {
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
+          
+          {otherNavItems.map((item) => (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                  isActive
+                    ? "bg-primary text-primary-foreground"
+                    : "text-foreground hover:bg-muted"
+                }`
+              }
+            >
+              <item.icon className="h-5 w-5" />
+              <span className="font-medium">{item.label}</span>
+            </NavLink>
+          ))}
         </nav>
 
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t">
