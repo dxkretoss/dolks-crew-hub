@@ -424,6 +424,7 @@ export type Database = {
           gender: string | null
           hobby: string | null
           id: string
+          is_approved: boolean | null
           is_crew_member: boolean | null
           jwt_token: string | null
           nationality: string | null
@@ -448,6 +449,7 @@ export type Database = {
           gender?: string | null
           hobby?: string | null
           id?: string
+          is_approved?: boolean | null
           is_crew_member?: boolean | null
           jwt_token?: string | null
           nationality?: string | null
@@ -472,6 +474,7 @@ export type Database = {
           gender?: string | null
           hobby?: string | null
           id?: string
+          is_approved?: boolean | null
           is_crew_member?: boolean | null
           jwt_token?: string | null
           nationality?: string | null

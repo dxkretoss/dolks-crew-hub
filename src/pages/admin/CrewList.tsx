@@ -11,7 +11,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Eye, Search } from "lucide-react";
+import { Eye, Search, Check, X } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import type { Tables } from "@/integrations/supabase/types";
@@ -72,6 +73,31 @@ const CrewList = () => {
     });
   };
 
+  const handleApproveReject = async (profileId: string, isApproved: boolean) => {
+    try {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ is_approved: isApproved })
+        .eq("id", profileId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: `Crew member ${isApproved ? "approved" : "rejected"} successfully`,
+      });
+
+      // Refresh the list
+      fetchCrewMembers();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="p-6 lg:p-8 space-y-6">
       <div className="flex items-center justify-between">
@@ -115,6 +141,7 @@ const CrewList = () => {
                     <TableHead>Username</TableHead>
                     <TableHead>Phone Number</TableHead>
                     <TableHead>Email</TableHead>
+                    <TableHead>Status</TableHead>
                     <TableHead>Created At</TableHead>
                     <TableHead className="text-right">Action</TableHead>
                   </TableRow>
@@ -130,16 +157,43 @@ const CrewList = () => {
                         {profile.country_code} {profile.phone_number}
                       </TableCell>
                       <TableCell>{profile.email}</TableCell>
+                      <TableCell>
+                        <Badge variant={profile.is_approved ? "default" : "secondary"}>
+                          {profile.is_approved ? "Approved" : "Pending"}
+                        </Badge>
+                      </TableCell>
                       <TableCell>{formatDate(profile.created_at)}</TableCell>
                       <TableCell className="text-right">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => navigate(`/admin/crew/${profile.id}`)}
-                        >
-                          <Eye className="h-4 w-4 mr-2" />
-                          View Details
-                        </Button>
+                        <div className="flex items-center justify-end gap-2">
+                          {!profile.is_approved && (
+                            <>
+                              <Button
+                                size="sm"
+                                variant="default"
+                                onClick={() => handleApproveReject(profile.id, true)}
+                              >
+                                <Check className="h-4 w-4 mr-1" />
+                                Approve
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => handleApproveReject(profile.id, false)}
+                              >
+                                <X className="h-4 w-4 mr-1" />
+                                Reject
+                              </Button>
+                            </>
+                          )}
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => navigate(`/admin/crew/${profile.id}`)}
+                          >
+                            <Eye className="h-4 w-4 mr-2" />
+                            View
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
