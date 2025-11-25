@@ -300,13 +300,6 @@ const ServiceDetail = () => {
                 </div>
               )}
 
-              {companyProfile.skills && (
-                <div className="pt-4 border-t">
-                  <p className="text-sm text-muted-foreground mb-2">Skills</p>
-                  <p className="font-medium">{companyProfile.skills}</p>
-                </div>
-              )}
-
               {companyProfile.company_portfolio && (
                 <div className="pt-4 border-t">
                   <p className="text-sm text-muted-foreground mb-2">Portfolio</p>
