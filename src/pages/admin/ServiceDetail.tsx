@@ -145,7 +145,7 @@ const ServiceDetail = () => {
           <AlertDialogTrigger asChild>
             <Button variant="destructive">
               <Trash2 className="mr-2 h-4 w-4" />
-              Delete Service Provider
+              Delete Company
             </Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
