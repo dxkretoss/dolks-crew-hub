@@ -2,8 +2,14 @@ import { useEffect, useState } from "react";
 import { Outlet, useNavigate, NavLink, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Users, Building2, LogOut, Menu, X, Briefcase, ShieldCheck, LayoutDashboard, Calendar } from "lucide-react";
+import { Users, Building2, LogOut, Menu, X, Briefcase, ShieldCheck, LayoutDashboard, Calendar, ChevronDown } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import dolksLogo from "@/assets/dolks-logo.png";
 
 const AdminLayout = () => {
@@ -74,12 +80,17 @@ const AdminLayout = () => {
 
   const navItems = [
     { path: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { path: "/admin/crew", label: "Crew Members", icon: Users },
-    { path: "/admin/services", label: "Docks Members", icon: Building2 },
     { path: "/admin/events", label: "Events", icon: Calendar },
     { path: "/admin/company-services-roles", label: "Company Services & Roles", icon: Briefcase },
     { path: "/admin/interests-skills", label: "Interests & Skills", icon: ShieldCheck },
   ];
+
+  const memberItems = [
+    { path: "/admin/crew", label: "Crew", icon: Users },
+    { path: "/admin/services", label: "Company", icon: Building2 },
+  ];
+
+  const isMembersActive = location.pathname === "/admin/crew" || location.pathname === "/admin/services";
 
   return (
     <div className="min-h-screen bg-background">
@@ -124,6 +135,40 @@ const AdminLayout = () => {
                   <span className="font-medium">{item.label}</span>
                 </NavLink>
               ))}
+              
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors w-full ${
+                      isMembersActive
+                        ? "bg-primary text-primary-foreground"
+                        : "text-foreground hover:bg-muted"
+                    }`}
+                  >
+                    <Users className="h-5 w-5" />
+                    <span className="font-medium flex-1 text-left">Members</span>
+                    <ChevronDown className="h-4 w-4" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-56 bg-card border">
+                  {memberItems.map((item) => (
+                    <DropdownMenuItem key={item.path} asChild>
+                      <NavLink
+                        to={item.path}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className={({ isActive }) =>
+                          `flex items-center gap-3 px-2 py-2 cursor-pointer ${
+                            isActive ? "bg-muted" : ""
+                          }`
+                        }
+                      >
+                        <item.icon className="h-4 w-4" />
+                        <span>{item.label}</span>
+                      </NavLink>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </nav>
             <div className="absolute bottom-0 left-0 right-0 p-4 border-t">
               <Button
@@ -164,6 +209,39 @@ const AdminLayout = () => {
               <span className="font-medium">{item.label}</span>
             </NavLink>
           ))}
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors w-full ${
+                  isMembersActive
+                    ? "bg-primary text-primary-foreground"
+                    : "text-foreground hover:bg-muted"
+                }`}
+              >
+                <Users className="h-5 w-5" />
+                <span className="font-medium flex-1 text-left">Members</span>
+                <ChevronDown className="h-4 w-4" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-56 bg-card border">
+              {memberItems.map((item) => (
+                <DropdownMenuItem key={item.path} asChild>
+                  <NavLink
+                    to={item.path}
+                    className={({ isActive }) =>
+                      `flex items-center gap-3 px-2 py-2 cursor-pointer ${
+                        isActive ? "bg-muted" : ""
+                      }`
+                    }
+                  >
+                    <item.icon className="h-4 w-4" />
+                    <span>{item.label}</span>
+                  </NavLink>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </nav>
 
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t">

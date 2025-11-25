@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       company_profiles: {
         Row: {
+          business_category: string | null
           company_name: string
           company_portfolio: string | null
           company_profile_picture: string | null
@@ -23,13 +24,14 @@ export type Database = {
           description: string | null
           id: string
           location: string
-          skills: string | null
+          tags: string | null
           team_size: string | null
           type_of_services: string
           updated_at: string
           user_id: string
         }
         Insert: {
+          business_category?: string | null
           company_name: string
           company_portfolio?: string | null
           company_profile_picture?: string | null
@@ -37,13 +39,14 @@ export type Database = {
           description?: string | null
           id?: string
           location: string
-          skills?: string | null
+          tags?: string | null
           team_size?: string | null
           type_of_services: string
           updated_at?: string
           user_id: string
         }
         Update: {
+          business_category?: string | null
           company_name?: string
           company_portfolio?: string | null
           company_profile_picture?: string | null
@@ -51,7 +54,7 @@ export type Database = {
           description?: string | null
           id?: string
           location?: string
-          skills?: string | null
+          tags?: string | null
           team_size?: string | null
           type_of_services?: string
           updated_at?: string
@@ -276,6 +279,13 @@ export type Database = {
             referencedRelation: "posts"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "post_comments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       post_favorites: {
@@ -373,7 +383,6 @@ export type Database = {
           image_url: string | null
           location: string | null
           mentions: string[] | null
-          posted_by_full_name: string
           tagged_user_ids: string[] | null
           updated_at: string
           user_id: string
@@ -385,7 +394,6 @@ export type Database = {
           image_url?: string | null
           location?: string | null
           mentions?: string[] | null
-          posted_by_full_name: string
           tagged_user_ids?: string[] | null
           updated_at?: string
           user_id: string
@@ -397,7 +405,6 @@ export type Database = {
           image_url?: string | null
           location?: string | null
           mentions?: string[] | null
-          posted_by_full_name?: string
           tagged_user_ids?: string[] | null
           updated_at?: string
           user_id?: string
@@ -417,6 +424,7 @@ export type Database = {
           gender: string | null
           hobby: string | null
           id: string
+          is_crew_member: boolean | null
           jwt_token: string | null
           nationality: string | null
           phone_number: string
@@ -440,6 +448,7 @@ export type Database = {
           gender?: string | null
           hobby?: string | null
           id?: string
+          is_crew_member?: boolean | null
           jwt_token?: string | null
           nationality?: string | null
           phone_number: string
@@ -463,6 +472,7 @@ export type Database = {
           gender?: string | null
           hobby?: string | null
           id?: string
+          is_crew_member?: boolean | null
           jwt_token?: string | null
           nationality?: string | null
           phone_number?: string
@@ -475,6 +485,59 @@ export type Database = {
           username?: string
         }
         Relationships: []
+      }
+      projects: {
+        Row: {
+          created_at: string
+          full_description: string
+          id: string
+          link_to_dolks_profile: boolean
+          short_description: string
+          tags: string[] | null
+          title: string
+          type: string
+          updated_at: string
+          user_id: string
+          visuals: string[] | null
+          what_looking_for: string | null
+        }
+        Insert: {
+          created_at?: string
+          full_description: string
+          id?: string
+          link_to_dolks_profile?: boolean
+          short_description: string
+          tags?: string[] | null
+          title: string
+          type: string
+          updated_at?: string
+          user_id: string
+          visuals?: string[] | null
+          what_looking_for?: string | null
+        }
+        Update: {
+          created_at?: string
+          full_description?: string
+          id?: string
+          link_to_dolks_profile?: boolean
+          short_description?: string
+          tags?: string[] | null
+          title?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+          visuals?: string[] | null
+          what_looking_for?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_projects_user_id"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       skills: {
         Row: {
