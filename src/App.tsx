@@ -13,7 +13,8 @@ import CrewList from "./pages/admin/CrewList";
 import ServiceList from "./pages/admin/ServiceList";
 import CrewDetail from "./pages/admin/CrewDetail";
 import ServiceDetail from "./pages/admin/ServiceDetail";
-import CompanyServicesRoles from "./pages/admin/CompanyServicesRoles";
+import Categories from "./pages/admin/Categories";
+import Services from "./pages/admin/Services";
 import InterestsSkills from "./pages/admin/InterestsSkills";
 import Events from "./pages/admin/Events";
 
@@ -44,7 +45,8 @@ const App = () => {
               <Route path="services" element={<ServiceList />} />
               <Route path="services/:id" element={<ServiceDetail />} />
               <Route path="events" element={<Events />} />
-              <Route path="company-services-roles" element={<CompanyServicesRoles />} />
+              <Route path="categories" element={<Categories />} />
+              <Route path="company-services" element={<Services />} />
               <Route path="interests-skills" element={<InterestsSkills />} />
             </Route>
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
