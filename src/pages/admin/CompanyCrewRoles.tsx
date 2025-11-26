@@ -267,7 +267,7 @@ const CompanyCrewRoles = () => {
         <h1 className="text-3xl font-bold">Company/Crew Roles</h1>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 md:pl-6 px-0">
+      <div className="grid gap-6 md:grid-cols-2 md:pl-0 px-0">
         {/* Types Section */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
