@@ -12,6 +12,15 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 type CompanyCrewType = {
   id: string;
   name: string;
@@ -34,6 +43,9 @@ const CompanyCrewRoles = () => {
   const [deleteTypeId, setDeleteTypeId] = useState<string | null>(null);
   const [deleteRoleId, setDeleteRoleId] = useState<string | null>(null);
   const [selectedTypeFilter, setSelectedTypeFilter] = useState<string>("all");
+  const [currentTypePage, setCurrentTypePage] = useState(1);
+  const [currentRolePage, setCurrentRolePage] = useState(1);
+  const itemsPerPage = 10;
   const [typeForm, setTypeForm] = useState({
     name: "",
     type: "company" as "company" | "crew"
@@ -262,6 +274,101 @@ const CompanyCrewRoles = () => {
     if (selectedTypeFilter === "all") return true;
     return role.type_id === selectedTypeFilter;
   });
+  
+  const totalTypePages = Math.ceil((types?.length || 0) / itemsPerPage);
+  const startTypeIndex = (currentTypePage - 1) * itemsPerPage;
+  const endTypeIndex = startTypeIndex + itemsPerPage;
+  const currentTypes = types?.slice(startTypeIndex, endTypeIndex);
+
+  const totalRolePages = Math.ceil((filteredRoles?.length || 0) / itemsPerPage);
+  const startRoleIndex = (currentRolePage - 1) * itemsPerPage;
+  const endRoleIndex = startRoleIndex + itemsPerPage;
+  const currentRoles = filteredRoles?.slice(startRoleIndex, endRoleIndex);
+
+  const handleTypePageChange = (page: number) => {
+    setCurrentTypePage(page);
+  };
+
+  const handleRolePageChange = (page: number) => {
+    setCurrentRolePage(page);
+  };
+
+  const renderPaginationItems = (currentPage: number, totalPages: number, onPageChange: (page: number) => void) => {
+    const items = [];
+    const maxVisible = 5;
+    
+    if (totalPages <= maxVisible) {
+      for (let i = 1; i <= totalPages; i++) {
+        items.push(
+          <PaginationItem key={i}>
+            <PaginationLink
+              onClick={() => onPageChange(i)}
+              isActive={currentPage === i}
+            >
+              {i}
+            </PaginationLink>
+          </PaginationItem>
+        );
+      }
+    } else {
+      items.push(
+        <PaginationItem key={1}>
+          <PaginationLink
+            onClick={() => onPageChange(1)}
+            isActive={currentPage === 1}
+          >
+            1
+          </PaginationLink>
+        </PaginationItem>
+      );
+
+      if (currentPage > 3) {
+        items.push(
+          <PaginationItem key="ellipsis-1">
+            <PaginationEllipsis />
+          </PaginationItem>
+        );
+      }
+
+      const start = Math.max(2, currentPage - 1);
+      const end = Math.min(totalPages - 1, currentPage + 1);
+
+      for (let i = start; i <= end; i++) {
+        items.push(
+          <PaginationItem key={i}>
+            <PaginationLink
+              onClick={() => onPageChange(i)}
+              isActive={currentPage === i}
+            >
+              {i}
+            </PaginationLink>
+          </PaginationItem>
+        );
+      }
+
+      if (currentPage < totalPages - 2) {
+        items.push(
+          <PaginationItem key="ellipsis-2">
+            <PaginationEllipsis />
+          </PaginationItem>
+        );
+      }
+
+      items.push(
+        <PaginationItem key={totalPages}>
+          <PaginationLink
+            onClick={() => onPageChange(totalPages)}
+            isActive={currentPage === totalPages}
+          >
+            {totalPages}
+          </PaginationLink>
+        </PaginationItem>
+      );
+    }
+    
+    return items;
+  };
+  
   return <div className="space-y-6 p-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Company/Crew Roles</h1>
@@ -282,7 +389,8 @@ const CompanyCrewRoles = () => {
             </Button>
           </CardHeader>
           <CardContent>
-            {typesLoading ? <p>Loading types...</p> : <Table>
+            {typesLoading ? <p>Loading types...</p> : <>
+              <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Name</TableHead>
@@ -291,7 +399,7 @@ const CompanyCrewRoles = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {types?.map(type => <TableRow key={type.id}>
+                  {currentTypes?.map(type => <TableRow key={type.id}>
                       <TableCell className="font-medium">{type.name}</TableCell>
                       <TableCell>
                         <Badge variant={type.type === "company" ? "default" : "secondary"}>
@@ -308,9 +416,31 @@ const CompanyCrewRoles = () => {
                           </Button>
                         </div>
                       </TableCell>
-                    </TableRow>)}
+                  </TableRow>)}
                 </TableBody>
-              </Table>}
+              </Table>
+              {types && types.length > itemsPerPage && (
+                <div className="mt-4">
+                  <Pagination>
+                    <PaginationContent>
+                      <PaginationItem>
+                        <PaginationPrevious
+                          onClick={() => currentTypePage > 1 && handleTypePageChange(currentTypePage - 1)}
+                          className={currentTypePage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                        />
+                      </PaginationItem>
+                      {renderPaginationItems(currentTypePage, totalTypePages, handleTypePageChange)}
+                      <PaginationItem>
+                        <PaginationNext
+                          onClick={() => currentTypePage < totalTypePages && handleTypePageChange(currentTypePage + 1)}
+                          className={currentTypePage === totalTypePages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                        />
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+                </div>
+              )}
+            </>}
           </CardContent>
         </Card>
 
@@ -341,7 +471,8 @@ const CompanyCrewRoles = () => {
                 </SelectContent>
               </Select>
             </div>
-            {rolesLoading ? <p>Loading roles...</p> : <Table>
+            {rolesLoading ? <p>Loading roles...</p> : <>
+              <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Name</TableHead>
@@ -350,7 +481,7 @@ const CompanyCrewRoles = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredRoles?.map(role => <TableRow key={role.id}>
+                  {currentRoles?.map(role => <TableRow key={role.id}>
                       <TableCell className="font-medium">{role.name}</TableCell>
                       <TableCell>{getTypeName(role.type_id)}</TableCell>
                       <TableCell className="text-right">
@@ -363,9 +494,31 @@ const CompanyCrewRoles = () => {
                           </Button>
                         </div>
                       </TableCell>
-                    </TableRow>)}
+                  </TableRow>)}
                 </TableBody>
-              </Table>}
+              </Table>
+              {filteredRoles && filteredRoles.length > itemsPerPage && (
+                <div className="mt-4">
+                  <Pagination>
+                    <PaginationContent>
+                      <PaginationItem>
+                        <PaginationPrevious
+                          onClick={() => currentRolePage > 1 && handleRolePageChange(currentRolePage - 1)}
+                          className={currentRolePage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                        />
+                      </PaginationItem>
+                      {renderPaginationItems(currentRolePage, totalRolePages, handleRolePageChange)}
+                      <PaginationItem>
+                        <PaginationNext
+                          onClick={() => currentRolePage < totalRolePages && handleRolePageChange(currentRolePage + 1)}
+                          className={currentRolePage === totalRolePages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                        />
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+                </div>
+              )}
+            </>}
           </CardContent>
         </Card>
       </div>

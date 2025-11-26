@@ -12,6 +12,15 @@ import { useToast } from "@/hooks/use-toast";
 import { Plus, Trash2, Edit, Check, X, Search, Users, Eye } from "lucide-react";
 import { format } from "date-fns";
 import { z } from "zod";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 interface Event {
   id: string;
   title: string;
@@ -77,6 +86,8 @@ export default function Events() {
   });
   const [eventDocuments, setEventDocuments] = useState<EventDocument[]>([]);
   const [loadingDocuments, setLoadingDocuments] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   const {
     toast
   } = useToast();
@@ -411,6 +422,92 @@ export default function Events() {
     setSelectedFiles(null);
   };
   const filteredEvents = events.filter(event => event.title.toLowerCase().includes(searchTerm.toLowerCase()) || event.type.toLowerCase().includes(searchTerm.toLowerCase()));
+  
+  const totalPages = Math.ceil(filteredEvents.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentEvents = filteredEvents.slice(startIndex, endIndex);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const renderPaginationItems = () => {
+    const items = [];
+    const maxVisible = 5;
+    
+    if (totalPages <= maxVisible) {
+      for (let i = 1; i <= totalPages; i++) {
+        items.push(
+          <PaginationItem key={i}>
+            <PaginationLink
+              onClick={() => handlePageChange(i)}
+              isActive={currentPage === i}
+            >
+              {i}
+            </PaginationLink>
+          </PaginationItem>
+        );
+      }
+    } else {
+      items.push(
+        <PaginationItem key={1}>
+          <PaginationLink
+            onClick={() => handlePageChange(1)}
+            isActive={currentPage === 1}
+          >
+            1
+          </PaginationLink>
+        </PaginationItem>
+      );
+
+      if (currentPage > 3) {
+        items.push(
+          <PaginationItem key="ellipsis-1">
+            <PaginationEllipsis />
+          </PaginationItem>
+        );
+      }
+
+      const start = Math.max(2, currentPage - 1);
+      const end = Math.min(totalPages - 1, currentPage + 1);
+
+      for (let i = start; i <= end; i++) {
+        items.push(
+          <PaginationItem key={i}>
+            <PaginationLink
+              onClick={() => handlePageChange(i)}
+              isActive={currentPage === i}
+            >
+              {i}
+            </PaginationLink>
+          </PaginationItem>
+        );
+      }
+
+      if (currentPage < totalPages - 2) {
+        items.push(
+          <PaginationItem key="ellipsis-2">
+            <PaginationEllipsis />
+          </PaginationItem>
+        );
+      }
+
+      items.push(
+        <PaginationItem key={totalPages}>
+          <PaginationLink
+            onClick={() => handlePageChange(totalPages)}
+            isActive={currentPage === totalPages}
+          >
+            {totalPages}
+          </PaginationLink>
+        </PaginationItem>
+      );
+    }
+    
+    return items;
+  };
+  
   const getApprovalBadge = (isAllowed: boolean | null) => {
     if (isAllowed === null) return <span className="text-yellow-500">Pending</span>;
     if (isAllowed) return <span className="text-green-500">Approved</span>;
@@ -582,7 +679,7 @@ export default function Events() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredEvents.map(event => <TableRow key={event.id} className="border-b">
+                {currentEvents.map(event => <TableRow key={event.id} className="border-b">
                     <TableCell className="font-medium">{event.title}</TableCell>
                     <TableCell>{event.type}</TableCell>
                     <TableCell>
@@ -633,6 +730,28 @@ export default function Events() {
             </Table>
           </div>}
       </div>
+
+      {!loading && filteredEvents.length > itemsPerPage && (
+        <div className="mt-4">
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)}
+                  className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                />
+              </PaginationItem>
+              {renderPaginationItems()}
+              <PaginationItem>
+                <PaginationNext
+                  onClick={() => currentPage < totalPages && handlePageChange(currentPage + 1)}
+                  className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
+      )}
 
       <AlertDialog open={confirmDialog.open} onOpenChange={open => !open && setConfirmDialog({
       open: false,
