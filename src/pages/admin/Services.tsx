@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+
 import {
   Table,
   TableBody,
@@ -61,7 +61,6 @@ const Services = () => {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: "",
-    description: "",
     category_id: "",
   });
 
@@ -111,12 +110,11 @@ const Services = () => {
       setEditingService(service);
       setFormData({
         name: service.name,
-        description: service.description || "",
         category_id: service.category_id || "",
       });
     } else {
       setEditingService(null);
-      setFormData({ name: "", description: "", category_id: "" });
+      setFormData({ name: "", category_id: "" });
     }
     setIsDialogOpen(true);
   };
@@ -124,7 +122,7 @@ const Services = () => {
   const handleCloseDialog = () => {
     setIsDialogOpen(false);
     setEditingService(null);
-    setFormData({ name: "", description: "", category_id: "" });
+    setFormData({ name: "", category_id: "" });
   };
 
   const handleSave = async () => {
@@ -140,7 +138,6 @@ const Services = () => {
 
       const payload = {
         name: formData.name.trim(),
-        description: formData.description.trim() || null,
         category_id: formData.category_id || null,
       };
 
@@ -249,7 +246,6 @@ const Services = () => {
                   <TableRow>
                     <TableHead>Name</TableHead>
                     <TableHead>Category</TableHead>
-                    <TableHead>Description</TableHead>
                     <TableHead>Created At</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
@@ -263,7 +259,6 @@ const Services = () => {
                       <TableCell>
                         {service.category?.name || "Uncategorized"}
                       </TableCell>
-                      <TableCell>{service.description || "N/A"}</TableCell>
                       <TableCell>{formatDate(service.created_at)}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">
@@ -339,18 +334,6 @@ const Services = () => {
                   ))}
                 </SelectContent>
               </Select>
-            </div>
-            <div>
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
-                placeholder="Enter service description"
-                rows={3}
-              />
             </div>
           </div>
           <DialogFooter>
