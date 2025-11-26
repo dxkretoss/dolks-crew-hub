@@ -17,6 +17,7 @@ import Categories from "./pages/admin/Categories";
 import Services from "./pages/admin/Services";
 import InterestsSkills from "./pages/admin/InterestsSkills";
 import Events from "./pages/admin/Events";
+import CompanyCrewRoles from "./pages/admin/CompanyCrewRoles";
 
 const App = () => {
   const [queryClient] = useState(() => new QueryClient({
@@ -48,6 +49,7 @@ const App = () => {
               <Route path="categories" element={<Categories />} />
               <Route path="company-services" element={<Services />} />
               <Route path="interests-skills" element={<InterestsSkills />} />
+              <Route path="company-crew-roles" element={<CompanyCrewRoles />} />
             </Route>
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
