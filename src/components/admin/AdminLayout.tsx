@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Outlet, useNavigate, NavLink, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Users, Building2, LogOut, Menu, X, Briefcase, ShieldCheck, LayoutDashboard, Calendar, ChevronDown, Settings } from "lucide-react";
+import { Users, Building2, LogOut, Menu, X, Briefcase, ShieldCheck, LayoutDashboard, Calendar, ChevronDown, Settings, UserCog } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import {
   DropdownMenu,
@@ -92,6 +92,7 @@ const AdminLayout = () => {
     { path: "/admin/categories", label: "Categories", icon: Settings },
     { path: "/admin/company-services", label: "Company Services", icon: Briefcase },
     { path: "/admin/interests-skills", label: "Interests & Skills", icon: ShieldCheck },
+    { path: "/admin/company-crew-roles", label: "Company/Crew Roles", icon: UserCog },
   ];
 
   const isMembersActive = location.pathname === "/admin/crew" || location.pathname === "/admin/services";
