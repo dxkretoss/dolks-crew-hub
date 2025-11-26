@@ -15,7 +15,7 @@ import CrewDetail from "./pages/admin/CrewDetail";
 import ServiceDetail from "./pages/admin/ServiceDetail";
 import Categories from "./pages/admin/Categories";
 import Services from "./pages/admin/Services";
-import InterestsSkills from "./pages/admin/InterestsSkills";
+import Hobbies from "./pages/admin/Hobbies";
 import Events from "./pages/admin/Events";
 import CompanyCrewRoles from "./pages/admin/CompanyCrewRoles";
 
@@ -48,7 +48,7 @@ const App = () => {
               <Route path="events" element={<Events />} />
               <Route path="categories" element={<Categories />} />
               <Route path="company-services" element={<Services />} />
-              <Route path="interests-skills" element={<InterestsSkills />} />
+              <Route path="hobbies" element={<Hobbies />} />
               <Route path="company-crew-roles" element={<CompanyCrewRoles />} />
             </Route>
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
