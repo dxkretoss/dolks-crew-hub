@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+
 import {
   Table,
   TableBody,
@@ -46,7 +46,7 @@ const Categories = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [formData, setFormData] = useState({ name: "", description: "" });
+  const [formData, setFormData] = useState({ name: "" });
 
   useEffect(() => {
     fetchCategories();
@@ -85,11 +85,10 @@ const Categories = () => {
       setEditingCategory(category);
       setFormData({
         name: category.name,
-        description: category.description || "",
       });
     } else {
       setEditingCategory(null);
-      setFormData({ name: "", description: "" });
+      setFormData({ name: "" });
     }
     setIsDialogOpen(true);
   };
@@ -97,7 +96,7 @@ const Categories = () => {
   const handleCloseDialog = () => {
     setIsDialogOpen(false);
     setEditingCategory(null);
-    setFormData({ name: "", description: "" });
+    setFormData({ name: "" });
   };
 
   const handleSave = async () => {
@@ -116,7 +115,6 @@ const Categories = () => {
           .from("categories")
           .update({
             name: formData.name.trim(),
-            description: formData.description.trim() || null,
           })
           .eq("id", editingCategory.id);
 
@@ -125,7 +123,6 @@ const Categories = () => {
       } else {
         const { error } = await supabase.from("categories").insert({
           name: formData.name.trim(),
-          description: formData.description.trim() || null,
         });
 
         if (error) throw error;
@@ -219,7 +216,6 @@ const Categories = () => {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Name</TableHead>
-                    <TableHead>Description</TableHead>
                     <TableHead>Created At</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
@@ -230,7 +226,6 @@ const Categories = () => {
                       <TableCell className="font-medium">
                         {category.name}
                       </TableCell>
-                      <TableCell>{category.description || "N/A"}</TableCell>
                       <TableCell>{formatDate(category.created_at)}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">
@@ -284,18 +279,6 @@ const Categories = () => {
                   setFormData({ ...formData, name: e.target.value })
                 }
                 placeholder="Enter category name"
-              />
-            </div>
-            <div>
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
-                placeholder="Enter category description"
-                rows={3}
               />
             </div>
           </div>
