@@ -322,16 +322,16 @@ const Services = () => {
             <div>
               <Label htmlFor="category">Category</Label>
               <Select
-                value={formData.category_id}
+                value={formData.category_id || "none"}
                 onValueChange={(value) =>
-                  setFormData({ ...formData, category_id: value })
+                  setFormData({ ...formData, category_id: value === "none" ? "" : value })
                 }
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">None</SelectItem>
+                  <SelectItem value="none">None</SelectItem>
                   {categories.map((category) => (
                     <SelectItem key={category.id} value={category.id}>
                       {category.name}
