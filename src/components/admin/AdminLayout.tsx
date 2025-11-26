@@ -91,7 +91,7 @@ const AdminLayout = () => {
     { path: "/admin/events", label: "Events", icon: Calendar },
     { path: "/admin/categories", label: "Categories", icon: Settings },
     { path: "/admin/company-services", label: "Company Services", icon: Briefcase },
-    { path: "/admin/interests-skills", label: "Interests & Skills", icon: ShieldCheck },
+    { path: "/admin/hobbies", label: "Hobby/Interest", icon: ShieldCheck },
     { path: "/admin/company-crew-roles", label: "Company/Crew Roles", icon: UserCog },
   ];
 
