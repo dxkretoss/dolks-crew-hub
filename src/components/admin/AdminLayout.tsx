@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Outlet, useNavigate, NavLink, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Users, Building2, LogOut, Menu, X, Briefcase, ShieldCheck, LayoutDashboard, Calendar, ChevronDown } from "lucide-react";
+import { Users, Building2, LogOut, Menu, X, Briefcase, ShieldCheck, LayoutDashboard, Calendar, ChevronDown, Settings } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import {
   DropdownMenu,
@@ -89,7 +89,8 @@ const AdminLayout = () => {
 
   const otherNavItems = [
     { path: "/admin/events", label: "Events", icon: Calendar },
-    { path: "/admin/company-services-roles", label: "Company Services & Roles", icon: Briefcase },
+    { path: "/admin/categories", label: "Categories", icon: Settings },
+    { path: "/admin/company-services", label: "Company Services", icon: Briefcase },
     { path: "/admin/interests-skills", label: "Interests & Skills", icon: ShieldCheck },
   ];
 
