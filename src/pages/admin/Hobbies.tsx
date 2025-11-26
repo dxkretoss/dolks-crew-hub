@@ -4,42 +4,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { toast } from "@/hooks/use-toast";
 import { Plus, Search, Pencil, Trash2 } from "lucide-react";
-
 interface Hobby {
   id: string;
   name: string;
   created_at: string;
   updated_at: string;
 }
-
 const Hobbies = () => {
   const [hobbies, setHobbies] = useState<Hobby[]>([]);
   const [filteredHobbies, setFilteredHobbies] = useState<Hobby[]>([]);
@@ -50,28 +25,22 @@ const Hobbies = () => {
   const [deletingHobby, setDeletingHobby] = useState<Hobby | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [formData, setFormData] = useState({
-    name: "",
+    name: ""
   });
-
   useEffect(() => {
     fetchHobbies();
   }, []);
-
   useEffect(() => {
-    const filtered = hobbies.filter((hobby) =>
-      hobby.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filtered = hobbies.filter(hobby => hobby.name.toLowerCase().includes(searchTerm.toLowerCase()));
     setFilteredHobbies(filtered);
   }, [searchTerm, hobbies]);
-
   const fetchHobbies = async () => {
     try {
       setIsLoading(true);
-      const { data, error } = await supabase
-        .from("hobbies")
-        .select("*")
-        .order("name");
-
+      const {
+        data,
+        error
+      } = await supabase.from("hobbies").select("*").order("name");
       if (error) throw error;
       setHobbies(data || []);
       setFilteredHobbies(data || []);
@@ -80,72 +49,65 @@ const Hobbies = () => {
       toast({
         title: "Error",
         description: "Failed to fetch hobbies",
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setIsLoading(false);
     }
   };
-
   const handleOpenDialog = (hobby?: Hobby) => {
     if (hobby) {
       setEditingHobby(hobby);
       setFormData({
-        name: hobby.name,
+        name: hobby.name
       });
     } else {
       setEditingHobby(null);
       setFormData({
-        name: "",
+        name: ""
       });
     }
     setIsDialogOpen(true);
   };
-
   const handleCloseDialog = () => {
     setIsDialogOpen(false);
     setEditingHobby(null);
     setFormData({
-      name: "",
+      name: ""
     });
   };
-
   const handleSave = async () => {
     if (!formData.name.trim()) {
       toast({
         title: "Validation Error",
         description: "Please fill in the hobby name",
-        variant: "destructive",
+        variant: "destructive"
       });
       return;
     }
-
     try {
       if (editingHobby) {
-        const { error } = await supabase
-          .from("hobbies")
-          .update({
-            name: formData.name,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", editingHobby.id);
-
+        const {
+          error
+        } = await supabase.from("hobbies").update({
+          name: formData.name,
+          updated_at: new Date().toISOString()
+        }).eq("id", editingHobby.id);
         if (error) throw error;
         toast({
           title: "Success",
-          description: "Hobby updated successfully",
+          description: "Hobby updated successfully"
         });
       } else {
-        const { error } = await supabase.from("hobbies").insert([
-          {
-            name: formData.name,
-          },
-        ]);
-
+        const {
+          error
+        } = await supabase.from("hobbies").insert([{
+          name: formData.name
+        }]);
         if (error) throw error;
         toast({
           title: "Success",
-          description: "Hobby added successfully",
+          description: "Hobby added successfully"
         });
       }
       handleCloseDialog();
@@ -155,25 +117,20 @@ const Hobbies = () => {
       toast({
         title: "Error",
         description: "Failed to save hobby",
-        variant: "destructive",
+        variant: "destructive"
       });
     }
   };
-
   const handleDelete = async () => {
     if (!deletingHobby) return;
-
     try {
-      const { error } = await supabase
-        .from("hobbies")
-        .delete()
-        .eq("id", deletingHobby.id);
-
+      const {
+        error
+      } = await supabase.from("hobbies").delete().eq("id", deletingHobby.id);
       if (error) throw error;
-
       toast({
         title: "Success",
-        description: "Hobby deleted successfully",
+        description: "Hobby deleted successfully"
       });
       setIsDeleteDialogOpen(false);
       setDeletingHobby(null);
@@ -183,23 +140,18 @@ const Hobbies = () => {
       toast({
         title: "Error",
         description: "Failed to delete hobby",
-        variant: "destructive",
+        variant: "destructive"
       });
     }
   };
-
   if (isLoading) {
-    return (
-      <div className="p-6">
+    return <div className="p-6">
         <div className="flex items-center justify-center h-64">
           <div className="animate-pulse text-muted-foreground">Loading...</div>
         </div>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="p-6 space-y-6">
+  return <div className="p-6 space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-3xl font-bold">Hobby/Interest Management</h1>
       </div>
@@ -211,16 +163,11 @@ const Hobbies = () => {
             <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
               <div className="relative flex-1 sm:flex-initial">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-                <Input
-                  placeholder="Search hobbies..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-9 w-full sm:w-64"
-                />
+                <Input value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-9 w-full sm:w-64" placeholder="Search hobbies/interest..." />
               </div>
               <Button onClick={() => handleOpenDialog()}>
                 <Plus className="mr-2 h-4 w-4" />
-                Add Hobby
+                Add Hobby/Interest
               </Button>
             </div>
           </div>
@@ -234,40 +181,26 @@ const Hobbies = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredHobbies.length === 0 ? (
-                <TableRow>
+              {filteredHobbies.length === 0 ? <TableRow>
                   <TableCell colSpan={2} className="text-center text-muted-foreground">
                     No hobbies found
                   </TableCell>
-                </TableRow>
-              ) : (
-                filteredHobbies.map((hobby) => (
-                  <TableRow key={hobby.id}>
+                </TableRow> : filteredHobbies.map(hobby => <TableRow key={hobby.id}>
                     <TableCell className="font-medium">{hobby.name}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleOpenDialog(hobby)}
-                        >
+                        <Button variant="outline" size="sm" onClick={() => handleOpenDialog(hobby)}>
                           <Pencil className="h-4 w-4" />
                         </Button>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => {
-                            setDeletingHobby(hobby);
-                            setIsDeleteDialogOpen(true);
-                          }}
-                        >
+                        <Button variant="destructive" size="sm" onClick={() => {
+                    setDeletingHobby(hobby);
+                    setIsDeleteDialogOpen(true);
+                  }}>
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </TableCell>
-                  </TableRow>
-                ))
-              )}
+                  </TableRow>)}
             </TableBody>
           </Table>
         </CardContent>
@@ -281,22 +214,16 @@ const Hobbies = () => {
               {editingHobby ? "Edit Hobby" : "Add New Hobby"}
             </DialogTitle>
             <DialogDescription>
-              {editingHobby
-                ? "Update the hobby information below"
-                : "Enter the hobby information below"}
+              {editingHobby ? "Update the hobby information below" : "Enter the hobby information below"}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="name">Name *</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-                placeholder="Enter hobby name"
-              />
+              <Input id="name" value={formData.name} onChange={e => setFormData({
+              ...formData,
+              name: e.target.value
+            })} placeholder="Enter hobby name" />
             </div>
           </div>
           <DialogFooter>
@@ -328,8 +255,6 @@ const Hobbies = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
-  );
+    </div>;
 };
-
 export default Hobbies;
