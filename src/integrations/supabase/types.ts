@@ -446,6 +446,7 @@ export type Database = {
           phone_number: string
           profile_picture_url: string | null
           refresh_token: string | null
+          rejection_reason: string | null
           role: string | null
           updated_at: string
           user_id: string
@@ -472,6 +473,7 @@ export type Database = {
           phone_number: string
           profile_picture_url?: string | null
           refresh_token?: string | null
+          rejection_reason?: string | null
           role?: string | null
           updated_at?: string
           user_id: string
@@ -498,6 +500,7 @@ export type Database = {
           phone_number?: string
           profile_picture_url?: string | null
           refresh_token?: string | null
+          rejection_reason?: string | null
           role?: string | null
           updated_at?: string
           user_id?: string

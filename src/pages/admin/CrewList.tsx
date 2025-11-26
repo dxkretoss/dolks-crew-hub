@@ -16,6 +16,16 @@ import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 import type { Tables } from "@/integrations/supabase/types";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 
 type Profile = Tables<"profiles">;
 
@@ -24,6 +34,9 @@ const CrewList = () => {
   const [filteredProfiles, setFilteredProfiles] = useState<Profile[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [selectedProfileId, setSelectedProfileId] = useState<string | null>(null);
+  const [rejectionReason, setRejectionReason] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -73,11 +86,16 @@ const CrewList = () => {
     });
   };
 
-  const handleApproveReject = async (profileId: string, isApproved: boolean) => {
+  const handleApproveReject = async (profileId: string, isApproved: boolean, reason?: string) => {
     try {
+      const updateData: any = { is_approved: isApproved };
+      if (!isApproved && reason) {
+        updateData.rejection_reason = reason;
+      }
+
       const { error } = await supabase
         .from("profiles")
-        .update({ is_approved: isApproved })
+        .update(updateData)
         .eq("id", profileId);
 
       if (error) throw error;
@@ -96,6 +114,30 @@ const CrewList = () => {
         variant: "destructive",
       });
     }
+  };
+
+  const handleRejectClick = (profileId: string) => {
+    setSelectedProfileId(profileId);
+    setRejectionReason("");
+    setRejectDialogOpen(true);
+  };
+
+  const handleRejectSubmit = async () => {
+    if (!selectedProfileId) return;
+
+    if (!rejectionReason.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a rejection reason",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    await handleApproveReject(selectedProfileId, false, rejectionReason);
+    setRejectDialogOpen(false);
+    setSelectedProfileId(null);
+    setRejectionReason("");
   };
 
   return (
@@ -178,7 +220,7 @@ const CrewList = () => {
                               <Button
                                 size="sm"
                                 variant="destructive"
-                                onClick={() => handleApproveReject(profile.id, false)}
+                                onClick={() => handleRejectClick(profile.id)}
                               >
                                 <X className="h-4 w-4 mr-1" />
                                 Reject
@@ -203,6 +245,43 @@ const CrewList = () => {
           )}
         </CardContent>
       </Card>
+
+      <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reject Crew Member</DialogTitle>
+            <DialogDescription>
+              Please provide a reason for rejecting this crew member application.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="rejection-reason">Rejection Reason</Label>
+              <Textarea
+                id="rejection-reason"
+                placeholder="Enter the reason for rejection..."
+                value={rejectionReason}
+                onChange={(e) => setRejectionReason(e.target.value)}
+                rows={4}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setRejectDialogOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleRejectSubmit}
+            >
+              Submit
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
