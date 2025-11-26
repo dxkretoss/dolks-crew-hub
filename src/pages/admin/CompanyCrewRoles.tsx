@@ -335,15 +335,15 @@ const CompanyCrewRoles = () => {
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
                           <Button
-                            variant="ghost"
-                            size="icon"
+                            variant="outline"
+                            size="sm"
                             onClick={() => handleTypeEdit(type)}
                           >
                             <Pencil className="h-4 w-4" />
                           </Button>
                           <Button
-                            variant="ghost"
-                            size="icon"
+                            variant="destructive"
+                            size="sm"
                             onClick={() => setDeleteTypeId(type.id)}
                           >
                             <Trash2 className="h-4 w-4" />
@@ -409,15 +409,15 @@ const CompanyCrewRoles = () => {
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
                           <Button
-                            variant="ghost"
-                            size="icon"
+                            variant="outline"
+                            size="sm"
                             onClick={() => handleRoleEdit(role)}
                           >
                             <Pencil className="h-4 w-4" />
                           </Button>
                           <Button
-                            variant="ghost"
-                            size="icon"
+                            variant="destructive"
+                            size="sm"
                             onClick={() => setDeleteRoleId(role.id)}
                           >
                             <Trash2 className="h-4 w-4" />
