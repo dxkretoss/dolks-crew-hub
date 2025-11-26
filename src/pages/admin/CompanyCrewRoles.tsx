@@ -27,7 +27,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -70,13 +69,11 @@ const CompanyCrewRoles = () => {
   const [typeForm, setTypeForm] = useState({
     name: "",
     type: "company" as "company" | "crew",
-    description: "",
   });
   
   const [roleForm, setRoleForm] = useState({
     type_id: "",
     name: "",
-    description: "",
   });
 
   const { toast } = useToast();
@@ -234,11 +231,11 @@ const CompanyCrewRoles = () => {
   });
 
   const resetTypeForm = () => {
-    setTypeForm({ name: "", type: "company", description: "" });
+    setTypeForm({ name: "", type: "company" });
   };
 
   const resetRoleForm = () => {
-    setRoleForm({ type_id: "", name: "", description: "" });
+    setRoleForm({ type_id: "", name: "" });
   };
 
   const handleTypeEdit = (type: CompanyCrewType) => {
@@ -246,7 +243,6 @@ const CompanyCrewRoles = () => {
     setTypeForm({
       name: type.name,
       type: type.type,
-      description: type.description || "",
     });
     setTypeDialogOpen(true);
   };
@@ -256,7 +252,6 @@ const CompanyCrewRoles = () => {
     setRoleForm({
       type_id: role.type_id,
       name: role.name,
-      description: role.description || "",
     });
     setRoleDialogOpen(true);
   };
@@ -289,12 +284,12 @@ const CompanyCrewRoles = () => {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6">
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Company/Crew Roles</h1>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2 md:pl-6">
         {/* Types Section */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
@@ -468,16 +463,6 @@ const CompanyCrewRoles = () => {
                 </SelectContent>
               </Select>
             </div>
-            <div>
-              <Label htmlFor="type-description">Description</Label>
-              <Textarea
-                id="type-description"
-                value={typeForm.description}
-                onChange={(e) =>
-                  setTypeForm({ ...typeForm, description: e.target.value })
-                }
-              />
-            </div>
             <DialogFooter>
               <Button
                 type="button"
@@ -530,16 +515,6 @@ const CompanyCrewRoles = () => {
                   setRoleForm({ ...roleForm, name: e.target.value })
                 }
                 required
-              />
-            </div>
-            <div>
-              <Label htmlFor="role-description">Description</Label>
-              <Textarea
-                id="role-description"
-                value={roleForm.description}
-                onChange={(e) =>
-                  setRoleForm({ ...roleForm, description: e.target.value })
-                }
               />
             </div>
             <DialogFooter>
