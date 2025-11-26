@@ -200,8 +200,20 @@ const CrewList = () => {
                       </TableCell>
                       <TableCell>{profile.email}</TableCell>
                       <TableCell>
-                        <Badge variant={profile.is_approved ? "default" : "secondary"}>
-                          {profile.is_approved ? "Approved" : "Pending"}
+                        <Badge 
+                          variant={
+                            profile.is_approved 
+                              ? "default" 
+                              : profile.rejection_reason 
+                              ? "destructive" 
+                              : "secondary"
+                          }
+                        >
+                          {profile.is_approved 
+                            ? "Approved" 
+                            : profile.rejection_reason 
+                            ? "Rejected" 
+                            : "Pending"}
                         </Badge>
                       </TableCell>
                       <TableCell>{formatDate(profile.created_at)}</TableCell>
