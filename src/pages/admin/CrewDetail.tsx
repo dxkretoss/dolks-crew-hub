@@ -231,6 +231,18 @@ const CrewDetail = () => {
                 <p className="text-sm text-muted-foreground">Last Updated</p>
                 <p className="font-medium mt-1">{formatDate(profile.updated_at)}</p>
               </div>
+              {profile.is_crew_member && (
+                <div>
+                  <p className="text-sm text-muted-foreground">Crew Member</p>
+                  <p className="font-medium mt-1">Yes</p>
+                </div>
+              )}
+              {profile.is_company_employee && (
+                <div>
+                  <p className="text-sm text-muted-foreground">Company Employer</p>
+                  <p className="font-medium mt-1">Yes</p>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>
