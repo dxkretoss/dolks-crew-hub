@@ -103,14 +103,14 @@ const ServiceDetail = () => {
       <div className="flex items-center justify-between mb-4">
         <Button variant="ghost" onClick={() => navigate("/admin/services")}>
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Service List
+          Back 
         </Button>
         
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <Button variant="destructive">
               <Trash2 className="mr-2 h-4 w-4" />
-              Delete Company
+              Delete  
             </Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
@@ -231,7 +231,7 @@ const ServiceDetail = () => {
                   <Building2 className="h-5 w-5 text-muted-foreground mt-0.5" />
                   <div>
                     <p className="text-sm text-muted-foreground font-semibold">Company Name</p>
-                    <p className="font-medium">{companyProfile.company_name}</p>
+                    <p className="font-medium my-[5px]">{companyProfile.company_name}</p>
                   </div>
                 </div>
 
@@ -239,7 +239,7 @@ const ServiceDetail = () => {
                   <MapPin className="h-5 w-5 text-muted-foreground mt-0.5" />
                   <div>
                     <p className="text-sm text-muted-foreground font-semibold">Location</p>
-                    <p className="font-medium">{companyProfile.location}</p>
+                    <p className="font-medium my-[5px]">{companyProfile.location}</p>
                   </div>
                 </div>
 
@@ -247,7 +247,7 @@ const ServiceDetail = () => {
                   <Briefcase className="h-5 w-5 text-muted-foreground mt-0.5" />
                   <div>
                     <p className="text-sm text-muted-foreground font-semibold">Type of Services</p>
-                    <p className="font-medium">{companyProfile.type_of_services}</p>
+                    <p className="font-medium my-[5px]">{companyProfile.type_of_services}</p>
                   </div>
                 </div>
 
@@ -255,7 +255,7 @@ const ServiceDetail = () => {
                   <UsersIcon className="h-5 w-5 text-muted-foreground mt-0.5" />
                   <div>
                     <p className="text-sm text-muted-foreground font-semibold">Team Size</p>
-                    <p className="font-medium">{companyProfile.team_size || "N/A"}</p>
+                    <p className="font-medium my-[5px]">{companyProfile.team_size || "N/A"}</p>
                   </div>
                 </div>
 
@@ -263,7 +263,7 @@ const ServiceDetail = () => {
                   <Building2 className="h-5 w-5 text-muted-foreground mt-0.5" />
                   <div>
                     <p className="text-sm text-muted-foreground font-semibold">Business Category</p>
-                    <p className="font-medium">{companyProfile.business_category || "N/A"}</p>
+                    <p className="font-medium my-[5px]">{companyProfile.business_category || "N/A"}</p>
                   </div>
                 </div>
 
@@ -271,7 +271,7 @@ const ServiceDetail = () => {
                   <Briefcase className="h-5 w-5 text-muted-foreground mt-0.5" />
                   <div>
                     <p className="text-sm text-muted-foreground font-semibold">Tags</p>
-                    <p className="font-medium">{companyProfile.tags || "N/A"}</p>
+                    <p className="font-medium my-[5px]">{companyProfile.tags || "N/A"}</p>
                   </div>
                 </div>
               </div>
@@ -281,7 +281,7 @@ const ServiceDetail = () => {
                   <p className="font-medium">{companyProfile.description}</p>
                 </div>}
 
-              {companyProfile.company_portfolio && <div className="pt-4 border-t">
+              {companyProfile.company_portfolio && <div className="pt-4 border-t py-[15px]">
                   <p className="text-sm text-muted-foreground mb-3 font-semibold">Portfolio Images</p>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {(() => {
