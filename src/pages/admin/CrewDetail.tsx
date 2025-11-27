@@ -206,6 +206,11 @@ const CrewDetail = () => {
                 <p className="font-medium">{profile.hobby}</p>
               </div>}
 
+            {profile.company_crew_type && <div className="pt-4 border-t">
+                <p className="text-sm text-muted-foreground mb-2">Company Crew Type</p>
+                <p className="font-medium">{profile.company_crew_type}</p>
+              </div>}
+
             {profile.is_crew_member && <div className="pt-4 border-t">
                 <p className="text-sm text-muted-foreground mb-2">Crew Member</p>
                 <p className="font-medium">Yes</p>
