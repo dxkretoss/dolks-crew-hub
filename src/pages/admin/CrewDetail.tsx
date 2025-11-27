@@ -206,6 +206,16 @@ const CrewDetail = () => {
                 <p className="font-medium">{profile.hobby}</p>
               </div>}
 
+            {profile.is_crew_member && <div className="pt-4 border-t">
+                <p className="text-sm text-muted-foreground mb-2">Crew Member</p>
+                <p className="font-medium">Yes</p>
+              </div>}
+
+            {profile.is_company_employee && <div className="pt-4 border-t">
+                <p className="text-sm text-muted-foreground mb-2">Company Employer</p>
+                <p className="font-medium">Yes</p>
+              </div>}
+
             {profile.company_name && <div className="pt-4 border-t">
                 <p className="text-sm text-muted-foreground mb-2">Company</p>
                 <p className="font-medium">{profile.company_name}</p>
@@ -231,18 +241,6 @@ const CrewDetail = () => {
                 <p className="text-sm text-muted-foreground">Last Updated</p>
                 <p className="font-medium mt-1">{formatDate(profile.updated_at)}</p>
               </div>
-              {profile.is_crew_member && (
-                <div>
-                  <p className="text-sm text-muted-foreground">Crew Member</p>
-                  <p className="font-medium mt-1">Yes</p>
-                </div>
-              )}
-              {profile.is_company_employee && (
-                <div>
-                  <p className="text-sm text-muted-foreground">Company Employer</p>
-                  <p className="font-medium mt-1">Yes</p>
-                </div>
-              )}
             </div>
           </CardContent>
         </Card>
