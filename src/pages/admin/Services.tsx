@@ -2,62 +2,21 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Search, Pencil, Trash2, Plus } from "lucide-react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import type { Tables } from "@/integrations/supabase/types";
-
 type Service = Tables<"company_services">;
 type Category = Tables<"categories">;
-
 interface ServiceWithCategory extends Service {
   category?: Category | null;
 }
-
 const Services = () => {
   const [services, setServices] = useState<ServiceWithCategory[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -70,39 +29,27 @@ const Services = () => {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: "",
-    category_id: "",
+    category_id: ""
   });
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-
   useEffect(() => {
     fetchData();
   }, []);
-
   useEffect(() => {
-    const filtered = services.filter((service) =>
-      service.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filtered = services.filter(service => service.name.toLowerCase().includes(searchTerm.toLowerCase()));
     setFilteredServices(filtered);
     setCurrentPage(1);
   }, [searchTerm, services]);
-
   const fetchData = async () => {
     try {
-      const [servicesRes, categoriesRes] = await Promise.all([
-        supabase
-          .from("company_services")
-          .select("*, category:categories(*)")
-          .order("created_at", { ascending: false }),
-        supabase
-          .from("categories")
-          .select("*")
-          .order("name", { ascending: true }),
-      ]);
-
+      const [servicesRes, categoriesRes] = await Promise.all([supabase.from("company_services").select("*, category:categories(*)").order("created_at", {
+        ascending: false
+      }), supabase.from("categories").select("*").order("name", {
+        ascending: true
+      })]);
       if (servicesRes.error) throw servicesRes.error;
       if (categoriesRes.error) throw categoriesRes.error;
-
       setServices(servicesRes.data || []);
       setFilteredServices(servicesRes.data || []);
       setCategories(categoriesRes.data || []);
@@ -110,89 +57,90 @@ const Services = () => {
       toast({
         title: "Error",
         description: error.message,
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setLoading(false);
     }
   };
-
   const handleOpenDialog = (service?: Service) => {
     if (service) {
       setEditingService(service);
       setFormData({
         name: service.name,
-        category_id: service.category_id || "",
+        category_id: service.category_id || ""
       });
     } else {
       setEditingService(null);
-      setFormData({ name: "", category_id: "" });
+      setFormData({
+        name: "",
+        category_id: ""
+      });
     }
     setIsDialogOpen(true);
   };
-
   const handleCloseDialog = () => {
     setIsDialogOpen(false);
     setEditingService(null);
-    setFormData({ name: "", category_id: "" });
+    setFormData({
+      name: "",
+      category_id: ""
+    });
   };
-
   const handleSave = async () => {
     try {
       if (!formData.name.trim()) {
         toast({
           title: "Error",
           description: "Service name is required",
-          variant: "destructive",
+          variant: "destructive"
         });
         return;
       }
-
       const payload = {
         name: formData.name.trim(),
-        category_id: formData.category_id || null,
+        category_id: formData.category_id || null
       };
-
       if (editingService) {
-        const { error } = await supabase
-          .from("company_services")
-          .update(payload)
-          .eq("id", editingService.id);
-
+        const {
+          error
+        } = await supabase.from("company_services").update(payload).eq("id", editingService.id);
         if (error) throw error;
-        toast({ title: "Success", description: "Service updated successfully" });
+        toast({
+          title: "Success",
+          description: "Service updated successfully"
+        });
       } else {
-        const { error } = await supabase
-          .from("company_services")
-          .insert(payload);
-
+        const {
+          error
+        } = await supabase.from("company_services").insert(payload);
         if (error) throw error;
-        toast({ title: "Success", description: "Service created successfully" });
+        toast({
+          title: "Success",
+          description: "Service created successfully"
+        });
       }
-
       handleCloseDialog();
       fetchData();
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.message,
-        variant: "destructive",
+        variant: "destructive"
       });
     }
   };
-
   const handleDelete = async () => {
     if (!deleteId) return;
-
     try {
-      const { error } = await supabase
-        .from("company_services")
-        .delete()
-        .eq("id", deleteId);
-
+      const {
+        error
+      } = await supabase.from("company_services").delete().eq("id", deleteId);
       if (error) throw error;
-
-      toast({ title: "Success", description: "Service deleted successfully" });
+      toast({
+        title: "Success",
+        description: "Service deleted successfully"
+      });
       setIsDeleteDialogOpen(false);
       setDeleteId(null);
       fetchData();
@@ -200,106 +148,69 @@ const Services = () => {
       toast({
         title: "Error",
         description: error.message,
-        variant: "destructive",
+        variant: "destructive"
       });
     }
   };
-
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
       month: "short",
-      day: "numeric",
+      day: "numeric"
     });
   };
-
   const totalPages = Math.ceil(filteredServices.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentServices = filteredServices.slice(startIndex, endIndex);
-
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
-
   const renderPaginationItems = () => {
     const items = [];
     const maxVisible = 5;
-    
     if (totalPages <= maxVisible) {
       for (let i = 1; i <= totalPages; i++) {
-        items.push(
-          <PaginationItem key={i}>
-            <PaginationLink
-              onClick={() => handlePageChange(i)}
-              isActive={currentPage === i}
-            >
+        items.push(<PaginationItem key={i}>
+            <PaginationLink onClick={() => handlePageChange(i)} isActive={currentPage === i}>
               {i}
             </PaginationLink>
-          </PaginationItem>
-        );
+          </PaginationItem>);
       }
     } else {
-      items.push(
-        <PaginationItem key={1}>
-          <PaginationLink
-            onClick={() => handlePageChange(1)}
-            isActive={currentPage === 1}
-          >
+      items.push(<PaginationItem key={1}>
+          <PaginationLink onClick={() => handlePageChange(1)} isActive={currentPage === 1}>
             1
           </PaginationLink>
-        </PaginationItem>
-      );
-
+        </PaginationItem>);
       if (currentPage > 3) {
-        items.push(
-          <PaginationItem key="ellipsis-1">
+        items.push(<PaginationItem key="ellipsis-1">
             <PaginationEllipsis />
-          </PaginationItem>
-        );
+          </PaginationItem>);
       }
-
       const start = Math.max(2, currentPage - 1);
       const end = Math.min(totalPages - 1, currentPage + 1);
-
       for (let i = start; i <= end; i++) {
-        items.push(
-          <PaginationItem key={i}>
-            <PaginationLink
-              onClick={() => handlePageChange(i)}
-              isActive={currentPage === i}
-            >
+        items.push(<PaginationItem key={i}>
+            <PaginationLink onClick={() => handlePageChange(i)} isActive={currentPage === i}>
               {i}
             </PaginationLink>
-          </PaginationItem>
-        );
+          </PaginationItem>);
       }
-
       if (currentPage < totalPages - 2) {
-        items.push(
-          <PaginationItem key="ellipsis-2">
+        items.push(<PaginationItem key="ellipsis-2">
             <PaginationEllipsis />
-          </PaginationItem>
-        );
+          </PaginationItem>);
       }
-
-      items.push(
-        <PaginationItem key={totalPages}>
-          <PaginationLink
-            onClick={() => handlePageChange(totalPages)}
-            isActive={currentPage === totalPages}
-          >
+      items.push(<PaginationItem key={totalPages}>
+          <PaginationLink onClick={() => handlePageChange(totalPages)} isActive={currentPage === totalPages}>
             {totalPages}
           </PaginationLink>
-        </PaginationItem>
-      );
+        </PaginationItem>);
     }
-    
     return items;
   };
-
-  return (
-    <div className="p-6 lg:p-8 space-y-6">
+  return <div className="p-6 lg:p-8 space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Services</h1>
@@ -318,26 +229,16 @@ const Services = () => {
           <div className="flex items-center gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search services..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9"
-              />
+              <Input placeholder="Search services..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-9" />
             </div>
           </div>
         </CardHeader>
         <CardContent>
-          {loading ? (
-            <div className="text-center py-8 text-muted-foreground">
+          {loading ? <div className="text-center py-8 text-muted-foreground">
               Loading services...
-            </div>
-          ) : filteredServices.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
+            </div> : filteredServices.length === 0 ? <div className="text-center py-8 text-muted-foreground">
               No services found
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
+            </div> : <div className="overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -348,8 +249,7 @@ const Services = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {currentServices.map((service) => (
-                    <TableRow key={service.id}>
+                  {currentServices.map(service => <TableRow key={service.id}>
                       <TableCell className="font-medium">
                         {service.name}
                       </TableCell>
@@ -359,52 +259,34 @@ const Services = () => {
                       <TableCell>{formatDate(service.created_at)}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleOpenDialog(service)}
-                          >
+                          <Button size="sm" variant="outline" onClick={() => handleOpenDialog(service)}>
                             <Pencil className="h-4 w-4" />
                           </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            onClick={() => {
-                              setDeleteId(service.id);
-                              setIsDeleteDialogOpen(true);
-                            }}
-                          >
+                          <Button size="sm" variant="destructive" onClick={() => {
+                      setDeleteId(service.id);
+                      setIsDeleteDialogOpen(true);
+                    }}>
                             <Trash2 className="h-4 w-4" />
                           </Button>
                         </div>
                       </TableCell>
-                    </TableRow>
-                  ))}
+                    </TableRow>)}
                 </TableBody>
               </Table>
-            </div>
-          )}
-          {!loading && filteredServices.length > itemsPerPage && (
-            <div className="mt-4">
+            </div>}
+          {!loading && filteredServices.length > itemsPerPage && <div className="mt-4">
               <Pagination>
                 <PaginationContent>
                   <PaginationItem>
-                    <PaginationPrevious
-                      onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)}
-                      className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                    />
+                    <PaginationPrevious onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)} className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"} />
                   </PaginationItem>
                   {renderPaginationItems()}
                   <PaginationItem>
-                    <PaginationNext
-                      onClick={() => currentPage < totalPages && handlePageChange(currentPage + 1)}
-                      className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                    />
+                    <PaginationNext onClick={() => currentPage < totalPages && handlePageChange(currentPage + 1)} className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"} />
                   </PaginationItem>
                 </PaginationContent>
               </Pagination>
-            </div>
-          )}
+            </div>}
         </CardContent>
       </Card>
 
@@ -415,41 +297,31 @@ const Services = () => {
               {editingService ? "Edit Service" : "Add Service"}
             </DialogTitle>
             <DialogDescription>
-              {editingService
-                ? "Update the service details below."
-                : "Enter the details for the new service."}
+              {editingService ? "Update the service details below." : "Enter the details for the new service."}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
               <Label htmlFor="name">Name *</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-                placeholder="Enter service name"
-              />
+              <Input id="name" value={formData.name} onChange={e => setFormData({
+              ...formData,
+              name: e.target.value
+            })} placeholder="Enter service name" className="my-[5px]" />
             </div>
             <div>
               <Label htmlFor="category">Category</Label>
-              <Select
-                value={formData.category_id || "none"}
-                onValueChange={(value) =>
-                  setFormData({ ...formData, category_id: value === "none" ? "" : value })
-                }
-              >
+              <Select value={formData.category_id || "none"} onValueChange={value => setFormData({
+              ...formData,
+              category_id: value === "none" ? "" : value
+            })}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="none">None</SelectItem>
-                  {categories.map((category) => (
-                    <SelectItem key={category.id} value={category.id}>
+                  {categories.map(category => <SelectItem key={category.id} value={category.id}>
                       {category.name}
-                    </SelectItem>
-                  ))}
+                    </SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -465,10 +337,7 @@ const Services = () => {
         </DialogContent>
       </Dialog>
 
-      <AlertDialog
-        open={isDeleteDialogOpen}
-        onOpenChange={setIsDeleteDialogOpen}
-      >
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
@@ -487,8 +356,6 @@ const Services = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
-  );
+    </div>;
 };
-
 export default Services;
