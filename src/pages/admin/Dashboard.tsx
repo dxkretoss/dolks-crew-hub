@@ -3,37 +3,39 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
 import { Users, Briefcase } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-
 const Dashboard = () => {
   const [crewCount, setCrewCount] = useState(0);
   const [serviceCount, setServiceCount] = useState(0);
   const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
-
+  const {
+    toast
+  } = useToast();
   useEffect(() => {
     fetchCounts();
   }, []);
-
   const fetchCounts = async () => {
     try {
       setLoading(true);
 
       // Fetch crew count
-      const { count: crewTotal, error: crewError } = await supabase
-        .from("profiles")
-        .select("*", { count: "exact", head: true })
-        .eq("user_type", "crew");
-
+      const {
+        count: crewTotal,
+        error: crewError
+      } = await supabase.from("profiles").select("*", {
+        count: "exact",
+        head: true
+      }).eq("user_type", "crew");
       if (crewError) throw crewError;
 
       // Fetch service providers count
-      const { count: serviceTotal, error: serviceError } = await supabase
-        .from("profiles")
-        .select("*", { count: "exact", head: true })
-        .eq("user_type", "service");
-
+      const {
+        count: serviceTotal,
+        error: serviceError
+      } = await supabase.from("profiles").select("*", {
+        count: "exact",
+        head: true
+      }).eq("user_type", "service");
       if (serviceError) throw serviceError;
-
       setCrewCount(crewTotal || 0);
       setServiceCount(serviceTotal || 0);
     } catch (error) {
@@ -41,15 +43,13 @@ const Dashboard = () => {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to fetch dashboard data",
+        description: "Failed to fetch dashboard data"
       });
     } finally {
       setLoading(false);
     }
   };
-
-  return (
-    <div className="p-6 space-y-6">
+  return <div className="p-6 space-y-6">
       <div>
         <h1 className="text-3xl font-bold">Dashboard</h1>
         <p className="text-muted-foreground mt-2">Overview of your system</p>
@@ -74,12 +74,10 @@ const Dashboard = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{loading ? "..." : serviceCount}</div>
-            <p className="text-xs text-muted-foreground mt-1">Registered Docks Members</p>
+            <p className="text-xs text-muted-foreground mt-1">Registered Company Members</p>
           </CardContent>
         </Card>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default Dashboard;
