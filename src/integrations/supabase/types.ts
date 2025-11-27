@@ -496,6 +496,8 @@ export type Database = {
       profiles: {
         Row: {
           birth_date: string | null
+          company_crew_ids: string | null
+          company_crew_type: string | null
           company_id: string | null
           company_name: string | null
           country_code: string
@@ -525,6 +527,8 @@ export type Database = {
         }
         Insert: {
           birth_date?: string | null
+          company_crew_ids?: string | null
+          company_crew_type?: string | null
           company_id?: string | null
           company_name?: string | null
           country_code: string
@@ -554,6 +558,8 @@ export type Database = {
         }
         Update: {
           birth_date?: string | null
+          company_crew_ids?: string | null
+          company_crew_type?: string | null
           company_id?: string | null
           company_name?: string | null
           country_code?: string
