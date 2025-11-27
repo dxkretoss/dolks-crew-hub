@@ -517,6 +517,7 @@ export type Database = {
           refresh_token: string | null
           rejection_reason: string | null
           role: string | null
+          role_ids: string | null
           updated_at: string
           user_id: string
           user_type: Database["public"]["Enums"]["user_type"]
@@ -545,6 +546,7 @@ export type Database = {
           refresh_token?: string | null
           rejection_reason?: string | null
           role?: string | null
+          role_ids?: string | null
           updated_at?: string
           user_id: string
           user_type: Database["public"]["Enums"]["user_type"]
@@ -573,6 +575,7 @@ export type Database = {
           refresh_token?: string | null
           rejection_reason?: string | null
           role?: string | null
+          role_ids?: string | null
           updated_at?: string
           user_id?: string
           user_type?: Database["public"]["Enums"]["user_type"]
