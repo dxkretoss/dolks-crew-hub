@@ -2,139 +2,107 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Mail, Phone, Calendar, MapPin, User, Briefcase, Trash2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import type { Tables } from "@/integrations/supabase/types";
-
 type Profile = Tables<"profiles">;
-
 const CrewDetail = () => {
-  const { id } = useParams();
+  const {
+    id
+  } = useParams();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
-
   useEffect(() => {
     fetchProfile();
   }, [id]);
-
   const fetchProfile = async () => {
     try {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", id!)
-        .eq("user_type", "crew")
-        .single();
-
+      const {
+        data,
+        error
+      } = await supabase.from("profiles").select("*").eq("id", id!).eq("user_type", "crew").single();
       if (error) throw error;
       setProfile(data);
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.message,
-        variant: "destructive",
+        variant: "destructive"
       });
       navigate("/admin/crew");
     } finally {
       setLoading(false);
     }
   };
-
   const handleDelete = async () => {
     setDeleting(true);
     try {
       // First delete the profile
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .delete()
-        .eq("id", id!);
-
+      const {
+        error: profileError
+      } = await supabase.from("profiles").delete().eq("id", id!);
       if (profileError) throw profileError;
 
       // Then delete from auth.users via edge function
-      const { error: authError } = await supabase.functions.invoke('delete-user', {
-        body: { userId: profile?.user_id }
+      const {
+        error: authError
+      } = await supabase.functions.invoke('delete-user', {
+        body: {
+          userId: profile?.user_id
+        }
       });
-
       if (authError) throw authError;
-
       toast({
         title: "Success",
         description: "Crew member deleted successfully",
-        variant: "success",
+        variant: "success"
       });
-      
       navigate("/admin/crew");
     } catch (error: any) {
       toast({
         title: "Error",
         description: error.message,
-        variant: "destructive",
+        variant: "destructive"
       });
     } finally {
       setDeleting(false);
     }
   };
-
   const formatDate = (dateString: string | null) => {
     if (!dateString) return "N/A";
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
-      day: "numeric",
+      day: "numeric"
     });
   };
-
   if (loading) {
-    return (
-      <div className="p-6 lg:p-8">
+    return <div className="p-6 lg:p-8">
         <div className="text-center py-12 text-muted-foreground">Loading...</div>
-      </div>
-    );
+      </div>;
   }
-
   if (!profile) {
     return null;
   }
-
-  const initials = profile.full_name
-    ?.split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase() || profile.username.substring(0, 2).toUpperCase();
-
-  return (
-    <div className="p-6 lg:p-8 space-y-6">
+  const initials = profile.full_name?.split(" ").map(n => n[0]).join("").toUpperCase() || profile.username.substring(0, 2).toUpperCase();
+  return <div className="p-6 lg:p-8 space-y-6">
       <div className="flex items-center justify-between mb-4">
-        <Button
-          variant="ghost"
-          onClick={() => navigate("/admin/crew")}
-        >
+        <Button variant="ghost" onClick={() => navigate("/admin/crew")}>
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Crew List
+          Back
         </Button>
         
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <Button variant="destructive">
               <Trash2 className="mr-2 h-4 w-4" />
-              Delete Crew Member
+              Delete
             </Button>
           </AlertDialogTrigger>
           <AlertDialogContent>
@@ -233,19 +201,15 @@ const CrewDetail = () => {
               </div>
             </div>
 
-            {profile.hobby && (
-              <div className="pt-4 border-t">
+            {profile.hobby && <div className="pt-4 border-t">
                 <p className="text-sm text-muted-foreground mb-2">Hobby</p>
                 <p className="font-medium">{profile.hobby}</p>
-              </div>
-            )}
+              </div>}
 
-            {profile.company_name && (
-              <div className="pt-4 border-t">
+            {profile.company_name && <div className="pt-4 border-t">
                 <p className="text-sm text-muted-foreground mb-2">Company</p>
                 <p className="font-medium">{profile.company_name}</p>
-              </div>
-            )}
+              </div>}
           </CardContent>
         </Card>
 
@@ -271,8 +235,6 @@ const CrewDetail = () => {
           </CardContent>
         </Card>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default CrewDetail;
