@@ -202,7 +202,7 @@ const CrewDetail = () => {
             </div>
 
             {profile.hobby && <div className="pt-4 border-t">
-                <p className="text-sm text-muted-foreground mb-2">Hobby</p>
+                <p className="text-sm text-muted-foreground mb-2">Hobby/Interest</p>
                 <p className="font-medium">{profile.hobby}</p>
               </div>}
 
