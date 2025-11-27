@@ -157,8 +157,8 @@ const Categories = () => {
   };
   const renderPaginationItems = () => {
     const items = [];
-    const maxVisible = 5;
-    if (totalPages <= maxVisible) {
+    
+    if (totalPages <= 4) {
       for (let i = 1; i <= totalPages; i++) {
         items.push(<PaginationItem key={i}>
             <PaginationLink onClick={() => handlePageChange(i)} isActive={currentPage === i}>
@@ -172,25 +172,40 @@ const Categories = () => {
             1
           </PaginationLink>
         </PaginationItem>);
-      if (currentPage > 3) {
-        items.push(<PaginationItem key="ellipsis-1">
-            <PaginationEllipsis />
-          </PaginationItem>);
-      }
-      const start = Math.max(2, currentPage - 1);
-      const end = Math.min(totalPages - 1, currentPage + 1);
-      for (let i = start; i <= end; i++) {
-        items.push(<PaginationItem key={i}>
-            <PaginationLink onClick={() => handlePageChange(i)} isActive={currentPage === i}>
-              {i}
+      
+      if (currentPage <= 2) {
+        items.push(<PaginationItem key={2}>
+            <PaginationLink onClick={() => handlePageChange(2)} isActive={currentPage === 2}>
+              2
             </PaginationLink>
           </PaginationItem>);
       }
-      if (currentPage < totalPages - 2) {
+      
+      if (currentPage > 2 && currentPage < totalPages - 1) {
+        items.push(<PaginationItem key="ellipsis-1">
+            <PaginationEllipsis />
+          </PaginationItem>);
+        items.push(<PaginationItem key={currentPage}>
+            <PaginationLink onClick={() => handlePageChange(currentPage)} isActive={true}>
+              {currentPage}
+            </PaginationLink>
+          </PaginationItem>);
+      }
+      
+      if (currentPage < totalPages - 1) {
         items.push(<PaginationItem key="ellipsis-2">
             <PaginationEllipsis />
           </PaginationItem>);
       }
+      
+      if (currentPage >= totalPages - 1) {
+        items.push(<PaginationItem key={totalPages - 1}>
+            <PaginationLink onClick={() => handlePageChange(totalPages - 1)} isActive={currentPage === totalPages - 1}>
+              {totalPages - 1}
+            </PaginationLink>
+          </PaginationItem>);
+      }
+      
       items.push(<PaginationItem key={totalPages}>
           <PaginationLink onClick={() => handlePageChange(totalPages)} isActive={currentPage === totalPages}>
             {totalPages}
