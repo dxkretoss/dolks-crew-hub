@@ -302,6 +302,22 @@ const ServiceDetail = () => {
                     <p className="font-medium">{companyProfile.team_size || "N/A"}</p>
                   </div>
                 </div>
+
+                <div className="flex items-start gap-3">
+                  <Building2 className="h-5 w-5 text-muted-foreground mt-0.5" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Business Category</p>
+                    <p className="font-medium">{companyProfile.business_category || "N/A"}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <Briefcase className="h-5 w-5 text-muted-foreground mt-0.5" />
+                  <div>
+                    <p className="text-sm text-muted-foreground">Tags</p>
+                    <p className="font-medium">{companyProfile.tags || "N/A"}</p>
+                  </div>
+                </div>
               </div>
 
               {companyProfile.description && (
