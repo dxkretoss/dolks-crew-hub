@@ -103,6 +103,7 @@ export type Database = {
       company_profiles: {
         Row: {
           business_category: string | null
+          business_category_id: string | null
           company_name: string
           company_portfolio: string | null
           company_profile_picture: string | null
@@ -113,11 +114,13 @@ export type Database = {
           tags: string | null
           team_size: string | null
           type_of_services: string
+          type_of_services_ids: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
           business_category?: string | null
+          business_category_id?: string | null
           company_name: string
           company_portfolio?: string | null
           company_profile_picture?: string | null
@@ -128,11 +131,13 @@ export type Database = {
           tags?: string | null
           team_size?: string | null
           type_of_services: string
+          type_of_services_ids?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
           business_category?: string | null
+          business_category_id?: string | null
           company_name?: string
           company_portfolio?: string | null
           company_profile_picture?: string | null
@@ -143,6 +148,7 @@ export type Database = {
           tags?: string | null
           team_size?: string | null
           type_of_services?: string
+          type_of_services_ids?: string | null
           updated_at?: string
           user_id?: string
         }

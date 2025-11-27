@@ -259,6 +259,17 @@ const ServiceDetail = () => {
               <CardTitle>Company Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              {companyProfile.company_profile_picture && (
+                <div className="mb-6">
+                  <p className="text-sm text-muted-foreground mb-3">Company Profile Picture</p>
+                  <img 
+                    src={companyProfile.company_profile_picture} 
+                    alt="Company Profile" 
+                    className="w-32 h-32 object-cover rounded-lg border"
+                  />
+                </div>
+              )}
+
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="flex items-start gap-3">
                   <Building2 className="h-5 w-5 text-muted-foreground mt-0.5" />
@@ -302,15 +313,39 @@ const ServiceDetail = () => {
 
               {companyProfile.company_portfolio && (
                 <div className="pt-4 border-t">
-                  <p className="text-sm text-muted-foreground mb-2">Portfolio</p>
-                  <a
-                    href={companyProfile.company_portfolio}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-primary hover:underline font-medium"
-                  >
-                    View Portfolio
-                  </a>
+                  <p className="text-sm text-muted-foreground mb-3">Portfolio Images</p>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {(() => {
+                      try {
+                        const portfolioImages = JSON.parse(companyProfile.company_portfolio);
+                        return Array.isArray(portfolioImages) ? portfolioImages.map((imageUrl: string, index: number) => (
+                          <img
+                            key={index}
+                            src={imageUrl}
+                            alt={`Portfolio ${index + 1}`}
+                            className="w-full h-32 object-cover rounded-lg border hover:opacity-80 transition-opacity cursor-pointer"
+                            onClick={() => window.open(imageUrl, '_blank')}
+                          />
+                        )) : (
+                          <img
+                            src={companyProfile.company_portfolio}
+                            alt="Portfolio"
+                            className="w-full h-32 object-cover rounded-lg border hover:opacity-80 transition-opacity cursor-pointer"
+                            onClick={() => window.open(companyProfile.company_portfolio!, '_blank')}
+                          />
+                        );
+                      } catch {
+                        return (
+                          <img
+                            src={companyProfile.company_portfolio}
+                            alt="Portfolio"
+                            className="w-full h-32 object-cover rounded-lg border hover:opacity-80 transition-opacity cursor-pointer"
+                            onClick={() => window.open(companyProfile.company_portfolio!, '_blank')}
+                          />
+                        );
+                      }
+                    })()}
+                  </div>
                 </div>
               )}
             </CardContent>
