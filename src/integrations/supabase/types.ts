@@ -509,6 +509,7 @@ export type Database = {
           is_approved: boolean | null
           is_company_employee: boolean | null
           is_crew_member: boolean | null
+          is_onboarded: boolean | null
           jwt_token: string | null
           nationality: string | null
           phone_number: string
@@ -536,6 +537,7 @@ export type Database = {
           is_approved?: boolean | null
           is_company_employee?: boolean | null
           is_crew_member?: boolean | null
+          is_onboarded?: boolean | null
           jwt_token?: string | null
           nationality?: string | null
           phone_number: string
@@ -563,6 +565,7 @@ export type Database = {
           is_approved?: boolean | null
           is_company_employee?: boolean | null
           is_crew_member?: boolean | null
+          is_onboarded?: boolean | null
           jwt_token?: string | null
           nationality?: string | null
           phone_number?: string
