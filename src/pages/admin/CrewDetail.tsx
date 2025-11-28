@@ -4,10 +4,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Mail, Phone, Calendar, MapPin, User, Briefcase, Trash2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { ConvertibleAvatar } from "@/components/ConvertibleAvatar";
 import type { Tables } from "@/integrations/supabase/types";
 type Profile = Tables<"profiles">;
 const CrewDetail = () => {
@@ -127,10 +127,12 @@ const CrewDetail = () => {
         <Card className="md:col-span-1">
           <CardContent className="pt-6">
             <div className="flex flex-col items-center text-center space-y-4">
-              <Avatar className="h-32 w-32">
-                <AvatarImage src={profile.profile_picture_url || ""} />
-                <AvatarFallback className="text-2xl">{initials}</AvatarFallback>
-              </Avatar>
+              <ConvertibleAvatar 
+                src={profile.profile_picture_url} 
+                alt={profile.full_name || profile.username}
+                fallback={initials}
+                className="h-32 w-32"
+              />
               <div>
                 <h2 className="text-2xl font-bold">
                   {profile.full_name || "No Name"}
