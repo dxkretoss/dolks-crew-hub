@@ -2,14 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Eye, Search, Check, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -105,10 +98,7 @@ const CrewList = () => {
         updateData.rejection_reason = reason;
       }
 
-      const { error } = await supabase
-        .from("profiles")
-        .update(updateData)
-        .eq("id", profileId);
+      const { error } = await supabase.from("profiles").update(updateData).eq("id", profileId);
 
       if (error) throw error;
 
@@ -163,96 +153,78 @@ const CrewList = () => {
 
   const renderPaginationItems = () => {
     const items = [];
-    
+
     if (totalPages <= 4) {
       for (let i = 1; i <= totalPages; i++) {
         items.push(
           <PaginationItem key={i}>
-            <PaginationLink
-              onClick={() => handlePageChange(i)}
-              isActive={currentPage === i}
-            >
+            <PaginationLink onClick={() => handlePageChange(i)} isActive={currentPage === i}>
               {i}
             </PaginationLink>
-          </PaginationItem>
+          </PaginationItem>,
         );
       }
     } else {
       items.push(
         <PaginationItem key={1}>
-          <PaginationLink
-            onClick={() => handlePageChange(1)}
-            isActive={currentPage === 1}
-          >
+          <PaginationLink onClick={() => handlePageChange(1)} isActive={currentPage === 1}>
             1
           </PaginationLink>
-        </PaginationItem>
+        </PaginationItem>,
       );
-      
+
       if (currentPage <= 2) {
         items.push(
           <PaginationItem key={2}>
-            <PaginationLink
-              onClick={() => handlePageChange(2)}
-              isActive={currentPage === 2}
-            >
+            <PaginationLink onClick={() => handlePageChange(2)} isActive={currentPage === 2}>
               2
             </PaginationLink>
-          </PaginationItem>
+          </PaginationItem>,
         );
       }
-      
+
       if (currentPage > 2 && currentPage < totalPages - 1) {
         items.push(
           <PaginationItem key="ellipsis-1">
             <PaginationEllipsis />
-          </PaginationItem>
+          </PaginationItem>,
         );
         items.push(
           <PaginationItem key={currentPage}>
-            <PaginationLink
-              onClick={() => handlePageChange(currentPage)}
-              isActive={true}
-            >
+            <PaginationLink onClick={() => handlePageChange(currentPage)} isActive={true}>
               {currentPage}
             </PaginationLink>
-          </PaginationItem>
+          </PaginationItem>,
         );
       }
-      
+
       if (currentPage < totalPages - 1) {
         items.push(
           <PaginationItem key="ellipsis-2">
             <PaginationEllipsis />
-          </PaginationItem>
+          </PaginationItem>,
         );
       }
-      
+
       if (currentPage >= totalPages - 1) {
         items.push(
           <PaginationItem key={totalPages - 1}>
-            <PaginationLink
-              onClick={() => handlePageChange(totalPages - 1)}
-              isActive={currentPage === totalPages - 1}
-            >
+            <PaginationLink onClick={() => handlePageChange(totalPages - 1)} isActive={currentPage === totalPages - 1}>
               {totalPages - 1}
             </PaginationLink>
-          </PaginationItem>
+          </PaginationItem>,
         );
       }
-      
+
       items.push(
         <PaginationItem key={totalPages}>
-          <PaginationLink
-            onClick={() => handlePageChange(totalPages)}
-            isActive={currentPage === totalPages}
-          >
+          <PaginationLink onClick={() => handlePageChange(totalPages)} isActive={currentPage === totalPages}>
             {totalPages}
           </PaginationLink>
-        </PaginationItem>
+        </PaginationItem>,
       );
     }
-    
+
     return items;
   };
 
@@ -261,9 +233,7 @@ const CrewList = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Crew Members</h1>
-          <p className="text-muted-foreground mt-1">
-            Manage and view all Crew Members
-          </p>
+          <p className="text-muted-foreground mt-1">Manage and view all Crew Members</p>
         </div>
       </div>
 
@@ -283,13 +253,9 @@ const CrewList = () => {
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="text-center py-8 text-muted-foreground">
-              Loading Crew Members...
-            </div>
+            <div className="text-center py-8 text-muted-foreground">Loading Crew Members...</div>
           ) : filteredProfiles.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              No Crew Members found
-            </div>
+            <div className="text-center py-8 text-muted-foreground">No Crew Members found</div>
           ) : (
             <div className="overflow-x-auto">
               <Table>
@@ -307,29 +273,19 @@ const CrewList = () => {
                 <TableBody>
                   {currentProfiles.map((profile) => (
                     <TableRow key={profile.id}>
-                      <TableCell className="font-medium">
-                        {profile.full_name || "N/A"}
-                      </TableCell>
+                      <TableCell className="font-medium">{profile.full_name || "N/A"}</TableCell>
                       <TableCell>{profile.username}</TableCell>
                       <TableCell>
                         {profile.country_code} {profile.phone_number}
                       </TableCell>
                       <TableCell>{profile.email}</TableCell>
                       <TableCell>
-                        <Badge 
+                        <Badge
                           variant={
-                            profile.is_approved 
-                              ? "default" 
-                              : profile.rejection_reason 
-                              ? "destructive" 
-                              : "secondary"
+                            profile.is_approved ? "default" : profile.rejection_reason ? "destructive" : "secondary"
                           }
                         >
-                          {profile.is_approved 
-                            ? "Approved" 
-                            : profile.rejection_reason 
-                            ? "Rejected" 
-                            : "Pending"}
+                          {profile.is_approved ? "Approved" : profile.rejection_reason ? "Rejected" : "Pending"}
                         </Badge>
                       </TableCell>
                       <TableCell>{formatDate(profile.created_at)}</TableCell>
@@ -337,29 +293,17 @@ const CrewList = () => {
                         <div className="flex items-center justify-end gap-2">
                           {!profile.is_approved && (
                             <>
-                              <Button
-                                size="sm"
-                                variant="default"
-                                onClick={() => handleApproveReject(profile.id, true)}
-                              >
+                              <Button size="sm" variant="default" onClick={() => handleApproveReject(profile.id, true)}>
                                 <Check className="h-4 w-4 mr-1" />
                                 Approve
                               </Button>
-                              <Button
-                                size="sm"
-                                variant="destructive"
-                                onClick={() => handleRejectClick(profile.id)}
-                              >
+                              <Button size="sm" variant="destructive" onClick={() => handleRejectClick(profile.id)}>
                                 <X className="h-4 w-4 mr-1" />
                                 Reject
                               </Button>
                             </>
                           )}
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => navigate(`/admin/crew/${profile.id}`)}
-                          >
+                          <Button size="sm" variant="outline" onClick={() => navigate(`/admin/crew/${profile.id}`)}>
                             <Eye className="h-4 w-4 mr-2" />
                             View
                           </Button>
@@ -399,9 +343,7 @@ const CrewList = () => {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Reject Crew Member</DialogTitle>
-            <DialogDescription>
-              Please provide a reason for rejecting this crew member application.
-            </DialogDescription>
+            <DialogDescription>Please provide a reason for rejecting this crew member.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
@@ -416,16 +358,10 @@ const CrewList = () => {
             </div>
           </div>
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setRejectDialogOpen(false)}
-            >
+            <Button variant="outline" onClick={() => setRejectDialogOpen(false)}>
               Cancel
             </Button>
-            <Button
-              variant="destructive"
-              onClick={handleRejectSubmit}
-            >
+            <Button variant="destructive" onClick={handleRejectSubmit}>
               Submit
             </Button>
           </DialogFooter>
