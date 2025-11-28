@@ -212,7 +212,7 @@ const AdminLayout = () => {
                 <ChevronDown className={`h-4 w-4 transition-transform ${isMembersOpen ? "rotate-180" : ""}`} />
               </button>
             </CollapsibleTrigger>
-            <CollapsibleContent className="space-y-1 pt-1">
+            <CollapsibleContent className="space-y-1 pt-1 my-[5px]">
               {memberItems.map(item => <NavLink key={item.path} to={item.path} className={({
               isActive
             }) => `flex items-center gap-3 px-4 py-2 pl-12 rounded-lg transition-all duration-200 ${isActive ? "bg-muted text-foreground font-medium shadow-sm" : "text-muted-foreground hover:bg-muted hover:text-foreground hover:shadow-sm"}`}>
