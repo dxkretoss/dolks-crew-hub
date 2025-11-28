@@ -128,7 +128,7 @@ const AdminLayout = () => {
                 <img src={dolksLogo} alt="DOLKS" className="h-10 w-auto" />
               </div>
             </div>
-            <nav className="p-4 space-y-2 overflow-y-auto flex-1 pb-20">
+            <nav className="p-4 space-y-2 overflow-y-auto flex-1 min-h-0">
               {navItems.map((item) => (
                 <NavLink
                   key={item.path}
@@ -257,7 +257,7 @@ const AdminLayout = () => {
           </div>
         </div>
 
-        <nav className="p-4 space-y-2 overflow-y-auto flex-1 pb-20">
+        <nav className="p-4 space-y-2 overflow-y-auto flex-1 min-h-0">
           {navItems.map((item) => (
             <NavLink
               key={item.path}
