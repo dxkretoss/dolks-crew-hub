@@ -122,7 +122,7 @@ const AdminLayout = () => {
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
         <div className="lg:hidden fixed inset-0 z-50 bg-background/80 backdrop-blur-sm">
-        <div className="fixed inset-y-0 left-0 w-72 bg-card border-r shadow-2xl flex flex-col">
+        <div className="fixed inset-y-0 left-0 w-72 bg-card border-r shadow-2xl flex flex-col overflow-y-auto">
             <div className="p-4 border-b">
               <div className="flex items-center">
                 <img src={dolksLogo} alt="DOLKS" className="h-10 w-auto" />
@@ -235,7 +235,7 @@ const AdminLayout = () => {
                 </CollapsibleContent>
               </Collapsible>
             </nav>
-            <div className="p-4 border-t bg-card">
+            <div className="p-4 border-t bg-card sticky bottom-0 left-0 right-0">
               <Button
                 variant="outline"
                 className="w-full justify-start"
@@ -250,7 +250,7 @@ const AdminLayout = () => {
       )}
 
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:block fixed left-0 top-0 bottom-0 w-64 bg-card border-r shadow-xl flex flex-col">
+      <aside className="hidden lg:block fixed left-0 top-0 bottom-0 w-64 bg-card border-r shadow-xl flex flex-col overflow-y-auto">
         <div className="p-6 border-b">
           <div className="flex items-center justify-center">
             <img src={dolksLogo} alt="DOLKS" className="h-12 w-auto" />
@@ -361,7 +361,7 @@ const AdminLayout = () => {
           </Collapsible>
         </nav>
 
-        <div className="p-4 border-t bg-card mt-auto">
+        <div className="p-4 border-t bg-card sticky bottom-0 left-0 right-0">
           <Button
             variant="outline"
             className="w-full justify-start"
