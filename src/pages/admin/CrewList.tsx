@@ -273,8 +273,8 @@ const CrewList = () => {
                 <TableBody>
                   {currentProfiles.map((profile) => (
                     <TableRow key={profile.id}>
-                      <TableCell className="font-medium">{profile.full_name || "N/A"}</TableCell>
-                      <TableCell>{profile.username}</TableCell>
+                      <TableCell className="font-medium break-words max-w-[200px]">{profile.full_name || "N/A"}</TableCell>
+                      <TableCell className="break-words max-w-[200px]">{profile.username}</TableCell>
                       <TableCell>
                         {profile.country_code} {profile.phone_number}
                       </TableCell>

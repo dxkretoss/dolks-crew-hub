@@ -141,10 +141,10 @@ const ServiceDetail = () => {
                 <AvatarFallback className="text-2xl">{initials}</AvatarFallback>
               </Avatar>
               <div>
-                <h2 className="text-2xl font-bold">
+                <h2 className="text-2xl font-bold break-words">
                   {profile.full_name || "No Name"}
                 </h2>
-                <p className="text-muted-foreground">@{profile.username}</p>
+                <p className="text-muted-foreground break-words">@{profile.username}</p>
                 <Badge className="mt-2" variant="secondary">
                   Service Provider
                 </Badge>
