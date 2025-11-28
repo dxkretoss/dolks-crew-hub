@@ -112,6 +112,7 @@ export type Database = {
           id: string
           location: string
           tags: string | null
+          tags_ids: string | null
           team_size: string | null
           type_of_services: string
           type_of_services_ids: string | null
@@ -129,6 +130,7 @@ export type Database = {
           id?: string
           location: string
           tags?: string | null
+          tags_ids?: string | null
           team_size?: string | null
           type_of_services: string
           type_of_services_ids?: string | null
@@ -146,6 +148,7 @@ export type Database = {
           id?: string
           location?: string
           tags?: string | null
+          tags_ids?: string | null
           team_size?: string | null
           type_of_services?: string
           type_of_services_ids?: string | null
