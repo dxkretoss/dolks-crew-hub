@@ -122,7 +122,7 @@ const AdminLayout = () => {
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
         <div className="lg:hidden fixed inset-0 z-50 bg-background/80 backdrop-blur-sm">
-        <div className="fixed inset-y-0 left-0 w-72 bg-card border-r shadow-lg flex flex-col">
+        <div className="fixed inset-y-0 left-0 w-72 bg-card border-r shadow-2xl flex flex-col">
             <div className="p-4 border-b">
               <div className="flex items-center">
                 <img src={dolksLogo} alt="DOLKS" className="h-10 w-auto" />
@@ -135,10 +135,10 @@ const AdminLayout = () => {
                   to={item.path}
                   onClick={() => setIsMobileMenuOpen(false)}
                   className={({ isActive }) =>
-                    `flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                    `flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
                       isActive
-                        ? "bg-primary text-primary-foreground"
-                        : "text-foreground hover:bg-muted"
+                        ? "bg-primary text-primary-foreground shadow-md"
+                        : "text-foreground hover:bg-muted hover:shadow-sm"
                     }`
                   }
                 >
@@ -150,10 +150,10 @@ const AdminLayout = () => {
               <Collapsible open={isMembersOpen} onOpenChange={setIsMembersOpen}>
                 <CollapsibleTrigger asChild>
                   <button
-                    className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors w-full ${
+                    className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 w-full ${
                       isMembersActive
-                        ? "bg-primary text-primary-foreground"
-                        : "text-foreground hover:bg-muted"
+                        ? "bg-primary text-primary-foreground shadow-md"
+                        : "text-foreground hover:bg-muted hover:shadow-sm"
                     }`}
                   >
                     <Users className="h-5 w-5" />
@@ -168,10 +168,10 @@ const AdminLayout = () => {
                       to={item.path}
                       onClick={() => setIsMobileMenuOpen(false)}
                       className={({ isActive }) =>
-                        `flex items-center gap-3 px-4 py-2 pl-12 rounded-lg transition-colors ${
+                        `flex items-center gap-3 px-4 py-2 pl-12 rounded-lg transition-all duration-200 ${
                           isActive
-                            ? "bg-muted text-foreground"
-                            : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                            ? "bg-muted text-foreground font-medium shadow-sm"
+                            : "text-muted-foreground hover:bg-muted hover:text-foreground hover:shadow-sm"
                         }`
                       }
                     >
@@ -188,10 +188,10 @@ const AdminLayout = () => {
                   to={item.path}
                   onClick={() => setIsMobileMenuOpen(false)}
                   className={({ isActive }) =>
-                    `flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                    `flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
                       isActive
-                        ? "bg-primary text-primary-foreground"
-                        : "text-foreground hover:bg-muted"
+                        ? "bg-primary text-primary-foreground shadow-md"
+                        : "text-foreground hover:bg-muted hover:shadow-sm"
                     }`
                   }
                 >
@@ -203,10 +203,10 @@ const AdminLayout = () => {
               <Collapsible open={isMasterOpen} onOpenChange={setIsMasterOpen}>
                 <CollapsibleTrigger asChild>
                   <button
-                    className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors w-full ${
+                    className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 w-full ${
                       isMasterActive
-                        ? "bg-primary text-primary-foreground"
-                        : "text-foreground hover:bg-muted"
+                        ? "bg-primary text-primary-foreground shadow-md"
+                        : "text-foreground hover:bg-muted hover:shadow-sm"
                     }`}
                   >
                     <Database className="h-5 w-5" />
@@ -221,10 +221,10 @@ const AdminLayout = () => {
                       to={item.path}
                       onClick={() => setIsMobileMenuOpen(false)}
                       className={({ isActive }) =>
-                        `flex items-center gap-3 px-4 py-2 pl-12 rounded-lg transition-colors ${
+                        `flex items-center gap-3 px-4 py-2 pl-12 rounded-lg transition-all duration-200 ${
                           isActive
-                            ? "bg-muted text-foreground"
-                            : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                            ? "bg-muted text-foreground font-medium shadow-sm"
+                            : "text-muted-foreground hover:bg-muted hover:text-foreground hover:shadow-sm"
                         }`
                       }
                     >
@@ -250,7 +250,7 @@ const AdminLayout = () => {
       )}
 
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:block fixed left-0 top-0 bottom-0 w-64 bg-card border-r flex flex-col">
+      <aside className="hidden lg:block fixed left-0 top-0 bottom-0 w-64 bg-card border-r shadow-xl flex flex-col">
         <div className="p-6 border-b">
           <div className="flex items-center justify-center">
             <img src={dolksLogo} alt="DOLKS" className="h-12 w-auto" />
@@ -263,10 +263,10 @@ const AdminLayout = () => {
               key={item.path}
               to={item.path}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                `flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
                   isActive
-                    ? "bg-primary text-primary-foreground"
-                    : "text-foreground hover:bg-muted"
+                    ? "bg-primary text-primary-foreground shadow-md"
+                    : "text-foreground hover:bg-muted hover:shadow-sm"
                 }`
               }
             >
@@ -278,10 +278,10 @@ const AdminLayout = () => {
           <Collapsible open={isMembersOpen} onOpenChange={setIsMembersOpen}>
             <CollapsibleTrigger asChild>
               <button
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors w-full ${
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 w-full ${
                   isMembersActive
-                    ? "bg-primary text-primary-foreground"
-                    : "text-foreground hover:bg-muted"
+                    ? "bg-primary text-primary-foreground shadow-md"
+                    : "text-foreground hover:bg-muted hover:shadow-sm"
                 }`}
               >
                 <Users className="h-5 w-5" />
@@ -295,10 +295,10 @@ const AdminLayout = () => {
                   key={item.path}
                   to={item.path}
                   className={({ isActive }) =>
-                    `flex items-center gap-3 px-4 py-2 pl-12 rounded-lg transition-colors ${
+                    `flex items-center gap-3 px-4 py-2 pl-12 rounded-lg transition-all duration-200 ${
                       isActive
-                        ? "bg-muted text-foreground"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                        ? "bg-muted text-foreground font-medium shadow-sm"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground hover:shadow-sm"
                     }`
                   }
                 >
@@ -314,10 +314,10 @@ const AdminLayout = () => {
               key={item.path}
               to={item.path}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+                `flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${
                   isActive
-                    ? "bg-primary text-primary-foreground"
-                    : "text-foreground hover:bg-muted"
+                    ? "bg-primary text-primary-foreground shadow-md"
+                    : "text-foreground hover:bg-muted hover:shadow-sm"
                 }`
               }
             >
@@ -329,10 +329,10 @@ const AdminLayout = () => {
           <Collapsible open={isMasterOpen} onOpenChange={setIsMasterOpen}>
             <CollapsibleTrigger asChild>
               <button
-                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors w-full ${
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 w-full ${
                   isMasterActive
-                    ? "bg-primary text-primary-foreground"
-                    : "text-foreground hover:bg-muted"
+                    ? "bg-primary text-primary-foreground shadow-md"
+                    : "text-foreground hover:bg-muted hover:shadow-sm"
                 }`}
               >
                 <Database className="h-5 w-5" />
@@ -346,10 +346,10 @@ const AdminLayout = () => {
                   key={item.path}
                   to={item.path}
                   className={({ isActive }) =>
-                    `flex items-center gap-3 px-4 py-2 pl-12 rounded-lg transition-colors ${
+                    `flex items-center gap-3 px-4 py-2 pl-12 rounded-lg transition-all duration-200 ${
                       isActive
-                        ? "bg-muted text-foreground"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                        ? "bg-muted text-foreground font-medium shadow-sm"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground hover:shadow-sm"
                     }`
                   }
                 >
