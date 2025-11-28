@@ -128,7 +128,7 @@ const AdminLayout = () => {
                 <img src={dolksLogo} alt="DOLKS" className="h-10 w-auto" />
               </div>
             </div>
-            <nav className="p-4 space-y-2 overflow-y-auto flex-1 min-h-0">
+            <nav className="p-4 pb-24 space-y-2 overflow-y-auto flex-1 min-h-0">
               {navItems.map((item) => (
                 <NavLink
                   key={item.path}
@@ -235,7 +235,7 @@ const AdminLayout = () => {
                 </CollapsibleContent>
               </Collapsible>
             </nav>
-            <div className="absolute bottom-0 left-0 right-0 p-4 border-t">
+            <div className="absolute bottom-0 left-0 right-0 p-4 border-t bg-card">
               <Button
                 variant="outline"
                 className="w-full justify-start"
@@ -257,7 +257,7 @@ const AdminLayout = () => {
           </div>
         </div>
 
-        <nav className="p-4 space-y-2 overflow-y-auto flex-1 min-h-0">
+        <nav className="p-4 pb-24 space-y-2 overflow-y-auto flex-1 min-h-0">
           {navItems.map((item) => (
             <NavLink
               key={item.path}
@@ -361,7 +361,7 @@ const AdminLayout = () => {
           </Collapsible>
         </nav>
 
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t">
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t bg-card">
           <Button
             variant="outline"
             className="w-full justify-start"
