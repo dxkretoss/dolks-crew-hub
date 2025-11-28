@@ -227,7 +227,6 @@ const ServiceList = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Full Name</TableHead>
                     <TableHead>Username</TableHead>
                     <TableHead>Phone Number</TableHead>
                     <TableHead>Email</TableHead>
@@ -238,10 +237,7 @@ const ServiceList = () => {
                 <TableBody>
                   {currentProfiles.map((profile) => (
                     <TableRow key={profile.id}>
-                      <TableCell className="font-medium">
-                        {profile.full_name || "N/A"}
-                      </TableCell>
-                      <TableCell>{profile.username}</TableCell>
+                      <TableCell className="font-medium">{profile.username}</TableCell>
                       <TableCell>
                         {profile.country_code} {profile.phone_number}
                       </TableCell>
