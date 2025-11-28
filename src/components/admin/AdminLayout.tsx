@@ -5,12 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Users, Building2, LogOut, Menu, X, Briefcase, ShieldCheck, LayoutDashboard, Calendar, ChevronDown, Settings, UserCog, Tag, Database } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
@@ -23,6 +17,7 @@ const AdminLayout = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMasterOpen, setIsMasterOpen] = useState(false);
+  const [isMembersOpen, setIsMembersOpen] = useState(false);
 
   useEffect(() => {
     const checkAdmin = async () => {
@@ -152,8 +147,8 @@ const AdminLayout = () => {
                 </NavLink>
               ))}
               
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
+              <Collapsible open={isMembersOpen} onOpenChange={setIsMembersOpen}>
+                <CollapsibleTrigger asChild>
                   <button
                     className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors w-full ${
                       isMembersActive
@@ -163,28 +158,29 @@ const AdminLayout = () => {
                   >
                     <Users className="h-5 w-5" />
                     <span className="font-medium flex-1 text-left">Members</span>
-                    <ChevronDown className="h-4 w-4" />
+                    <ChevronDown className={`h-4 w-4 transition-transform ${isMembersOpen ? "rotate-180" : ""}`} />
                   </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-56 bg-card border">
+                </CollapsibleTrigger>
+                <CollapsibleContent className="space-y-1 pt-1">
                   {memberItems.map((item) => (
-                    <DropdownMenuItem key={item.path} asChild>
-                      <NavLink
-                        to={item.path}
-                        onClick={() => setIsMobileMenuOpen(false)}
-                        className={({ isActive }) =>
-                          `flex items-center gap-3 px-2 py-2 cursor-pointer ${
-                            isActive ? "bg-muted" : ""
-                          }`
-                        }
-                      >
-                        <item.icon className="h-4 w-4" />
-                        <span>{item.label}</span>
-                      </NavLink>
-                    </DropdownMenuItem>
+                    <NavLink
+                      key={item.path}
+                      to={item.path}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className={({ isActive }) =>
+                        `flex items-center gap-3 px-4 py-2 pl-12 rounded-lg transition-colors ${
+                          isActive
+                            ? "bg-muted text-foreground"
+                            : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                        }`
+                      }
+                    >
+                      <item.icon className="h-4 w-4" />
+                      <span className="text-sm">{item.label}</span>
+                    </NavLink>
                   ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
+                </CollapsibleContent>
+              </Collapsible>
               
               {otherNavItems.map((item) => (
                 <NavLink
@@ -279,8 +275,8 @@ const AdminLayout = () => {
             </NavLink>
           ))}
           
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+          <Collapsible open={isMembersOpen} onOpenChange={setIsMembersOpen}>
+            <CollapsibleTrigger asChild>
               <button
                 className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors w-full ${
                   isMembersActive
@@ -290,27 +286,28 @@ const AdminLayout = () => {
               >
                 <Users className="h-5 w-5" />
                 <span className="font-medium flex-1 text-left">Members</span>
-                <ChevronDown className="h-4 w-4" />
+                <ChevronDown className={`h-4 w-4 transition-transform ${isMembersOpen ? "rotate-180" : ""}`} />
               </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-56 bg-card border">
+            </CollapsibleTrigger>
+            <CollapsibleContent className="space-y-1 pt-1">
               {memberItems.map((item) => (
-                <DropdownMenuItem key={item.path} asChild>
-                  <NavLink
-                    to={item.path}
-                    className={({ isActive }) =>
-                      `flex items-center gap-3 px-2 py-2 cursor-pointer ${
-                        isActive ? "bg-muted" : ""
-                      }`
-                    }
-                  >
-                    <item.icon className="h-4 w-4" />
-                    <span>{item.label}</span>
-                  </NavLink>
-                </DropdownMenuItem>
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-4 py-2 pl-12 rounded-lg transition-colors ${
+                      isActive
+                        ? "bg-muted text-foreground"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    }`
+                  }
+                >
+                  <item.icon className="h-4 w-4" />
+                  <span className="text-sm">{item.label}</span>
+                </NavLink>
               ))}
-            </DropdownMenuContent>
-          </DropdownMenu>
+            </CollapsibleContent>
+          </Collapsible>
           
           {otherNavItems.map((item) => (
             <NavLink
