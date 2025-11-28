@@ -237,7 +237,7 @@ const ServiceList = () => {
                 <TableBody>
                   {currentProfiles.map((profile) => (
                     <TableRow key={profile.id}>
-                      <TableCell className="font-medium">{profile.username}</TableCell>
+                      <TableCell className="font-medium break-words max-w-[200px]">{profile.username}</TableCell>
                       <TableCell>
                         {profile.country_code} {profile.phone_number}
                       </TableCell>
