@@ -133,11 +133,11 @@ const CrewDetail = () => {
                 fallback={initials}
                 className="h-32 w-32"
               />
-              <div>
-                <h2 className="text-2xl font-bold break-words">
+              <div className="w-full px-4">
+                <h2 className="text-2xl font-bold break-words overflow-wrap-anywhere">
                   {profile.full_name || "No Name"}
                 </h2>
-                <p className="text-muted-foreground break-words">@{profile.username}</p>
+                <p className="text-muted-foreground break-words overflow-wrap-anywhere">@{profile.username}</p>
                 <Badge className="mt-2" variant="secondary">
                   Crew Member
                 </Badge>
