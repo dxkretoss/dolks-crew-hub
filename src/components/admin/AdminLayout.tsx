@@ -122,13 +122,13 @@ const AdminLayout = () => {
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
         <div className="lg:hidden fixed inset-0 z-50 bg-background/80 backdrop-blur-sm">
-        <div className="fixed inset-y-0 left-0 w-72 bg-card border-r shadow-lg">
+        <div className="fixed inset-y-0 left-0 w-72 bg-card border-r shadow-lg flex flex-col">
             <div className="p-4 border-b">
               <div className="flex items-center">
                 <img src={dolksLogo} alt="DOLKS" className="h-10 w-auto" />
               </div>
             </div>
-            <nav className="p-4 space-y-2">
+            <nav className="p-4 space-y-2 overflow-y-auto flex-1 pb-20">
               {navItems.map((item) => (
                 <NavLink
                   key={item.path}
@@ -250,14 +250,14 @@ const AdminLayout = () => {
       )}
 
       {/* Desktop Sidebar */}
-      <aside className="hidden lg:block fixed left-0 top-0 bottom-0 w-64 bg-card border-r">
+      <aside className="hidden lg:block fixed left-0 top-0 bottom-0 w-64 bg-card border-r flex flex-col">
         <div className="p-6 border-b">
           <div className="flex items-center justify-center">
             <img src={dolksLogo} alt="DOLKS" className="h-12 w-auto" />
           </div>
         </div>
 
-        <nav className="p-4 space-y-2">
+        <nav className="p-4 space-y-2 overflow-y-auto flex-1 pb-20">
           {navItems.map((item) => (
             <NavLink
               key={item.path}
