@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Outlet, useNavigate, NavLink, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Users, Building2, LogOut, Menu, X, Briefcase, ShieldCheck, LayoutDashboard, Calendar, ChevronDown, Settings, UserCog, Tag } from "lucide-react";
+import { Users, Building2, LogOut, Menu, X, Briefcase, ShieldCheck, LayoutDashboard, Calendar, ChevronDown, Settings, UserCog, Tag, Database } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import {
   DropdownMenu,
@@ -10,6 +10,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import dolksLogo from "@/assets/dolks-logo.png";
 
 const AdminLayout = () => {
@@ -17,6 +22,7 @@ const AdminLayout = () => {
   const location = useLocation();
   const [isLoading, setIsLoading] = useState(true);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMasterOpen, setIsMasterOpen] = useState(false);
 
   useEffect(() => {
     const checkAdmin = async () => {
@@ -87,8 +93,7 @@ const AdminLayout = () => {
     { path: "/admin/services", label: "Company", icon: Building2 },
   ];
 
-  const otherNavItems = [
-    { path: "/admin/events", label: "Events", icon: Calendar },
+  const masterItems = [
     { path: "/admin/categories", label: "Categories", icon: Settings },
     { path: "/admin/company-services", label: "Company Services", icon: Briefcase },
     { path: "/admin/hobbies", label: "Hobby/Interest", icon: ShieldCheck },
@@ -96,7 +101,12 @@ const AdminLayout = () => {
     { path: "/admin/company-crew-roles", label: "Company/Crew Roles", icon: UserCog },
   ];
 
+  const otherNavItems = [
+    { path: "/admin/events", label: "Events", icon: Calendar },
+  ];
+
   const isMembersActive = location.pathname === "/admin/crew" || location.pathname === "/admin/services";
+  const isMasterActive = masterItems.some(item => location.pathname === item.path);
 
   return (
     <div className="min-h-screen bg-background">
@@ -193,6 +203,41 @@ const AdminLayout = () => {
                   <span className="font-medium">{item.label}</span>
                 </NavLink>
               ))}
+
+              <Collapsible open={isMasterOpen} onOpenChange={setIsMasterOpen}>
+                <CollapsibleTrigger asChild>
+                  <button
+                    className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors w-full ${
+                      isMasterActive
+                        ? "bg-primary text-primary-foreground"
+                        : "text-foreground hover:bg-muted"
+                    }`}
+                  >
+                    <Database className="h-5 w-5" />
+                    <span className="font-medium flex-1 text-left">Master</span>
+                    <ChevronDown className={`h-4 w-4 transition-transform ${isMasterOpen ? "rotate-180" : ""}`} />
+                  </button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="space-y-1 pt-1">
+                  {masterItems.map((item) => (
+                    <NavLink
+                      key={item.path}
+                      to={item.path}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className={({ isActive }) =>
+                        `flex items-center gap-3 px-4 py-2 pl-12 rounded-lg transition-colors ${
+                          isActive
+                            ? "bg-muted text-foreground"
+                            : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                        }`
+                      }
+                    >
+                      <item.icon className="h-4 w-4" />
+                      <span className="text-sm">{item.label}</span>
+                    </NavLink>
+                  ))}
+                </CollapsibleContent>
+              </Collapsible>
             </nav>
             <div className="absolute bottom-0 left-0 right-0 p-4 border-t">
               <Button
@@ -283,6 +328,40 @@ const AdminLayout = () => {
               <span className="font-medium">{item.label}</span>
             </NavLink>
           ))}
+
+          <Collapsible open={isMasterOpen} onOpenChange={setIsMasterOpen}>
+            <CollapsibleTrigger asChild>
+              <button
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors w-full ${
+                  isMasterActive
+                    ? "bg-primary text-primary-foreground"
+                    : "text-foreground hover:bg-muted"
+                }`}
+              >
+                <Database className="h-5 w-5" />
+                <span className="font-medium flex-1 text-left">Master</span>
+                <ChevronDown className={`h-4 w-4 transition-transform ${isMasterOpen ? "rotate-180" : ""}`} />
+              </button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="space-y-1 pt-1">
+              {masterItems.map((item) => (
+                <NavLink
+                  key={item.path}
+                  to={item.path}
+                  className={({ isActive }) =>
+                    `flex items-center gap-3 px-4 py-2 pl-12 rounded-lg transition-colors ${
+                      isActive
+                        ? "bg-muted text-foreground"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    }`
+                  }
+                >
+                  <item.icon className="h-4 w-4" />
+                  <span className="text-sm">{item.label}</span>
+                </NavLink>
+              ))}
+            </CollapsibleContent>
+          </Collapsible>
         </nav>
 
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t">
