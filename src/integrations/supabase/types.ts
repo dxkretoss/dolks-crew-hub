@@ -512,8 +512,11 @@ export type Database = {
           is_company_employee: boolean | null
           is_crew_member: boolean | null
           is_onboarded: boolean | null
+          is_otp_verified: boolean | null
           jwt_token: string | null
           nationality: string | null
+          otp: string | null
+          otp_created_at: string | null
           phone_number: string
           profile_picture_url: string | null
           refresh_token: string | null
@@ -543,8 +546,11 @@ export type Database = {
           is_company_employee?: boolean | null
           is_crew_member?: boolean | null
           is_onboarded?: boolean | null
+          is_otp_verified?: boolean | null
           jwt_token?: string | null
           nationality?: string | null
+          otp?: string | null
+          otp_created_at?: string | null
           phone_number: string
           profile_picture_url?: string | null
           refresh_token?: string | null
@@ -574,8 +580,11 @@ export type Database = {
           is_company_employee?: boolean | null
           is_crew_member?: boolean | null
           is_onboarded?: boolean | null
+          is_otp_verified?: boolean | null
           jwt_token?: string | null
           nationality?: string | null
+          otp?: string | null
+          otp_created_at?: string | null
           phone_number?: string
           profile_picture_url?: string | null
           refresh_token?: string | null
