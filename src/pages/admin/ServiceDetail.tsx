@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Mail, Phone, Calendar, MapPin, User, Building2, Users as UsersIcon, Briefcase, Trash2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { ConvertibleImage } from "@/components/ConvertibleImage";
 import type { Tables } from "@/integrations/supabase/types";
 type Profile = Tables<"profiles">;
 type CompanyProfile = Tables<"company_profiles">;
@@ -223,7 +224,7 @@ const ServiceDetail = () => {
             <CardContent className="space-y-4">
               {companyProfile.company_profile_picture && <div className="mb-6">
                   <p className="text-sm text-muted-foreground mb-3 font-semibold">Company Profile Picture</p>
-                  <img src={companyProfile.company_profile_picture} alt="Company Profile" className="w-24 h-24 object-cover rounded-lg border" />
+                  <ConvertibleImage src={companyProfile.company_profile_picture} alt="Company Profile" className="w-24 h-24 object-cover rounded-lg border" />
                 </div>}
 
               <div className="grid gap-4 md:grid-cols-2">
@@ -287,9 +288,9 @@ const ServiceDetail = () => {
                     {(() => {
                 try {
                   const portfolioImages = JSON.parse(companyProfile.company_portfolio);
-                  return Array.isArray(portfolioImages) ? portfolioImages.map((imageUrl: string, index: number) => <img key={index} src={imageUrl} alt={`Portfolio ${index + 1}`} onClick={() => window.open(imageUrl, '_blank')} className="w-full h-32 object-cover rounded-lg border hover:opacity-80 transition-opacity cursor-pointer" />) : <img src={companyProfile.company_portfolio} alt="Portfolio" className="w-full h-32 object-cover rounded-lg border hover:opacity-80 transition-opacity cursor-pointer" onClick={() => window.open(companyProfile.company_portfolio!, '_blank')} />;
+                  return Array.isArray(portfolioImages) ? portfolioImages.map((imageUrl: string, index: number) => <ConvertibleImage key={index} src={imageUrl} alt={`Portfolio ${index + 1}`} onClick={() => window.open(imageUrl, '_blank')} className="w-full h-32 object-cover rounded-lg border hover:opacity-80 transition-opacity cursor-pointer" />) : <ConvertibleImage src={companyProfile.company_portfolio} alt="Portfolio" className="w-full h-32 object-cover rounded-lg border hover:opacity-80 transition-opacity cursor-pointer" onClick={() => window.open(companyProfile.company_portfolio!, '_blank')} />;
                 } catch {
-                  return <img src={companyProfile.company_portfolio} alt="Portfolio" className="w-full h-32 object-cover rounded-lg border hover:opacity-80 transition-opacity cursor-pointer" onClick={() => window.open(companyProfile.company_portfolio!, '_blank')} />;
+                  return <ConvertibleImage src={companyProfile.company_portfolio} alt="Portfolio" className="w-full h-32 object-cover rounded-lg border hover:opacity-80 transition-opacity cursor-pointer" onClick={() => window.open(companyProfile.company_portfolio!, '_blank')} />;
                 }
               })()}
                   </div>
