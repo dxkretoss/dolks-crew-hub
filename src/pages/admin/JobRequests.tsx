@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
-import { Eye, CheckCircle, XCircle, Search, Calendar, MapPin, DollarSign, Pencil, Trash2 } from "lucide-react";
+import { Eye, CheckCircle, XCircle, Search, Calendar, MapPin, Euro, Pencil, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 type JobRequest = {
   id: string;
@@ -395,7 +395,7 @@ const JobRequests = () => {
                     <div className="break-words text-sm text-muted-foreground">{job.job_location}</div>
                   </TableCell>
                   <TableCell>{getUrgencyBadge(job.job_urgency)}</TableCell>
-                  <TableCell>{job.job_budget || "Not specified"}</TableCell>
+                  <TableCell>{job.job_budget ? `€${job.job_budget}` : "Not specified"}</TableCell>
                   <TableCell>{getStatusBadge(job.status)}</TableCell>
                   <TableCell className="text-sm text-muted-foreground">
                     {format(new Date(job.created_at), "MMM dd, yyyy")}
@@ -478,9 +478,9 @@ const JobRequests = () => {
                     <span className="break-words">{selectedJob.job_location}</span>
                   </div>
                   {selectedJob.job_budget && <div className="flex items-center gap-2 text-sm">
-                      <DollarSign className="h-4 w-4 text-muted-foreground" />
+                      <Euro className="h-4 w-4 text-muted-foreground" />
                       <span className="font-medium">Budget:</span>
-                      <span>{selectedJob.job_budget}</span>
+                      <span>€{selectedJob.job_budget}</span>
                     </div>}
                 </div>
               </div>
