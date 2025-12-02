@@ -54,6 +54,20 @@ type JobRequest = {
   status: string;
   rejection_reason: string | null;
   created_at: string;
+  user?: {
+    email: string;
+    country_code: string;
+    phone_number: string;
+  };
+  company_profile?: {
+    company_name: string;
+    type_of_services: string;
+    location: string;
+    description: string | null;
+    business_category: string | null;
+    team_size: string | null;
+    company_profile_picture: string | null;
+  };
 };
 
 const JobRequests = () => {
@@ -71,13 +85,37 @@ const JobRequests = () => {
   const { data: jobRequests, isLoading } = useQuery({
     queryKey: ["jobRequests"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: jobs, error } = await supabase
         .from("job_requests")
         .select("*")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return data as JobRequest[];
+
+      // Fetch user and company profile data for each job request
+      const jobsWithDetails = await Promise.all(
+        (jobs || []).map(async (job) => {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("email, country_code, phone_number")
+            .eq("user_id", job.user_id)
+            .single();
+
+          const { data: companyProfile } = await supabase
+            .from("company_profiles")
+            .select("company_name, type_of_services, location, description, business_category, team_size, company_profile_picture")
+            .eq("user_id", job.user_id)
+            .maybeSingle();
+
+          return {
+            ...job,
+            user: profile || undefined,
+            company_profile: companyProfile || undefined,
+          };
+        })
+      );
+
+      return jobsWithDetails as JobRequest[];
     },
   });
 
@@ -457,6 +495,69 @@ const JobRequests = () => {
                         />
                       </a>
                     ))}
+                  </div>
+                </div>
+              )}
+
+              {selectedJob.user && (
+                <div className="border rounded-lg p-4 bg-muted/50">
+                  <h4 className="font-semibold mb-3">User Information</h4>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex gap-2">
+                      <span className="font-medium">Email:</span>
+                      <span className="text-muted-foreground">{selectedJob.user.email}</span>
+                    </div>
+                    <div className="flex gap-2">
+                      <span className="font-medium">Phone:</span>
+                      <span className="text-muted-foreground">
+                        {selectedJob.user.country_code} {selectedJob.user.phone_number}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {selectedJob.company_profile && (
+                <div className="border rounded-lg p-4 bg-muted/50">
+                  <h4 className="font-semibold mb-3">Company Information</h4>
+                  <div className="space-y-3">
+                    {selectedJob.company_profile.company_profile_picture && (
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={selectedJob.company_profile.company_profile_picture}
+                          alt={selectedJob.company_profile.company_name}
+                          className="w-16 h-16 rounded-lg object-cover"
+                        />
+                        <div>
+                          <p className="font-medium">{selectedJob.company_profile.company_name}</p>
+                          <p className="text-xs text-muted-foreground">{selectedJob.company_profile.location}</p>
+                        </div>
+                      </div>
+                    )}
+                    <div className="space-y-2 text-sm">
+                      <div>
+                        <span className="font-medium">Type of Services:</span>
+                        <p className="text-muted-foreground mt-1">{selectedJob.company_profile.type_of_services}</p>
+                      </div>
+                      {selectedJob.company_profile.business_category && (
+                        <div>
+                          <span className="font-medium">Business Category:</span>
+                          <p className="text-muted-foreground mt-1">{selectedJob.company_profile.business_category}</p>
+                        </div>
+                      )}
+                      {selectedJob.company_profile.team_size && (
+                        <div>
+                          <span className="font-medium">Team Size:</span>
+                          <p className="text-muted-foreground mt-1">{selectedJob.company_profile.team_size}</p>
+                        </div>
+                      )}
+                      {selectedJob.company_profile.description && (
+                        <div>
+                          <span className="font-medium">Description:</span>
+                          <p className="text-muted-foreground mt-1">{selectedJob.company_profile.description}</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               )}
