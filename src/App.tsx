@@ -18,6 +18,7 @@ import Hobbies from "./pages/admin/Hobbies";
 import Tags from "./pages/admin/Tags";
 import Events from "./pages/admin/Events";
 import CompanyCrewRoles from "./pages/admin/CompanyCrewRoles";
+import JobRequests from "./pages/admin/JobRequests";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -52,6 +53,7 @@ const App = () => {
               <Route path="hobbies" element={<Hobbies />} />
               <Route path="tags" element={<Tags />} />
               <Route path="company-crew-roles" element={<CompanyCrewRoles />} />
+              <Route path="job-requests" element={<JobRequests />} />
             </Route>
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
