@@ -346,6 +346,84 @@ export type Database = {
         }
         Relationships: []
       }
+      job_requests: {
+        Row: {
+          created_at: string
+          id: string
+          job_budget: string | null
+          job_category_names: string[]
+          job_category_type_ids: string[]
+          job_complete_date: string
+          job_consent: boolean | null
+          job_documents_images: string[] | null
+          job_full_description: string
+          job_latitude: string
+          job_location: string
+          job_longitude: string
+          job_short_description: string
+          job_special_requirements: string
+          job_start_date: string
+          job_tags_ids: string[] | null
+          job_tags_names: string[] | null
+          job_title: string
+          job_urgency: string
+          rejection_reason: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          job_budget?: string | null
+          job_category_names: string[]
+          job_category_type_ids: string[]
+          job_complete_date: string
+          job_consent?: boolean | null
+          job_documents_images?: string[] | null
+          job_full_description: string
+          job_latitude: string
+          job_location: string
+          job_longitude: string
+          job_short_description: string
+          job_special_requirements: string
+          job_start_date: string
+          job_tags_ids?: string[] | null
+          job_tags_names?: string[] | null
+          job_title: string
+          job_urgency: string
+          rejection_reason?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          job_budget?: string | null
+          job_category_names?: string[]
+          job_category_type_ids?: string[]
+          job_complete_date?: string
+          job_consent?: boolean | null
+          job_documents_images?: string[] | null
+          job_full_description?: string
+          job_latitude?: string
+          job_location?: string
+          job_longitude?: string
+          job_short_description?: string
+          job_special_requirements?: string
+          job_start_date?: string
+          job_tags_ids?: string[] | null
+          job_tags_names?: string[] | null
+          job_title?: string
+          job_urgency?: string
+          rejection_reason?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       post_comments: {
         Row: {
           comment_text: string
