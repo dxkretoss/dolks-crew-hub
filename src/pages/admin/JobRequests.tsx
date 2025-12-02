@@ -34,18 +34,12 @@ type JobRequest = {
   rejection_reason: string | null;
   created_at: string;
   user?: {
+    full_name: string | null;
     email: string;
     country_code: string;
     phone_number: string;
-  };
-  company_profile?: {
-    company_name: string;
-    type_of_services: string;
-    location: string;
-    description: string | null;
-    business_category: string | null;
-    team_size: string | null;
-    company_profile_picture: string | null;
+    role: string | null;
+    profile_picture_url: string | null;
   };
 };
 const JobRequests = () => {
@@ -72,18 +66,14 @@ const JobRequests = () => {
       });
       if (error) throw error;
 
-      // Fetch user and company profile data for each job request
+      // Fetch user profile data for each job request
       const jobsWithDetails = await Promise.all((jobs || []).map(async job => {
         const {
           data: profile
-        } = await supabase.from("profiles").select("email, country_code, phone_number").eq("user_id", job.user_id).single();
-        const {
-          data: companyProfile
-        } = await supabase.from("company_profiles").select("company_name, type_of_services, location, description, business_category, team_size, company_profile_picture").eq("user_id", job.user_id).maybeSingle();
+        } = await supabase.from("profiles").select("full_name, email, country_code, phone_number, role, profile_picture_url").eq("user_id", job.user_id).single();
         return {
           ...job,
-          user: profile || undefined,
-          company_profile: companyProfile || undefined
+          user: profile || undefined
         };
       }));
       return jobsWithDetails as JobRequest[];
@@ -402,47 +392,39 @@ const JobRequests = () => {
 
               {selectedJob.user && <div className="border rounded-lg p-4 bg-muted/50">
                   <h4 className="mb-3 font-bold">User Information</h4>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex gap-2">
-                      <span className="font-medium">Email:</span>
-                      <span className="text-muted-foreground">{selectedJob.user.email}</span>
-                    </div>
-                    <div className="flex gap-2">
-                      <span className="font-medium">Phone:</span>
-                      <span className="text-muted-foreground">
-                        {selectedJob.user.country_code} {selectedJob.user.phone_number}
-                      </span>
-                    </div>
-                  </div>
-                </div>}
-
-              {selectedJob.company_profile && <div className="border rounded-lg p-4 bg-muted/50">
-                  <h4 className="mb-3 font-bold">Company Information</h4>
                   <div className="space-y-3">
-                    {selectedJob.company_profile.company_profile_picture && <div className="flex items-center gap-3">
-                        <img src={selectedJob.company_profile.company_profile_picture} alt={selectedJob.company_profile.company_name} className="w-14 h-14 rounded-lg object-cover" />
-                        <div>
-                          <p className="font-medium">{selectedJob.company_profile.company_name}</p>
-                          <p className="text-xs text-muted-foreground font-medium my-[4px]">{selectedJob.company_profile.location}</p>
+                    <div className="flex items-center gap-3">
+                      {selectedJob.user.profile_picture_url ? (
+                        <img 
+                          src={selectedJob.user.profile_picture_url} 
+                          alt={selectedJob.user.full_name || "User"} 
+                          className="w-14 h-14 rounded-full object-cover" 
+                        />
+                      ) : (
+                        <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center">
+                          <span className="text-lg font-medium text-muted-foreground">
+                            {selectedJob.user.full_name?.charAt(0) || "U"}
+                          </span>
                         </div>
-                      </div>}
-                    <div className="space-y-2 text-sm">
+                      )}
                       <div>
-                        <span className="font-medium">Type of Services:</span>
-                        <p className="text-muted-foreground mt-1 text-xs">{selectedJob.company_profile.type_of_services}</p>
+                        <p className="font-medium">{selectedJob.user.full_name || "N/A"}</p>
+                        {selectedJob.user.role && (
+                          <p className="text-xs text-muted-foreground">{selectedJob.user.role}</p>
+                        )}
                       </div>
-                      {selectedJob.company_profile.business_category && <div>
-                          <span className="font-medium">Business Category:</span>
-                          <p className="text-muted-foreground mt-1 text-xs">{selectedJob.company_profile.business_category}</p>
-                        </div>}
-                      {selectedJob.company_profile.team_size && <div>
-                          <span className="font-medium">Team Size:</span>
-                          <p className="text-muted-foreground mt-1 text-xs">{selectedJob.company_profile.team_size}</p>
-                        </div>}
-                      {selectedJob.company_profile.description && <div>
-                          <span className="font-medium">Description:</span>
-                          <p className="text-muted-foreground mt-1 text-xs">{selectedJob.company_profile.description}</p>
-                        </div>}
+                    </div>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex gap-2">
+                        <span className="font-medium">Email:</span>
+                        <span className="text-muted-foreground">{selectedJob.user.email}</span>
+                      </div>
+                      <div className="flex gap-2">
+                        <span className="font-medium">Phone:</span>
+                        <span className="text-muted-foreground">
+                          {selectedJob.user.country_code} {selectedJob.user.phone_number}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 </div>}
