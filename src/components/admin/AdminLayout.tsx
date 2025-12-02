@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Outlet, useNavigate, NavLink, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Users, Building2, LogOut, Menu, X, Briefcase, ShieldCheck, LayoutDashboard, Calendar, ChevronDown, Settings, UserCog, Tag, Database, ClipboardList } from "lucide-react";
+import { Users, Building2, LogOut, Menu, X, Briefcase, ShieldCheck, LayoutDashboard, Calendar, ChevronDown, Settings, UserCog, Tag, Database, ClipboardList, Rss } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import dolksLogo from "@/assets/dolks-logo.png";
@@ -13,6 +13,7 @@ const AdminLayout = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMasterOpen, setIsMasterOpen] = useState(false);
   const [isMembersOpen, setIsMembersOpen] = useState(false);
+  const [isFeedsOpen, setIsFeedsOpen] = useState(false);
   useEffect(() => {
     const checkAdmin = async () => {
       const {
@@ -74,15 +75,6 @@ const AdminLayout = () => {
     label: "Dashboard",
     icon: LayoutDashboard
   }];
-  const memberItems = [{
-    path: "/admin/crew",
-    label: "Crew",
-    icon: Users
-  }, {
-    path: "/admin/services",
-    label: "Company",
-    icon: Building2
-  }];
   const masterItems = [{
     path: "/admin/categories",
     label: "Categories",
@@ -104,17 +96,27 @@ const AdminLayout = () => {
     label: "Company/Crew Roles",
     icon: UserCog
   }];
-  const otherNavItems = [{
-    path: "/admin/events",
-    label: "Events",
-    icon: Calendar
+  const memberItems = [{
+    path: "/admin/crew",
+    label: "Crew",
+    icon: Users
   }, {
+    path: "/admin/services",
+    label: "Company",
+    icon: Building2
+  }];
+  const feedsItems = [{
     path: "/admin/job-requests",
     label: "Job Requests",
     icon: ClipboardList
+  }, {
+    path: "/admin/events",
+    label: "Events",
+    icon: Calendar
   }];
-  const isMembersActive = location.pathname === "/admin/crew" || location.pathname === "/admin/services";
   const isMasterActive = masterItems.some(item => location.pathname === item.path);
+  const isMembersActive = memberItems.some(item => location.pathname === item.path);
+  const isFeedsActive = feedsItems.some(item => location.pathname === item.path);
   return <div className="min-h-screen bg-background">
       {/* Mobile Header */}
       <div className="lg:hidden flex items-center justify-between p-4 border-b bg-card">
@@ -142,6 +144,24 @@ const AdminLayout = () => {
                   <span className="font-medium">{item.label}</span>
                 </NavLink>)}
               
+              <Collapsible open={isMasterOpen} onOpenChange={setIsMasterOpen}>
+                <CollapsibleTrigger asChild>
+                  <button className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 w-full ${isMasterActive ? "bg-primary text-primary-foreground shadow-md" : "text-foreground hover:bg-muted hover:shadow-sm"}`}>
+                    <Database className="h-5 w-5" />
+                    <span className="font-medium flex-1 text-left">Master</span>
+                    <ChevronDown className={`h-4 w-4 transition-transform ${isMasterOpen ? "rotate-180" : ""}`} />
+                  </button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="space-y-1 pt-1">
+                  {masterItems.map(item => <NavLink key={item.path} to={item.path} onClick={() => setIsMobileMenuOpen(false)} className={({
+                isActive
+              }) => `flex items-center gap-3 px-4 py-2 pl-12 rounded-lg transition-all duration-200 ${isActive ? "bg-muted text-foreground font-medium shadow-sm" : "text-muted-foreground hover:bg-muted hover:text-foreground hover:shadow-sm"}`}>
+                      <item.icon className="h-4 w-4" />
+                      <span className="text-sm">{item.label}</span>
+                    </NavLink>)}
+                </CollapsibleContent>
+              </Collapsible>
+
               <Collapsible open={isMembersOpen} onOpenChange={setIsMembersOpen}>
                 <CollapsibleTrigger asChild>
                   <button className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 w-full ${isMembersActive ? "bg-primary text-primary-foreground shadow-md" : "text-foreground hover:bg-muted hover:shadow-sm"}`}>
@@ -160,23 +180,16 @@ const AdminLayout = () => {
                 </CollapsibleContent>
               </Collapsible>
               
-              {otherNavItems.map(item => <NavLink key={item.path} to={item.path} onClick={() => setIsMobileMenuOpen(false)} className={({
-            isActive
-          }) => `flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${isActive ? "bg-primary text-primary-foreground shadow-md" : "text-foreground hover:bg-muted hover:shadow-sm"}`}>
-                  <item.icon className="h-5 w-5" />
-                  <span className="font-medium">{item.label}</span>
-                </NavLink>)}
-
-              <Collapsible open={isMasterOpen} onOpenChange={setIsMasterOpen}>
+              <Collapsible open={isFeedsOpen} onOpenChange={setIsFeedsOpen}>
                 <CollapsibleTrigger asChild>
-                  <button className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 w-full ${isMasterActive ? "bg-primary text-primary-foreground shadow-md" : "text-foreground hover:bg-muted hover:shadow-sm"}`}>
-                    <Database className="h-5 w-5" />
-                    <span className="font-medium flex-1 text-left">Master</span>
-                    <ChevronDown className={`h-4 w-4 transition-transform ${isMasterOpen ? "rotate-180" : ""}`} />
+                  <button className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 w-full ${isFeedsActive ? "bg-primary text-primary-foreground shadow-md" : "text-foreground hover:bg-muted hover:shadow-sm"}`}>
+                    <Rss className="h-5 w-5" />
+                    <span className="font-medium flex-1 text-left">Feeds</span>
+                    <ChevronDown className={`h-4 w-4 transition-transform ${isFeedsOpen ? "rotate-180" : ""}`} />
                   </button>
                 </CollapsibleTrigger>
                 <CollapsibleContent className="space-y-1 pt-1">
-                  {masterItems.map(item => <NavLink key={item.path} to={item.path} onClick={() => setIsMobileMenuOpen(false)} className={({
+                  {feedsItems.map(item => <NavLink key={item.path} to={item.path} onClick={() => setIsMobileMenuOpen(false)} className={({
                 isActive
               }) => `flex items-center gap-3 px-4 py-2 pl-12 rounded-lg transition-all duration-200 ${isActive ? "bg-muted text-foreground font-medium shadow-sm" : "text-muted-foreground hover:bg-muted hover:text-foreground hover:shadow-sm"}`}>
                       <item.icon className="h-4 w-4" />
@@ -210,6 +223,24 @@ const AdminLayout = () => {
               <span className="font-medium">{item.label}</span>
             </NavLink>)}
           
+          <Collapsible open={isMasterOpen} onOpenChange={setIsMasterOpen}>
+            <CollapsibleTrigger asChild>
+              <button className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 w-full ${isMasterActive ? "bg-primary text-primary-foreground shadow-md" : "text-foreground hover:bg-muted hover:shadow-sm"}`}>
+                <Database className="h-5 w-5" />
+                <span className="font-medium flex-1 text-left">Master</span>
+                <ChevronDown className={`h-4 w-4 transition-transform ${isMasterOpen ? "rotate-180" : ""}`} />
+              </button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="space-y-1 pt-1 py-[5px] my-[5px]">
+              {masterItems.map(item => <NavLink key={item.path} to={item.path} className={({
+              isActive
+            }) => `flex items-center gap-3 px-4 py-2 pl-12 rounded-lg transition-all duration-200 ${isActive ? "bg-muted text-foreground font-medium shadow-sm" : "text-muted-foreground hover:bg-muted hover:text-foreground hover:shadow-sm"}`}>
+                  <item.icon className="h-4 w-4" />
+                  <span className="text-sm">{item.label}</span>
+                </NavLink>)}
+            </CollapsibleContent>
+          </Collapsible>
+
           <Collapsible open={isMembersOpen} onOpenChange={setIsMembersOpen}>
             <CollapsibleTrigger asChild>
               <button className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 w-full ${isMembersActive ? "bg-primary text-primary-foreground shadow-md" : "text-foreground hover:bg-muted hover:shadow-sm"}`}>
@@ -228,23 +259,16 @@ const AdminLayout = () => {
             </CollapsibleContent>
           </Collapsible>
           
-          {otherNavItems.map(item => <NavLink key={item.path} to={item.path} className={({
-          isActive
-        }) => `flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${isActive ? "bg-primary text-primary-foreground shadow-md" : "text-foreground hover:bg-muted hover:shadow-sm"}`}>
-              <item.icon className="h-5 w-5" />
-              <span className="font-medium">{item.label}</span>
-            </NavLink>)}
-
-          <Collapsible open={isMasterOpen} onOpenChange={setIsMasterOpen}>
+          <Collapsible open={isFeedsOpen} onOpenChange={setIsFeedsOpen}>
             <CollapsibleTrigger asChild>
-              <button className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 w-full ${isMasterActive ? "bg-primary text-primary-foreground shadow-md" : "text-foreground hover:bg-muted hover:shadow-sm"}`}>
-                <Database className="h-5 w-5" />
-                <span className="font-medium flex-1 text-left">Master</span>
-                <ChevronDown className={`h-4 w-4 transition-transform ${isMasterOpen ? "rotate-180" : ""}`} />
+              <button className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 w-full ${isFeedsActive ? "bg-primary text-primary-foreground shadow-md" : "text-foreground hover:bg-muted hover:shadow-sm"}`}>
+                <Rss className="h-5 w-5" />
+                <span className="font-medium flex-1 text-left">Feeds</span>
+                <ChevronDown className={`h-4 w-4 transition-transform ${isFeedsOpen ? "rotate-180" : ""}`} />
               </button>
             </CollapsibleTrigger>
-            <CollapsibleContent className="space-y-1 pt-1 py-[5px] my-[5px]">
-              {masterItems.map(item => <NavLink key={item.path} to={item.path} className={({
+            <CollapsibleContent className="space-y-1 pt-1 my-[5px]">
+              {feedsItems.map(item => <NavLink key={item.path} to={item.path} className={({
               isActive
             }) => `flex items-center gap-3 px-4 py-2 pl-12 rounded-lg transition-all duration-200 ${isActive ? "bg-muted text-foreground font-medium shadow-sm" : "text-muted-foreground hover:bg-muted hover:text-foreground hover:shadow-sm"}`}>
                   <item.icon className="h-4 w-4" />
