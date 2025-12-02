@@ -4,35 +4,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import { Eye, CheckCircle, XCircle, Search, Calendar, MapPin, DollarSign } from "lucide-react";
 import { format } from "date-fns";
-
 type JobRequest = {
   id: string;
   user_id: string;
@@ -69,7 +48,6 @@ type JobRequest = {
     company_profile_picture: string | null;
   };
 };
-
 const JobRequests = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -79,139 +57,132 @@ const JobRequests = () => {
   const [rejectionReason, setRejectionReason] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-
   const queryClient = useQueryClient();
-
-  const { data: jobRequests, isLoading } = useQuery({
+  const {
+    data: jobRequests,
+    isLoading
+  } = useQuery({
     queryKey: ["jobRequests"],
     queryFn: async () => {
-      const { data: jobs, error } = await supabase
-        .from("job_requests")
-        .select("*")
-        .order("created_at", { ascending: false });
-
+      const {
+        data: jobs,
+        error
+      } = await supabase.from("job_requests").select("*").order("created_at", {
+        ascending: false
+      });
       if (error) throw error;
 
       // Fetch user and company profile data for each job request
-      const jobsWithDetails = await Promise.all(
-        (jobs || []).map(async (job) => {
-          const { data: profile } = await supabase
-            .from("profiles")
-            .select("email, country_code, phone_number")
-            .eq("user_id", job.user_id)
-            .single();
-
-          const { data: companyProfile } = await supabase
-            .from("company_profiles")
-            .select("company_name, type_of_services, location, description, business_category, team_size, company_profile_picture")
-            .eq("user_id", job.user_id)
-            .maybeSingle();
-
-          return {
-            ...job,
-            user: profile || undefined,
-            company_profile: companyProfile || undefined,
-          };
-        })
-      );
-
+      const jobsWithDetails = await Promise.all((jobs || []).map(async job => {
+        const {
+          data: profile
+        } = await supabase.from("profiles").select("email, country_code, phone_number").eq("user_id", job.user_id).single();
+        const {
+          data: companyProfile
+        } = await supabase.from("company_profiles").select("company_name, type_of_services, location, description, business_category, team_size, company_profile_picture").eq("user_id", job.user_id).maybeSingle();
+        return {
+          ...job,
+          user: profile || undefined,
+          company_profile: companyProfile || undefined
+        };
+      }));
       return jobsWithDetails as JobRequest[];
-    },
+    }
   });
-
   const approveMutation = useMutation({
     mutationFn: async (jobId: string) => {
-      const { error } = await supabase
-        .from("job_requests")
-        .update({ status: "Approved", rejection_reason: null })
-        .eq("id", jobId);
-
+      const {
+        error
+      } = await supabase.from("job_requests").update({
+        status: "Approved",
+        rejection_reason: null
+      }).eq("id", jobId);
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["jobRequests"] });
+      queryClient.invalidateQueries({
+        queryKey: ["jobRequests"]
+      });
       toast({
         title: "Job Approved",
-        description: "Job request has been approved successfully",
+        description: "Job request has been approved successfully"
       });
       setIsDetailsOpen(false);
     },
-    onError: (error) => {
+    onError: error => {
       toast({
         title: "Error",
         description: "Failed to approve job request",
-        variant: "destructive",
+        variant: "destructive"
       });
       console.error(error);
-    },
+    }
   });
-
   const rejectMutation = useMutation({
-    mutationFn: async ({ jobId, reason }: { jobId: string; reason: string }) => {
-      const { error } = await supabase
-        .from("job_requests")
-        .update({ status: "Rejected", rejection_reason: reason })
-        .eq("id", jobId);
-
+    mutationFn: async ({
+      jobId,
+      reason
+    }: {
+      jobId: string;
+      reason: string;
+    }) => {
+      const {
+        error
+      } = await supabase.from("job_requests").update({
+        status: "Rejected",
+        rejection_reason: reason
+      }).eq("id", jobId);
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["jobRequests"] });
+      queryClient.invalidateQueries({
+        queryKey: ["jobRequests"]
+      });
       toast({
         title: "Job Rejected",
-        description: "Job request has been rejected",
+        description: "Job request has been rejected"
       });
       setIsDetailsOpen(false);
       setIsRejectDialogOpen(false);
       setRejectionReason("");
     },
-    onError: (error) => {
+    onError: error => {
       toast({
         title: "Error",
         description: "Failed to reject job request",
-        variant: "destructive",
+        variant: "destructive"
       });
       console.error(error);
-    },
+    }
   });
-
-  const filteredJobs = jobRequests?.filter((job) => {
-    const matchesSearch =
-      job.job_title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      job.job_short_description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      job.job_location.toLowerCase().includes(searchTerm.toLowerCase());
-
-    const matchesStatus =
-      statusFilter === "all" || job.status.toLowerCase() === statusFilter.toLowerCase();
-
+  const filteredJobs = jobRequests?.filter(job => {
+    const matchesSearch = job.job_title.toLowerCase().includes(searchTerm.toLowerCase()) || job.job_short_description.toLowerCase().includes(searchTerm.toLowerCase()) || job.job_location.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === "all" || job.status.toLowerCase() === statusFilter.toLowerCase();
     return matchesSearch && matchesStatus;
   });
-
   const totalPages = Math.ceil((filteredJobs?.length || 0) / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginatedJobs = filteredJobs?.slice(startIndex, startIndex + itemsPerPage);
-
   const handleViewDetails = (job: JobRequest) => {
     setSelectedJob(job);
     setIsDetailsOpen(true);
   };
-
   const handleApprove = () => {
     if (selectedJob) {
       approveMutation.mutate(selectedJob.id);
     }
   };
-
   const handleRejectClick = () => {
     setIsRejectDialogOpen(true);
   };
-
   const handleRejectConfirm = () => {
     if (selectedJob && rejectionReason.trim()) {
-      rejectMutation.mutate({ jobId: selectedJob.id, reason: rejectionReason });
+      rejectMutation.mutate({
+        jobId: selectedJob.id,
+        reason: rejectionReason
+      });
     }
   };
-
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "Pending":
@@ -224,7 +195,6 @@ const JobRequests = () => {
         return <Badge variant="outline">{status}</Badge>;
     }
   };
-
   const getUrgencyBadge = (urgency: string) => {
     switch (urgency.toLowerCase()) {
       case "high":
@@ -237,7 +207,6 @@ const JobRequests = () => {
         return <Badge variant="outline">{urgency}</Badge>;
     }
   };
-
   const renderPageNumbers = () => {
     const pages = [];
     if (totalPages <= 7) {
@@ -255,20 +224,15 @@ const JobRequests = () => {
     }
     return pages;
   };
-
   if (isLoading) {
-    return (
-      <div className="p-8">
+    return <div className="p-8">
         <div className="animate-pulse space-y-4">
           <div className="h-8 bg-muted rounded w-1/4"></div>
           <div className="h-64 bg-muted rounded"></div>
         </div>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="p-8">
+  return <div className="p-8">
       <div className="mb-6">
         <h1 className="text-3xl font-bold">Job Requests</h1>
         <p className="text-muted-foreground">Manage and review job requests</p>
@@ -277,20 +241,15 @@ const JobRequests = () => {
       <div className="mb-6 flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-          <Input
-            placeholder="Search by title, description, or location..."
-            value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value);
-              setCurrentPage(1);
-            }}
-            className="pl-9"
-          />
-        </div>
-        <Select value={statusFilter} onValueChange={(value) => {
-          setStatusFilter(value);
+          <Input placeholder="Search by title, description, or location..." value={searchTerm} onChange={e => {
+          setSearchTerm(e.target.value);
           setCurrentPage(1);
-        }}>
+        }} className="pl-9" />
+        </div>
+        <Select value={statusFilter} onValueChange={value => {
+        setStatusFilter(value);
+        setCurrentPage(1);
+      }}>
           <SelectTrigger className="w-full sm:w-[180px]">
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>
@@ -317,9 +276,7 @@ const JobRequests = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {paginatedJobs && paginatedJobs.length > 0 ? (
-              paginatedJobs.map((job) => (
-                <TableRow key={job.id}>
+            {paginatedJobs && paginatedJobs.length > 0 ? paginatedJobs.map(job => <TableRow key={job.id}>
                   <TableCell className="font-medium max-w-[200px]">
                     <div className="break-words">{job.job_title}</div>
                   </TableCell>
@@ -333,64 +290,33 @@ const JobRequests = () => {
                     {format(new Date(job.created_at), "MMM dd, yyyy")}
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleViewDetails(job)}
-                    >
+                    <Button variant="ghost" size="sm" onClick={() => handleViewDetails(job)}>
                       <Eye className="h-4 w-4 mr-1" />
                       View
                     </Button>
                   </TableCell>
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
+                </TableRow>) : <TableRow>
                 <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
                   No job requests found
                 </TableCell>
-              </TableRow>
-            )}
+              </TableRow>}
           </TableBody>
         </Table>
       </div>
 
-      {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2 mt-6">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-            disabled={currentPage === 1}
-          >
+      {totalPages > 1 && <div className="flex items-center justify-center gap-2 mt-6">
+          <Button variant="outline" size="sm" onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))} disabled={currentPage === 1}>
             Previous
           </Button>
-          {renderPageNumbers().map((page, index) =>
-            page === "..." ? (
-              <span key={`ellipsis-${index}`} className="px-2">
+          {renderPageNumbers().map((page, index) => page === "..." ? <span key={`ellipsis-${index}`} className="px-2">
                 ...
-              </span>
-            ) : (
-              <Button
-                key={page}
-                variant={currentPage === page ? "default" : "outline"}
-                size="sm"
-                onClick={() => setCurrentPage(page as number)}
-              >
+              </span> : <Button key={page} variant={currentPage === page ? "default" : "outline"} size="sm" onClick={() => setCurrentPage(page as number)}>
                 {page}
-              </Button>
-            )
-          )}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-            disabled={currentPage === totalPages}
-          >
+              </Button>)}
+          <Button variant="outline" size="sm" onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))} disabled={currentPage === totalPages}>
             Next
           </Button>
-        </div>
-      )}
+        </div>}
 
       {/* Job Details Dialog */}
       <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
@@ -402,8 +328,7 @@ const JobRequests = () => {
             </DialogDescription>
           </DialogHeader>
 
-          {selectedJob && (
-            <div className="space-y-6">
+          {selectedJob && <div className="space-y-6">
               <div className="flex items-start justify-between">
                 <div>
                   <h3 className="text-2xl font-bold break-words">{selectedJob.job_title}</h3>
@@ -434,13 +359,11 @@ const JobRequests = () => {
                     <span className="font-medium">Location:</span>
                     <span className="break-words">{selectedJob.job_location}</span>
                   </div>
-                  {selectedJob.job_budget && (
-                    <div className="flex items-center gap-2 text-sm">
+                  {selectedJob.job_budget && <div className="flex items-center gap-2 text-sm">
                       <DollarSign className="h-4 w-4 text-muted-foreground" />
                       <span className="font-medium">Budget:</span>
                       <span>{selectedJob.job_budget}</span>
-                    </div>
-                  )}
+                    </div>}
                 </div>
               </div>
 
@@ -454,54 +377,31 @@ const JobRequests = () => {
                 <p className="text-sm text-muted-foreground whitespace-pre-wrap">{selectedJob.job_special_requirements}</p>
               </div>
 
-              {selectedJob.job_category_names && selectedJob.job_category_names.length > 0 && (
-                <div>
+              {selectedJob.job_category_names && selectedJob.job_category_names.length > 0 && <div>
                   <h4 className="font-semibold mb-2">Categories</h4>
                   <div className="flex flex-wrap gap-2">
-                    {selectedJob.job_category_names.map((category, index) => (
-                      <Badge key={index} variant="secondary">{category}</Badge>
-                    ))}
+                    {selectedJob.job_category_names.map((category, index) => <Badge key={index} variant="secondary">{category}</Badge>)}
                   </div>
-                </div>
-              )}
+                </div>}
 
-              {selectedJob.job_tags_names && selectedJob.job_tags_names.length > 0 && (
-                <div>
+              {selectedJob.job_tags_names && selectedJob.job_tags_names.length > 0 && <div>
                   <h4 className="font-semibold mb-2">Tags</h4>
                   <div className="flex flex-wrap gap-2">
-                    {selectedJob.job_tags_names.map((tag, index) => (
-                      <Badge key={index} variant="outline">{tag}</Badge>
-                    ))}
+                    {selectedJob.job_tags_names.map((tag, index) => <Badge key={index} variant="outline">{tag}</Badge>)}
                   </div>
-                </div>
-              )}
+                </div>}
 
-              {selectedJob.job_documents_images && selectedJob.job_documents_images.length > 0 && (
-                <div>
+              {selectedJob.job_documents_images && selectedJob.job_documents_images.length > 0 && <div>
                   <h4 className="font-semibold mb-2">Documents/Images</h4>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {selectedJob.job_documents_images.map((url, index) => (
-                      <a
-                        key={index}
-                        href={url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="relative aspect-video rounded-lg overflow-hidden border hover:opacity-80 transition-opacity"
-                      >
-                        <img
-                          src={url}
-                          alt={`Document ${index + 1}`}
-                          className="w-full h-full object-cover"
-                        />
-                      </a>
-                    ))}
+                    {selectedJob.job_documents_images.map((url, index) => <a key={index} href={url} target="_blank" rel="noopener noreferrer" className="relative aspect-video rounded-lg overflow-hidden border hover:opacity-80 transition-opacity">
+                        <img src={url} alt={`Document ${index + 1}`} className="w-full h-full object-cover" />
+                      </a>)}
                   </div>
-                </div>
-              )}
+                </div>}
 
-              {selectedJob.user && (
-                <div className="border rounded-lg p-4 bg-muted/50">
-                  <h4 className="font-semibold mb-3">User Information</h4>
+              {selectedJob.user && <div className="border rounded-lg p-4 bg-muted/50">
+                  <h4 className="mb-3 font-bold">User Information</h4>
                   <div className="space-y-2 text-sm">
                     <div className="flex gap-2">
                       <span className="font-medium">Email:</span>
@@ -514,88 +414,58 @@ const JobRequests = () => {
                       </span>
                     </div>
                   </div>
-                </div>
-              )}
+                </div>}
 
-              {selectedJob.company_profile && (
-                <div className="border rounded-lg p-4 bg-muted/50">
-                  <h4 className="font-semibold mb-3">Company Information</h4>
+              {selectedJob.company_profile && <div className="border rounded-lg p-4 bg-muted/50">
+                  <h4 className="mb-3 font-bold">Company Information</h4>
                   <div className="space-y-3">
-                    {selectedJob.company_profile.company_profile_picture && (
-                      <div className="flex items-center gap-3">
-                        <img
-                          src={selectedJob.company_profile.company_profile_picture}
-                          alt={selectedJob.company_profile.company_name}
-                          className="w-16 h-16 rounded-lg object-cover"
-                        />
+                    {selectedJob.company_profile.company_profile_picture && <div className="flex items-center gap-3">
+                        <img src={selectedJob.company_profile.company_profile_picture} alt={selectedJob.company_profile.company_name} className="w-14 h-14 rounded-lg object-cover" />
                         <div>
                           <p className="font-medium">{selectedJob.company_profile.company_name}</p>
-                          <p className="text-xs text-muted-foreground">{selectedJob.company_profile.location}</p>
+                          <p className="text-xs text-muted-foreground font-medium my-[4px]">{selectedJob.company_profile.location}</p>
                         </div>
-                      </div>
-                    )}
+                      </div>}
                     <div className="space-y-2 text-sm">
                       <div>
                         <span className="font-medium">Type of Services:</span>
-                        <p className="text-muted-foreground mt-1">{selectedJob.company_profile.type_of_services}</p>
+                        <p className="text-muted-foreground mt-1 text-xs">{selectedJob.company_profile.type_of_services}</p>
                       </div>
-                      {selectedJob.company_profile.business_category && (
-                        <div>
+                      {selectedJob.company_profile.business_category && <div>
                           <span className="font-medium">Business Category:</span>
-                          <p className="text-muted-foreground mt-1">{selectedJob.company_profile.business_category}</p>
-                        </div>
-                      )}
-                      {selectedJob.company_profile.team_size && (
-                        <div>
+                          <p className="text-muted-foreground mt-1 text-xs">{selectedJob.company_profile.business_category}</p>
+                        </div>}
+                      {selectedJob.company_profile.team_size && <div>
                           <span className="font-medium">Team Size:</span>
-                          <p className="text-muted-foreground mt-1">{selectedJob.company_profile.team_size}</p>
-                        </div>
-                      )}
-                      {selectedJob.company_profile.description && (
-                        <div>
+                          <p className="text-muted-foreground mt-1 text-xs">{selectedJob.company_profile.team_size}</p>
+                        </div>}
+                      {selectedJob.company_profile.description && <div>
                           <span className="font-medium">Description:</span>
-                          <p className="text-muted-foreground mt-1">{selectedJob.company_profile.description}</p>
-                        </div>
-                      )}
+                          <p className="text-muted-foreground mt-1 text-xs">{selectedJob.company_profile.description}</p>
+                        </div>}
                     </div>
                   </div>
-                </div>
-              )}
+                </div>}
 
-              {selectedJob.status === "Rejected" && selectedJob.rejection_reason && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              {selectedJob.status === "Rejected" && selectedJob.rejection_reason && <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                   <h4 className="font-semibold text-red-800 mb-2">Rejection Reason</h4>
                   <p className="text-sm text-red-700">{selectedJob.rejection_reason}</p>
-                </div>
-              )}
+                </div>}
 
-              {selectedJob.status === "Pending" && (
-                <DialogFooter className="gap-2">
-                  <Button
-                    variant="outline"
-                    onClick={() => setIsDetailsOpen(false)}
-                  >
+              {selectedJob.status === "Pending" && <DialogFooter className="gap-2">
+                  <Button variant="outline" onClick={() => setIsDetailsOpen(false)}>
                     Close
                   </Button>
-                  <Button
-                    variant="destructive"
-                    onClick={handleRejectClick}
-                    disabled={rejectMutation.isPending}
-                  >
+                  <Button variant="destructive" onClick={handleRejectClick} disabled={rejectMutation.isPending}>
                     <XCircle className="h-4 w-4 mr-2" />
                     Reject
                   </Button>
-                  <Button
-                    onClick={handleApprove}
-                    disabled={approveMutation.isPending}
-                  >
+                  <Button onClick={handleApprove} disabled={approveMutation.isPending}>
                     <CheckCircle className="h-4 w-4 mr-2" />
                     Approve
                   </Button>
-                </DialogFooter>
-              )}
-            </div>
-          )}
+                </DialogFooter>}
+            </div>}
         </DialogContent>
       </Dialog>
 
@@ -611,38 +481,22 @@ const JobRequests = () => {
           <div className="space-y-4">
             <div>
               <Label htmlFor="rejection-reason">Rejection Reason</Label>
-              <Textarea
-                id="rejection-reason"
-                placeholder="Enter the reason for rejection..."
-                value={rejectionReason}
-                onChange={(e) => setRejectionReason(e.target.value)}
-                className="mt-2"
-                rows={4}
-              />
+              <Textarea id="rejection-reason" placeholder="Enter the reason for rejection..." value={rejectionReason} onChange={e => setRejectionReason(e.target.value)} className="mt-2" rows={4} />
             </div>
           </div>
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => {
-                setIsRejectDialogOpen(false);
-                setRejectionReason("");
-              }}
-            >
+            <Button variant="outline" onClick={() => {
+            setIsRejectDialogOpen(false);
+            setRejectionReason("");
+          }}>
               Cancel
             </Button>
-            <Button
-              variant="destructive"
-              onClick={handleRejectConfirm}
-              disabled={!rejectionReason.trim() || rejectMutation.isPending}
-            >
+            <Button variant="destructive" onClick={handleRejectConfirm} disabled={!rejectionReason.trim() || rejectMutation.isPending}>
               Confirm Rejection
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
-  );
+    </div>;
 };
-
 export default JobRequests;
