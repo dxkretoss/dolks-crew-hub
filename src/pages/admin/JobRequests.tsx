@@ -509,14 +509,18 @@ const JobRequests = () => {
                   </div>
                 </div>}
 
-              {selectedJob.job_documents_images && selectedJob.job_documents_images.length > 0 && <div>
-                  <h4 className="font-semibold mb-2">Documents/Images</h4>
+              <div>
+                <h4 className="font-semibold mb-2">Documents/Images</h4>
+                {selectedJob.job_documents_images && selectedJob.job_documents_images.length > 0 ? (
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     {selectedJob.job_documents_images.map((url, index) => <a key={index} href={url} target="_blank" rel="noopener noreferrer" className="relative aspect-video rounded-lg overflow-hidden border hover:opacity-80 transition-opacity">
                         <img src={url} alt={`Document ${index + 1}`} className="w-full h-full object-cover" />
                       </a>)}
                   </div>
-                </div>}
+                ) : (
+                  <p className="text-sm text-muted-foreground">No documents uploaded</p>
+                )}
+              </div>
 
               {selectedJob.user && <div className="border rounded-lg p-4 bg-muted/50">
                   <h4 className="mb-3 font-bold">User Information</h4>
