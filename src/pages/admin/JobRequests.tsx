@@ -48,10 +48,22 @@ const JobRequests = () => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [selectedJob, setSelectedJob] = useState<JobRequest | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [jobToDelete, setJobToDelete] = useState<string | null>(null);
+  const [editFormData, setEditFormData] = useState({
+    job_title: "",
+    job_short_description: "",
+    job_full_description: "",
+    job_urgency: "",
+    job_start_date: "",
+    job_complete_date: "",
+    job_location: "",
+    job_budget: "",
+    job_special_requirements: ""
+  });
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const queryClient = useQueryClient();
@@ -148,6 +160,31 @@ const JobRequests = () => {
       console.error(error);
     }
   });
+  const updateMutation = useMutation({
+    mutationFn: async ({ jobId, data }: { jobId: string; data: any }) => {
+      const { error } = await supabase
+        .from("job_requests")
+        .update(data)
+        .eq("id", jobId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["jobRequests"] });
+      toast({
+        title: "Job Updated",
+        description: "Job request has been updated successfully"
+      });
+      setIsEditDialogOpen(false);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to update job request",
+        variant: "destructive"
+      });
+      console.error(error);
+    }
+  });
   const deleteMutation = useMutation({
     mutationFn: async (jobId: string) => {
       const { error } = await supabase
@@ -185,6 +222,48 @@ const JobRequests = () => {
   const handleViewDetails = (job: JobRequest) => {
     setSelectedJob(job);
     setIsDetailsOpen(true);
+  };
+  const handleEditClick = (job: JobRequest) => {
+    setSelectedJob(job);
+    setEditFormData({
+      job_title: job.job_title,
+      job_short_description: job.job_short_description,
+      job_full_description: job.job_full_description,
+      job_urgency: job.job_urgency,
+      job_start_date: job.job_start_date,
+      job_complete_date: job.job_complete_date,
+      job_location: job.job_location,
+      job_budget: job.job_budget || "",
+      job_special_requirements: job.job_special_requirements
+    });
+    setIsEditDialogOpen(true);
+  };
+  const handleUpdateSubmit = () => {
+    if (!selectedJob) return;
+    
+    if (!editFormData.job_title.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Job title is required",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    updateMutation.mutate({
+      jobId: selectedJob.id,
+      data: {
+        job_title: editFormData.job_title.trim(),
+        job_short_description: editFormData.job_short_description.trim(),
+        job_full_description: editFormData.job_full_description.trim(),
+        job_urgency: editFormData.job_urgency,
+        job_start_date: editFormData.job_start_date,
+        job_complete_date: editFormData.job_complete_date,
+        job_location: editFormData.job_location.trim(),
+        job_budget: editFormData.job_budget.trim() || null,
+        job_special_requirements: editFormData.job_special_requirements.trim()
+      }
+    });
   };
   const handleApprove = () => {
     if (selectedJob) {
@@ -326,7 +405,7 @@ const JobRequests = () => {
                       <Button size="sm" variant="outline" onClick={() => handleViewDetails(job)}>
                         <Eye className="h-4 w-4" />
                       </Button>
-                      <Button size="sm" variant="outline" onClick={() => handleViewDetails(job)}>
+                      <Button size="sm" variant="outline" onClick={() => handleEditClick(job)}>
                         <Pencil className="h-4 w-4" />
                       </Button>
                       <Button size="sm" variant="destructive" onClick={() => handleDeleteClick(job.id)}>
@@ -497,6 +576,137 @@ const JobRequests = () => {
                   </Button>
                 </DialogFooter>}
             </div>}
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Job Request Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Job Request</DialogTitle>
+            <DialogDescription>
+              Update the job request details below
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="edit-title">Job Title *</Label>
+              <Input
+                id="edit-title"
+                value={editFormData.job_title}
+                onChange={(e) => setEditFormData({ ...editFormData, job_title: e.target.value })}
+                placeholder="Enter job title"
+                className="mt-2"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="edit-short-desc">Short Description *</Label>
+              <Input
+                id="edit-short-desc"
+                value={editFormData.job_short_description}
+                onChange={(e) => setEditFormData({ ...editFormData, job_short_description: e.target.value })}
+                placeholder="Enter short description"
+                className="mt-2"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="edit-full-desc">Full Description *</Label>
+              <Textarea
+                id="edit-full-desc"
+                value={editFormData.job_full_description}
+                onChange={(e) => setEditFormData({ ...editFormData, job_full_description: e.target.value })}
+                placeholder="Enter full description"
+                className="mt-2"
+                rows={4}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="edit-urgency">Urgency *</Label>
+                <Select value={editFormData.job_urgency} onValueChange={(value) => setEditFormData({ ...editFormData, job_urgency: value })}>
+                  <SelectTrigger id="edit-urgency" className="mt-2">
+                    <SelectValue placeholder="Select urgency" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Low">Low</SelectItem>
+                    <SelectItem value="Medium">Medium</SelectItem>
+                    <SelectItem value="High">High</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="edit-budget">Budget</Label>
+                <Input
+                  id="edit-budget"
+                  value={editFormData.job_budget}
+                  onChange={(e) => setEditFormData({ ...editFormData, job_budget: e.target.value })}
+                  placeholder="Enter budget"
+                  className="mt-2"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="edit-start-date">Start Date *</Label>
+                <Input
+                  id="edit-start-date"
+                  type="date"
+                  value={editFormData.job_start_date}
+                  onChange={(e) => setEditFormData({ ...editFormData, job_start_date: e.target.value })}
+                  className="mt-2"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="edit-complete-date">Complete Date *</Label>
+                <Input
+                  id="edit-complete-date"
+                  type="date"
+                  value={editFormData.job_complete_date}
+                  onChange={(e) => setEditFormData({ ...editFormData, job_complete_date: e.target.value })}
+                  className="mt-2"
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="edit-location">Location *</Label>
+              <Input
+                id="edit-location"
+                value={editFormData.job_location}
+                onChange={(e) => setEditFormData({ ...editFormData, job_location: e.target.value })}
+                placeholder="Enter location"
+                className="mt-2"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="edit-special-req">Special Requirements</Label>
+              <Textarea
+                id="edit-special-req"
+                value={editFormData.job_special_requirements}
+                onChange={(e) => setEditFormData({ ...editFormData, job_special_requirements: e.target.value })}
+                placeholder="Enter special requirements"
+                className="mt-2"
+                rows={3}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleUpdateSubmit} disabled={updateMutation.isPending}>
+              {updateMutation.isPending ? "Updating..." : "Update"}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
