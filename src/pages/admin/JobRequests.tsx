@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
-import { Eye, CheckCircle, XCircle, Search, Calendar, MapPin, DollarSign } from "lucide-react";
+import { Eye, CheckCircle, XCircle, Search, Calendar, MapPin, DollarSign, Pencil, Trash2 } from "lucide-react";
 import { format } from "date-fns";
 type JobRequest = {
   id: string;
@@ -49,6 +49,8 @@ const JobRequests = () => {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [jobToDelete, setJobToDelete] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   const queryClient = useQueryClient();
@@ -145,6 +147,32 @@ const JobRequests = () => {
       console.error(error);
     }
   });
+  const deleteMutation = useMutation({
+    mutationFn: async (jobId: string) => {
+      const { error } = await supabase
+        .from("job_requests")
+        .delete()
+        .eq("id", jobId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["jobRequests"] });
+      toast({
+        title: "Job Deleted",
+        description: "Job request has been deleted successfully"
+      });
+      setIsDeleteDialogOpen(false);
+      setJobToDelete(null);
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: "Failed to delete job request",
+        variant: "destructive"
+      });
+      console.error(error);
+    }
+  });
   const filteredJobs = jobRequests?.filter(job => {
     const matchesSearch = job.job_title.toLowerCase().includes(searchTerm.toLowerCase()) || job.job_short_description.toLowerCase().includes(searchTerm.toLowerCase()) || job.job_location.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === "all" || job.status.toLowerCase() === statusFilter.toLowerCase();
@@ -171,6 +199,15 @@ const JobRequests = () => {
         jobId: selectedJob.id,
         reason: rejectionReason
       });
+    }
+  };
+  const handleDeleteClick = (jobId: string) => {
+    setJobToDelete(jobId);
+    setIsDeleteDialogOpen(true);
+  };
+  const handleDeleteConfirm = () => {
+    if (jobToDelete) {
+      deleteMutation.mutate(jobToDelete);
     }
   };
   const getStatusBadge = (status: string) => {
@@ -257,6 +294,7 @@ const JobRequests = () => {
           <TableHeader>
             <TableRow>
               <TableHead>Job Title</TableHead>
+              <TableHead>Full Name</TableHead>
               <TableHead>Location</TableHead>
               <TableHead>Urgency</TableHead>
               <TableHead>Budget</TableHead>
@@ -271,6 +309,9 @@ const JobRequests = () => {
                     <div className="break-words">{job.job_title}</div>
                   </TableCell>
                   <TableCell className="max-w-[150px]">
+                    <div className="break-words text-sm">{job.user?.full_name || "N/A"}</div>
+                  </TableCell>
+                  <TableCell className="max-w-[150px]">
                     <div className="break-words text-sm text-muted-foreground">{job.job_location}</div>
                   </TableCell>
                   <TableCell>{getUrgencyBadge(job.job_urgency)}</TableCell>
@@ -280,13 +321,20 @@ const JobRequests = () => {
                     {format(new Date(job.created_at), "MMM dd, yyyy")}
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button variant="ghost" size="sm" onClick={() => handleViewDetails(job)}>
-                      <Eye className="h-4 w-4 mr-1" />
-                      View
-                    </Button>
+                    <div className="flex items-center justify-end gap-1">
+                      <Button variant="ghost" size="sm" onClick={() => handleViewDetails(job)}>
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => handleViewDetails(job)}>
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => handleDeleteClick(job.id)}>
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>) : <TableRow>
-                <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                   No job requests found
                 </TableCell>
               </TableRow>}
@@ -475,6 +523,29 @@ const JobRequests = () => {
             </Button>
             <Button variant="destructive" onClick={handleRejectConfirm} disabled={!rejectionReason.trim() || rejectMutation.isPending}>
               Confirm Rejection
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete Job Request</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this job request? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setIsDeleteDialogOpen(false);
+              setJobToDelete(null);
+            }}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteConfirm} disabled={deleteMutation.isPending}>
+              Delete
             </Button>
           </DialogFooter>
         </DialogContent>
