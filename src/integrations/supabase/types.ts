@@ -110,9 +110,13 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          latitude: string | null
+          links: string | null
           location: string
+          longitude: string | null
           tags: string | null
           tags_ids: string | null
+          team: string | null
           team_size: string | null
           type_of_services: string
           type_of_services_ids: string | null
@@ -128,9 +132,13 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          latitude?: string | null
+          links?: string | null
           location: string
+          longitude?: string | null
           tags?: string | null
           tags_ids?: string | null
+          team?: string | null
           team_size?: string | null
           type_of_services: string
           type_of_services_ids?: string | null
@@ -146,9 +154,13 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          latitude?: string | null
+          links?: string | null
           location?: string
+          longitude?: string | null
           tags?: string | null
           tags_ids?: string | null
+          team?: string | null
           team_size?: string | null
           type_of_services?: string
           type_of_services_ids?: string | null
