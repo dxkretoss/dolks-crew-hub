@@ -270,7 +270,10 @@ export type Database = {
       }
       events: {
         Row: {
+          category_id: string | null
+          cover_picture: string | null
           created_at: string
+          duration: string | null
           event_date: string
           event_time: string
           full_description: string
@@ -288,7 +291,10 @@ export type Database = {
           where_to_host: string | null
         }
         Insert: {
+          category_id?: string | null
+          cover_picture?: string | null
           created_at?: string
+          duration?: string | null
           event_date: string
           event_time: string
           full_description: string
@@ -306,7 +312,10 @@ export type Database = {
           where_to_host?: string | null
         }
         Update: {
+          category_id?: string | null
+          cover_picture?: string | null
           created_at?: string
+          duration?: string | null
           event_date?: string
           event_time?: string
           full_description?: string
@@ -323,7 +332,15 @@ export type Database = {
           user_id?: string
           where_to_host?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "events_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       hobbies: {
         Row: {
