@@ -29,7 +29,6 @@ interface Event {
   event_date: string;
   event_time: string;
   short_description: string;
-  type: string;
   full_description: string;
   link_to_dolk_profile: boolean;
   where_to_host: string | null;
@@ -117,7 +116,6 @@ export default function Events() {
     duration: "",
     short_description: "",
     category_id: "",
-    type: "",
     full_description: "",
     link_to_dolk_profile: false,
     where_to_host: "",
@@ -257,7 +255,7 @@ export default function Events() {
         duration: formData.duration.trim() || null,
         short_description: formData.short_description.trim(),
         category_id: formData.category_id || null,
-        type: formData.type.trim(),
+        type: "event", // Default type value
         full_description: formData.full_description.trim(),
         link_to_dolk_profile: formData.link_to_dolk_profile,
         where_to_host: formData.where_to_host || null,
@@ -495,7 +493,6 @@ export default function Events() {
       duration: event.duration || "",
       short_description: event.short_description,
       category_id: event.category_id || "",
-      type: event.type,
       full_description: event.full_description,
       link_to_dolk_profile: event.link_to_dolk_profile,
       where_to_host: event.where_to_host || "",
@@ -515,7 +512,6 @@ export default function Events() {
       duration: "",
       short_description: "",
       category_id: "",
-      type: "",
       full_description: "",
       link_to_dolk_profile: false,
       where_to_host: "",
@@ -556,8 +552,7 @@ export default function Events() {
   };
 
   const filteredEvents = events.filter(event =>
-    event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    event.type.toLowerCase().includes(searchTerm.toLowerCase())
+    event.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const totalPages = Math.ceil(filteredEvents.length / itemsPerPage);
@@ -792,18 +787,6 @@ export default function Events() {
                 </Select>
               </div>
 
-              {/* Type (kept for backward compatibility) */}
-              <div>
-                <Label htmlFor="type">Type *</Label>
-                <Input
-                  id="type"
-                  value={formData.type}
-                  onChange={e => setFormData({ ...formData, type: e.target.value })}
-                  placeholder="e.g., Workshop, Meetup, Conference"
-                  required
-                />
-              </div>
-
               {/* Full Description */}
               <div>
                 <Label htmlFor="full_description">Full Description *</Label>
@@ -911,7 +894,7 @@ export default function Events() {
                 />
               </div>
 
-              <div className="flex justify-end space-x-2">
+              <div className="flex justify-end space-x-2 pt-2">
                 <Button type="button" variant="outline" onClick={() => {
                   setIsDialogOpen(false);
                   resetForm();
@@ -1158,10 +1141,6 @@ export default function Events() {
                 <div>
                   <Label className="text-muted-foreground">Duration</Label>
                   <p className="font-medium">{eventDetailsDialog.event.duration || "N/A"}</p>
-                </div>
-                <div>
-                  <Label className="text-muted-foreground">Type</Label>
-                  <p className="font-medium">{eventDetailsDialog.event.type}</p>
                 </div>
                 <div>
                   <Label className="text-muted-foreground">Status</Label>
