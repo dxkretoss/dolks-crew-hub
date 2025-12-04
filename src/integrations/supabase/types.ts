@@ -730,6 +730,7 @@ export type Database = {
           category_id: string | null
           category_names: string | null
           created_at: string
+          documents: string | null
           full_description: string
           id: string
           link_to_dolks_profile: boolean
@@ -749,6 +750,7 @@ export type Database = {
           category_id?: string | null
           category_names?: string | null
           created_at?: string
+          documents?: string | null
           full_description: string
           id?: string
           link_to_dolks_profile?: boolean
@@ -768,6 +770,7 @@ export type Database = {
           category_id?: string | null
           category_names?: string | null
           created_at?: string
+          documents?: string | null
           full_description?: string
           id?: string
           link_to_dolks_profile?: boolean
