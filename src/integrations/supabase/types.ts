@@ -104,6 +104,7 @@ export type Database = {
         Row: {
           business_category: string | null
           business_category_id: string | null
+          company_banner_image: string | null
           company_name: string
           company_portfolio: string | null
           company_profile_picture: string | null
@@ -126,6 +127,7 @@ export type Database = {
         Insert: {
           business_category?: string | null
           business_category_id?: string | null
+          company_banner_image?: string | null
           company_name: string
           company_portfolio?: string | null
           company_profile_picture?: string | null
@@ -148,6 +150,7 @@ export type Database = {
         Update: {
           business_category?: string | null
           business_category_id?: string | null
+          company_banner_image?: string | null
           company_name?: string
           company_portfolio?: string | null
           company_profile_picture?: string | null
@@ -365,6 +368,8 @@ export type Database = {
       }
       job_requests: {
         Row: {
+          accepted_by_company: boolean | null
+          accepted_user_id: string | null
           created_at: string
           id: string
           job_budget: string | null
@@ -390,6 +395,8 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          accepted_by_company?: boolean | null
+          accepted_user_id?: string | null
           created_at?: string
           id?: string
           job_budget?: string | null
@@ -415,6 +422,8 @@ export type Database = {
           user_id: string
         }
         Update: {
+          accepted_by_company?: boolean | null
+          accepted_user_id?: string | null
           created_at?: string
           id?: string
           job_budget?: string | null
@@ -439,7 +448,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_job_requests_accepted_user"
+            columns: ["accepted_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
       }
       post_comments: {
         Row: {
