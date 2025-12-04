@@ -9,7 +9,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Edit, Check, X, Search, Users, Eye, Upload, Image as ImageIcon } from "lucide-react";
+import { Plus, Trash2, Edit, Check, X, Search, Users, Eye, Upload, Image as ImageIcon, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { z } from "zod";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -60,6 +60,7 @@ export default function Events() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [confirmDialog, setConfirmDialog] = useState<{
@@ -207,6 +208,7 @@ export default function Events() {
   };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitting(true);
     try {
       if (formData.meeting_url && formData.meeting_url.trim()) {
         const urlSchema = z.string().url({
@@ -299,6 +301,8 @@ export default function Events() {
         description: error.message,
         variant: "destructive"
       });
+    } finally {
+      setSubmitting(false);
     }
   };
   const uploadDocuments = async (eventId: string) => {
@@ -605,22 +609,14 @@ export default function Events() {
                   {coverPicturePreview ? (
                     <div className="relative w-full h-48 rounded-lg overflow-hidden border">
                       <img src={coverPicturePreview} alt="Cover preview" className="w-full h-full object-cover" />
-                      <div className="absolute top-2 right-2 flex gap-2">
-                        <label className="cursor-pointer">
-                          <Button type="button" variant="secondary" size="sm" asChild>
-                            <span>
-                              <Edit className="h-4 w-4" />
-                            </span>
-                          </Button>
-                          <input type="file" className="hidden" accept="image/*" onChange={handleCoverPictureChange} />
-                        </label>
-                        <Button type="button" variant="destructive" size="sm" onClick={() => {
-                          setCoverPictureFile(null);
-                          setCoverPicturePreview(null);
-                        }}>
-                          <Trash2 className="h-4 w-4" />
+                      <label className="absolute top-2 right-2 cursor-pointer">
+                        <Button type="button" variant="secondary" size="sm" asChild>
+                          <span>
+                            <Edit className="h-4 w-4 mr-1" /> Change
+                          </span>
                         </Button>
-                      </div>
+                        <input type="file" className="hidden" accept="image/*" onChange={handleCoverPictureChange} />
+                      </label>
                     </div>
                   ) : (
                     <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
@@ -774,13 +770,18 @@ export default function Events() {
 
               <div className="flex justify-end space-x-2">
                 <Button type="button" variant="outline" onClick={() => {
-                setIsDialogOpen(false);
-                resetForm();
-              }}>
+                  setIsDialogOpen(false);
+                  resetForm();
+                }} disabled={submitting}>
                   Cancel
                 </Button>
-                <Button type="submit" disabled={uploading}>
-                  {uploading ? "Uploading..." : editingEvent ? "Update" : "Create"}
+                <Button type="submit" disabled={submitting || uploading}>
+                  {submitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      {editingEvent ? "Updating..." : "Creating..."}
+                    </>
+                  ) : editingEvent ? "Update" : "Create"}
                 </Button>
               </div>
             </form>
