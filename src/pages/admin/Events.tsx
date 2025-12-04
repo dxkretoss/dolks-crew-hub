@@ -9,25 +9,17 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Edit, Check, X, Search, Users, Eye } from "lucide-react";
+import { Plus, Trash2, Edit, Check, X, Search, Users, Eye, Upload, Image as ImageIcon, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { z } from "zod";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 interface Event {
   id: string;
   title: string;
   event_date: string;
   event_time: string;
   short_description: string;
-  type: string;
   full_description: string;
   link_to_dolk_profile: boolean;
   where_to_host: string | null;
@@ -37,6 +29,9 @@ interface Event {
   is_allowed: boolean | null;
   user_id: string;
   created_at: string;
+  cover_picture: string | null;
+  duration: string | null;
+  category_id: string | null;
 }
 interface EventDocument {
   id: string;
@@ -50,6 +45,14 @@ interface InterestedUser {
   email: string;
   interest_type: string;
 }
+interface Category {
+  id: string;
+  name: string;
+}
+interface Tag {
+  id: string;
+  name: string;
+}
 export default function Events() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
@@ -57,6 +60,9 @@ export default function Events() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [tags, setTags] = useState<Tag[]>([]);
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean;
     type: 'delete' | 'approve' | 'reject' | null;
@@ -95,18 +101,23 @@ export default function Events() {
     title: "",
     event_date: "",
     event_time: "",
+    duration: "",
     short_description: "",
-    type: "",
+    category_id: "",
     full_description: "",
     link_to_dolk_profile: false,
     where_to_host: "",
     location: "",
     meeting_url: "",
-    tags: ""
+    tags: [] as string[]
   });
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
+  const [coverPictureFile, setCoverPictureFile] = useState<File | null>(null);
+  const [coverPicturePreview, setCoverPicturePreview] = useState<string | null>(null);
   useEffect(() => {
     fetchEvents();
+    fetchCategories();
+    fetchTags();
   }, []);
   const fetchEvents = async () => {
     try {
@@ -126,6 +137,30 @@ export default function Events() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+  const fetchCategories = async () => {
+    try {
+      const {
+        data,
+        error
+      } = await supabase.from("categories").select("id, name").order("name");
+      if (error) throw error;
+      setCategories(data || []);
+    } catch (error: any) {
+      console.error("Error fetching categories:", error.message);
+    }
+  };
+  const fetchTags = async () => {
+    try {
+      const {
+        data,
+        error
+      } = await supabase.from("tags").select("id, name").order("name");
+      if (error) throw error;
+      setTags(data || []);
+    } catch (error: any) {
+      console.error("Error fetching tags:", error.message);
     }
   };
   const handleApproval = async (isAllowed: boolean) => {
@@ -156,10 +191,25 @@ export default function Events() {
       });
     }
   };
+  const uploadCoverPicture = async (eventId: string): Promise<string | null> => {
+    if (!coverPictureFile) return null;
+    const fileExt = coverPictureFile.name.split(".").pop();
+    const fileName = `covers/${eventId}/${Date.now()}.${fileExt}`;
+    const {
+      error: uploadError
+    } = await supabase.storage.from("event-documents").upload(fileName, coverPictureFile);
+    if (uploadError) throw uploadError;
+    const {
+      data: {
+        publicUrl
+      }
+    } = supabase.storage.from("event-documents").getPublicUrl(fileName);
+    return publicUrl;
+  };
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setSubmitting(true);
     try {
-      // Validate meeting URL if provided
       if (formData.meeting_url && formData.meeting_url.trim()) {
         const urlSchema = z.string().url({
           message: "Invalid URL format"
@@ -180,24 +230,36 @@ export default function Events() {
         }
       } = await supabase.auth.getUser();
       if (!user) throw new Error("User not authenticated");
+
+      // Get tag names from selected tag IDs
+      const selectedTagNames = formData.tags.map(tagId => tags.find(t => t.id === tagId)?.name).filter(Boolean) as string[];
+      let coverPictureUrl = editingEvent?.cover_picture || null;
       const eventData = {
         title: formData.title.trim(),
         event_date: formData.event_date,
         event_time: formData.event_time,
+        duration: formData.duration.trim() || null,
         short_description: formData.short_description.trim(),
-        type: formData.type.trim(),
+        category_id: formData.category_id || null,
+        type: "event",
+        // Default type value
         full_description: formData.full_description.trim(),
         link_to_dolk_profile: formData.link_to_dolk_profile,
         where_to_host: formData.where_to_host || null,
         location: formData.location.trim() || null,
         meeting_url: formData.meeting_url.trim() || null,
-        tags: formData.tags ? formData.tags.split(",").map(t => t.trim()) : null,
+        tags: selectedTagNames.length > 0 ? selectedTagNames : null,
         user_id: user.id,
-        // For updates: require re-approval, for new: auto-approve
-        is_allowed: editingEvent ? null : true
+        is_allowed: editingEvent ? null : true,
+        cover_picture: coverPictureUrl
       };
       let eventId: string;
       if (editingEvent) {
+        // Upload cover picture if new one selected
+        if (coverPictureFile) {
+          coverPictureUrl = await uploadCoverPicture(editingEvent.id);
+          eventData.cover_picture = coverPictureUrl;
+        }
         const {
           error
         } = await supabase.from("events").update(eventData).eq("id", editingEvent.id);
@@ -214,13 +276,19 @@ export default function Events() {
         } = await supabase.from("events").insert([eventData]).select().single();
         if (error) throw error;
         eventId = data.id;
+
+        // Upload cover picture for new event
+        if (coverPictureFile) {
+          coverPictureUrl = await uploadCoverPicture(eventId);
+          await supabase.from("events").update({
+            cover_picture: coverPictureUrl
+          }).eq("id", eventId);
+        }
         toast({
           title: "Success",
           description: "Event created successfully"
         });
       }
-
-      // Upload documents if any
       if (selectedFiles && selectedFiles.length > 0) {
         await uploadDocuments(eventId);
       }
@@ -233,6 +301,8 @@ export default function Events() {
         description: error.message,
         variant: "destructive"
       });
+    } finally {
+      setSubmitting(false);
     }
   };
   const uploadDocuments = async (eventId: string) => {
@@ -313,7 +383,6 @@ export default function Events() {
   const fetchInterestedUsers = async (eventId: string) => {
     setLoadingUsers(true);
     try {
-      // Query event_interests and then fetch profiles separately
       const {
         data: interests,
         error: interestsError
@@ -324,15 +393,11 @@ export default function Events() {
         return;
       }
       const userIds = interests.map(i => i.user_id);
-
-      // Fetch profiles for these users
       const {
         data: profiles,
         error: profilesError
       } = await supabase.from("profiles").select("user_id, full_name, email").in("user_id", userIds);
       if (profilesError) throw profilesError;
-
-      // Merge interests with profiles
       const users = interests.map((interest: any) => {
         const profile = profiles.find((p: any) => p.user_id === interest.user_id);
         return {
@@ -389,19 +454,24 @@ export default function Events() {
   };
   const handleEdit = (event: Event) => {
     setEditingEvent(event);
+
+    // Find tag IDs from tag names
+    const tagIds = event.tags ? event.tags.map(tagName => tags.find(t => t.name === tagName)?.id).filter(Boolean) as string[] : [];
     setFormData({
       title: event.title,
       event_date: event.event_date,
       event_time: event.event_time,
+      duration: event.duration || "",
       short_description: event.short_description,
-      type: event.type,
+      category_id: event.category_id || "",
       full_description: event.full_description,
       link_to_dolk_profile: event.link_to_dolk_profile,
       where_to_host: event.where_to_host || "",
       location: event.location || "",
       meeting_url: event.meeting_url || "",
-      tags: event.tags ? event.tags.join(", ") : ""
+      tags: tagIds
     });
+    setCoverPicturePreview(event.cover_picture || null);
     setIsDialogOpen(true);
   };
   const resetForm = () => {
@@ -409,124 +479,103 @@ export default function Events() {
       title: "",
       event_date: "",
       event_time: "",
+      duration: "",
       short_description: "",
-      type: "",
+      category_id: "",
       full_description: "",
       link_to_dolk_profile: false,
       where_to_host: "",
       location: "",
       meeting_url: "",
-      tags: ""
+      tags: []
     });
     setEditingEvent(null);
     setSelectedFiles(null);
+    setCoverPictureFile(null);
+    setCoverPicturePreview(null);
   };
-  const filteredEvents = events.filter(event => event.title.toLowerCase().includes(searchTerm.toLowerCase()) || event.type.toLowerCase().includes(searchTerm.toLowerCase()));
-  
+  const handleCoverPictureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setCoverPictureFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setCoverPicturePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+  const handleTagToggle = (tagId: string) => {
+    setFormData(prev => ({
+      ...prev,
+      tags: prev.tags.includes(tagId) ? prev.tags.filter(id => id !== tagId) : [...prev.tags, tagId]
+    }));
+  };
+  const getCategoryName = (categoryId: string | null) => {
+    if (!categoryId) return "N/A";
+    return categories.find(c => c.id === categoryId)?.name || "N/A";
+  };
+  const filteredEvents = events.filter(event => event.title.toLowerCase().includes(searchTerm.toLowerCase()));
   const totalPages = Math.ceil(filteredEvents.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentEvents = filteredEvents.slice(startIndex, endIndex);
-
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
-
   const renderPaginationItems = () => {
     const items = [];
-    
     if (totalPages <= 4) {
       for (let i = 1; i <= totalPages; i++) {
-        items.push(
-          <PaginationItem key={i}>
-            <PaginationLink
-              onClick={() => handlePageChange(i)}
-              isActive={currentPage === i}
-            >
+        items.push(<PaginationItem key={i}>
+            <PaginationLink onClick={() => handlePageChange(i)} isActive={currentPage === i}>
               {i}
             </PaginationLink>
-          </PaginationItem>
-        );
+          </PaginationItem>);
       }
     } else {
-      items.push(
-        <PaginationItem key={1}>
-          <PaginationLink
-            onClick={() => handlePageChange(1)}
-            isActive={currentPage === 1}
-          >
+      items.push(<PaginationItem key={1}>
+          <PaginationLink onClick={() => handlePageChange(1)} isActive={currentPage === 1}>
             1
           </PaginationLink>
-        </PaginationItem>
-      );
-      
+        </PaginationItem>);
       if (currentPage <= 2) {
-        items.push(
-          <PaginationItem key={2}>
-            <PaginationLink
-              onClick={() => handlePageChange(2)}
-              isActive={currentPage === 2}
-            >
+        items.push(<PaginationItem key={2}>
+            <PaginationLink onClick={() => handlePageChange(2)} isActive={currentPage === 2}>
               2
             </PaginationLink>
-          </PaginationItem>
-        );
+          </PaginationItem>);
       }
-      
       if (currentPage > 2 && currentPage < totalPages - 1) {
-        items.push(
-          <PaginationItem key="ellipsis-1">
+        items.push(<PaginationItem key="ellipsis-1">
             <PaginationEllipsis />
-          </PaginationItem>
-        );
-        items.push(
-          <PaginationItem key={currentPage}>
-            <PaginationLink
-              onClick={() => handlePageChange(currentPage)}
-              isActive={true}
-            >
+          </PaginationItem>);
+        items.push(<PaginationItem key={currentPage}>
+            <PaginationLink onClick={() => handlePageChange(currentPage)} isActive={true}>
               {currentPage}
             </PaginationLink>
-          </PaginationItem>
-        );
+          </PaginationItem>);
       }
-      
       if (currentPage < totalPages - 1) {
-        items.push(
-          <PaginationItem key="ellipsis-2">
+        items.push(<PaginationItem key="ellipsis-2">
             <PaginationEllipsis />
-          </PaginationItem>
-        );
+          </PaginationItem>);
       }
-      
       if (currentPage >= totalPages - 1) {
-        items.push(
-          <PaginationItem key={totalPages - 1}>
-            <PaginationLink
-              onClick={() => handlePageChange(totalPages - 1)}
-              isActive={currentPage === totalPages - 1}
-            >
+        items.push(<PaginationItem key={totalPages - 1}>
+            <PaginationLink onClick={() => handlePageChange(totalPages - 1)} isActive={currentPage === totalPages - 1}>
               {totalPages - 1}
             </PaginationLink>
-          </PaginationItem>
-        );
+          </PaginationItem>);
       }
-      
-      items.push(
-        <PaginationItem key={totalPages}>
-          <PaginationLink
-            onClick={() => handlePageChange(totalPages)}
-            isActive={currentPage === totalPages}
-          >
+      items.push(<PaginationItem key={totalPages}>
+          <PaginationLink onClick={() => handlePageChange(totalPages)} isActive={currentPage === totalPages}>
             {totalPages}
           </PaginationLink>
-        </PaginationItem>
-      );
+        </PaginationItem>);
     }
-    
     return items;
   };
-  
   const getApprovalBadge = (isAllowed: boolean | null) => {
     if (isAllowed === null) return <span className="text-yellow-500">Pending</span>;
     if (isAllowed) return <span className="text-green-500">Approved</span>;
@@ -536,9 +585,7 @@ export default function Events() {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-bold">Events Management</h1>
-          <p className="text-muted-foreground">
-            Manage and approve crew events
-          </p>
+          <p className="text-muted-foreground">Manage and approve crew events</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={open => {
         setIsDialogOpen(open);
@@ -555,55 +602,107 @@ export default function Events() {
               <DialogTitle>{editingEvent ? "Edit Event" : "Add New Event"}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Cover Picture */}
               <div>
-                <Label htmlFor="title">Title *</Label>
+                <Label>Cover Picture</Label>
+                <div className="mt-2">
+                  {coverPicturePreview ? (
+                    <div className="relative w-full h-48 rounded-lg overflow-hidden border">
+                      <img src={coverPicturePreview} alt="Cover preview" className="w-full h-full object-cover" />
+                      <label className="absolute top-2 right-2 cursor-pointer">
+                        <Button type="button" variant="secondary" size="sm" asChild>
+                          <span>
+                            <Edit className="h-4 w-4 mr-1" /> Change
+                          </span>
+                        </Button>
+                        <input type="file" className="hidden" accept="image/*" onChange={handleCoverPictureChange} />
+                      </label>
+                    </div>
+                  ) : (
+                    <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
+                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                        <ImageIcon className="w-10 h-10 mb-3 text-muted-foreground" />
+                        <p className="mb-2 text-sm text-muted-foreground">
+                          Click to upload cover picture
+                        </p>
+                      </div>
+                      <input type="file" className="hidden" accept="image/*" onChange={handleCoverPictureChange} />
+                    </label>
+                  )}
+                </div>
+              </div>
+
+              {/* Event Title */}
+              <div>
+                <Label htmlFor="title">Event Title *</Label>
                 <Input id="title" value={formData.title} onChange={e => setFormData({
                 ...formData,
                 title: e.target.value
-              })} required />
+              })} required className="my-[4px]" />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              {/* Date, Time, Duration */}
+              <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <Label htmlFor="event_date">Date *</Label>
+                  <Label htmlFor="event_date">Event Date *</Label>
                   <Input id="event_date" type="date" value={formData.event_date} onChange={e => setFormData({
                   ...formData,
                   event_date: e.target.value
-                })} required />
+                })} required className="my-[5px]" />
                 </div>
                 <div>
-                  <Label htmlFor="event_time">Time *</Label>
+                  <Label htmlFor="event_time">Event Time *</Label>
                   <Input id="event_time" type="time" value={formData.event_time} onChange={e => setFormData({
                   ...formData,
                   event_time: e.target.value
-                })} required />
+                })} required className="my-[5px]" />
+                </div>
+                <div>
+                  <Label htmlFor="duration">Duration</Label>
+                  <Input id="duration" value={formData.duration} onChange={e => setFormData({
+                  ...formData,
+                  duration: e.target.value
+                })} placeholder="e.g., 2 hours" className="my-[5px]" />
                 </div>
               </div>
 
-              <div>
-                <Label htmlFor="type">Type *</Label>
-                <Input id="type" value={formData.type} onChange={e => setFormData({
-                ...formData,
-                type: e.target.value
-              })} placeholder="e.g., Workshop, Meetup, Conference" required />
-              </div>
-
+              {/* Short Description */}
               <div>
                 <Label htmlFor="short_description">Short Description *</Label>
                 <Textarea id="short_description" value={formData.short_description} onChange={e => setFormData({
                 ...formData,
                 short_description: e.target.value
-              })} required />
+              })} required className="my-[5px]" />
               </div>
 
+              {/* Category */}
+              <div>
+                <Label htmlFor="category_id">Category</Label>
+                <Select value={formData.category_id} onValueChange={value => setFormData({
+                ...formData,
+                category_id: value
+              })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map(category => <SelectItem key={category.id} value={category.id}>
+                        {category.name}
+                      </SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Full Description */}
               <div>
                 <Label htmlFor="full_description">Full Description *</Label>
                 <Textarea id="full_description" value={formData.full_description} onChange={e => setFormData({
                 ...formData,
                 full_description: e.target.value
-              })} rows={5} required />
+              })} rows={5} required className="my-[5px]" />
               </div>
 
+              {/* Where to Host */}
               <div>
                 <Label htmlFor="where_to_host">Where to Host</Label>
                 <Select value={formData.where_to_host} onValueChange={value => setFormData({
@@ -620,6 +719,7 @@ export default function Events() {
                 </Select>
               </div>
 
+              {/* Location (for in-person) */}
               {formData.where_to_host === "in-person" && <div>
                   <Label htmlFor="location">Location *</Label>
                   <Input id="location" value={formData.location} onChange={e => setFormData({
@@ -628,6 +728,7 @@ export default function Events() {
               })} placeholder="Enter event location" required />
                 </div>}
 
+              {/* Meeting URL (for online) */}
               {formData.where_to_host === "online" && <div>
                   <Label htmlFor="meeting_url">Meeting URL</Label>
                   <Input id="meeting_url" type="url" value={formData.meeting_url} onChange={e => setFormData({
@@ -636,38 +737,51 @@ export default function Events() {
               })} placeholder="https://zoom.us/j/... or https://meet.google.com/..." />
                 </div>}
 
+              {/* Tags */}
               <div>
-                <Label htmlFor="tags">Tags (comma-separated)</Label>
-                <Input id="tags" value={formData.tags} onChange={e => setFormData({
-                ...formData,
-                tags: e.target.value
-              })} placeholder="e.g., networking, tech, social" />
+                <Label>Tags</Label>
+                <div className="mt-2 flex flex-wrap gap-2 p-3 border rounded-lg max-h-32 overflow-y-auto">
+                  {tags.length === 0 ? <p className="text-sm text-muted-foreground">No tags available</p> : tags.map(tag => <div key={tag.id} className="flex items-center space-x-2">
+                        <Checkbox id={`tag-${tag.id}`} checked={formData.tags.includes(tag.id)} onCheckedChange={() => handleTagToggle(tag.id)} />
+                        <label htmlFor={`tag-${tag.id}`} className="text-sm cursor-pointer">
+                          {tag.name}
+                        </label>
+                      </div>)}
+                </div>
               </div>
 
+              {/* Show Personal Details */}
               <div className="flex items-center space-x-2">
-                <input type="checkbox" id="link_to_dolk_profile" checked={formData.link_to_dolk_profile} onChange={e => setFormData({
+                <Checkbox id="link_to_dolk_profile" checked={formData.link_to_dolk_profile} onCheckedChange={checked => setFormData({
                 ...formData,
-                link_to_dolk_profile: e.target.checked
-              })} className="h-4 w-4" />
-                <Label htmlFor="link_to_dolk_profile">
-                  Link to DOLK Profile
-                </Label>
+                link_to_dolk_profile: checked as boolean
+              })} />
+                <Label htmlFor="link_to_dolk_profile">Show Personal Details</Label>
               </div>
 
+              {/* Documents Upload */}
               <div>
-                <Label htmlFor="documents">Upload Documents/Images</Label>
-                <Input id="documents" type="file" multiple accept="image/*" onChange={e => setSelectedFiles(e.target.files)} />
+                <Label htmlFor="documents">Documents/Images (Multiple)</Label>
+                <Input id="documents" type="file" multiple accept="image/*,.pdf,.doc,.docx" onChange={e => setSelectedFiles(e.target.files)} className="mt-1" />
+                {selectedFiles && selectedFiles.length > 0 && (
+                  <p className="text-sm text-muted-foreground mt-1">{selectedFiles.length} file(s) selected</p>
+                )}
               </div>
 
               <div className="flex justify-end space-x-2">
                 <Button type="button" variant="outline" onClick={() => {
-                setIsDialogOpen(false);
-                resetForm();
-              }}>
+                  setIsDialogOpen(false);
+                  resetForm();
+                }} disabled={submitting}>
                   Cancel
                 </Button>
-                <Button type="submit" disabled={uploading}>
-                  {uploading ? "Uploading..." : editingEvent ? "Update" : "Create"}
+                <Button type="submit" disabled={submitting || uploading}>
+                  {submitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      {editingEvent ? "Updating..." : "Creating..."}
+                    </>
+                  ) : editingEvent ? "Update" : "Create"}
                 </Button>
               </div>
             </form>
@@ -683,14 +797,12 @@ export default function Events() {
       </div>
 
       <div className="border rounded-lg bg-white">
-        {loading ? <div className="p-8 text-center">Loading events...</div> : filteredEvents.length === 0 ? <div className="p-8 text-center text-muted-foreground">
-            No Events Found
-          </div> : <div className="overflow-x-auto">
+        {loading ? <div className="p-8 text-center">Loading events...</div> : filteredEvents.length === 0 ? <div className="p-8 text-center text-muted-foreground">No Events Found</div> : <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Title</TableHead>
-                  <TableHead>Type</TableHead>
+                  <TableHead>Category</TableHead>
                   <TableHead>Date & Time</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Interested</TableHead>
@@ -700,10 +812,9 @@ export default function Events() {
               <TableBody>
                 {currentEvents.map(event => <TableRow key={event.id} className="border-b">
                     <TableCell className="font-medium">{event.title}</TableCell>
-                    <TableCell>{event.type}</TableCell>
+                    <TableCell>{getCategoryName(event.category_id)}</TableCell>
                     <TableCell>
-                      {format(new Date(event.event_date), "MMM dd, yyyy")} at{" "}
-                      {event.event_time}
+                      {format(new Date(event.event_date), "MMM dd, yyyy")} at {event.event_time}
                     </TableCell>
                     <TableCell>{getApprovalBadge(event.is_allowed)}</TableCell>
                     <TableCell>
@@ -750,28 +861,21 @@ export default function Events() {
           </div>}
       </div>
 
-      {!loading && filteredEvents.length > itemsPerPage && (
-        <div className="mt-4">
+      {!loading && filteredEvents.length > itemsPerPage && <div className="mt-4">
           <Pagination>
             <PaginationContent>
               <PaginationItem>
-                <PaginationPrevious
-                  onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)}
-                  className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                />
+                <PaginationPrevious onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)} className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"} />
               </PaginationItem>
               {renderPaginationItems()}
               <PaginationItem>
-                <PaginationNext
-                  onClick={() => currentPage < totalPages && handlePageChange(currentPage + 1)}
-                  className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                />
+                <PaginationNext onClick={() => currentPage < totalPages && handlePageChange(currentPage + 1)} className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"} />
               </PaginationItem>
             </PaginationContent>
           </Pagination>
-        </div>
-      )}
+        </div>}
 
+      {/* Confirm Dialog */}
       <AlertDialog open={confirmDialog.open} onOpenChange={open => !open && setConfirmDialog({
       open: false,
       type: null,
@@ -801,6 +905,7 @@ export default function Events() {
         </AlertDialogContent>
       </AlertDialog>
 
+      {/* Interested Users Dialog */}
       <Dialog open={interestedUsersDialog.open} onOpenChange={open => !open && setInterestedUsersDialog({
       open: false,
       eventId: null,
@@ -839,6 +944,7 @@ export default function Events() {
         </DialogContent>
       </Dialog>
 
+      {/* Event Details Dialog */}
       <Dialog open={eventDetailsDialog.open} onOpenChange={open => !open && setEventDetailsDialog({
       open: false,
       event: null
@@ -848,24 +954,36 @@ export default function Events() {
             <DialogTitle>Event Details</DialogTitle>
           </DialogHeader>
           {eventDetailsDialog.event && <div className="space-y-6">
+              {/* Cover Picture */}
+              {eventDetailsDialog.event.cover_picture && <div>
+                  <Label className="text-muted-foreground">Cover Picture</Label>
+                  <div className="mt-2 w-full h-48 rounded-lg overflow-hidden border">
+                    <img src={eventDetailsDialog.event.cover_picture} alt="Event cover" className="w-full h-full object-cover" />
+                  </div>
+                </div>}
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-muted-foreground">Title</Label>
+                  <Label className="text-muted-foreground">Event Title</Label>
                   <p className="font-medium">{eventDetailsDialog.event.title}</p>
                 </div>
                 <div>
-                  <Label className="text-muted-foreground">Type</Label>
-                  <p className="font-medium">{eventDetailsDialog.event.type}</p>
+                  <Label className="text-muted-foreground">Category</Label>
+                  <p className="font-medium">{getCategoryName(eventDetailsDialog.event.category_id)}</p>
                 </div>
                 <div>
-                  <Label className="text-muted-foreground">Date</Label>
+                  <Label className="text-muted-foreground">Event Date</Label>
                   <p className="font-medium">
                     {format(new Date(eventDetailsDialog.event.event_date), "MMM dd, yyyy")}
                   </p>
                 </div>
                 <div>
-                  <Label className="text-muted-foreground">Time</Label>
+                  <Label className="text-muted-foreground">Event Time</Label>
                   <p className="font-medium">{eventDetailsDialog.event.event_time}</p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Duration</Label>
+                  <p className="font-medium">{eventDetailsDialog.event.duration || "N/A"}</p>
                 </div>
                 <div>
                   <Label className="text-muted-foreground">Status</Label>
@@ -874,6 +992,10 @@ export default function Events() {
                 <div>
                   <Label className="text-muted-foreground">Where to Host</Label>
                   <p className="font-medium capitalize">{eventDetailsDialog.event.where_to_host || "N/A"}</p>
+                </div>
+                <div>
+                  <Label className="text-muted-foreground">Show Personal Details</Label>
+                  <p className="font-medium">{eventDetailsDialog.event.link_to_dolk_profile ? "Yes" : "No"}</p>
                 </div>
               </div>
 
@@ -902,30 +1024,23 @@ export default function Events() {
               {eventDetailsDialog.event.tags && eventDetailsDialog.event.tags.length > 0 && <div>
                   <Label className="text-muted-foreground">Tags</Label>
                   <div className="flex flex-wrap gap-2 mt-2">
-                    {eventDetailsDialog.event.tags.map((tag, index) => <span key={index} className="px-3 py-1 bg-primary/10 text-primary rounded-full text-sm">
+                    {eventDetailsDialog.event.tags.map((tag, index) => <span key={index} className="px-2 py-1 bg-secondary text-secondary-foreground rounded-full text-sm">
                         {tag}
                       </span>)}
                   </div>
                 </div>}
 
               <div>
-                <Label className="text-muted-foreground">Link to DOLK Profile</Label>
-                <p className="font-medium">{eventDetailsDialog.event.link_to_dolk_profile ? "Yes" : "No"}</p>
-              </div>
-
-              <div>
-                <Label className="text-muted-foreground">Uploaded Documents</Label>
-                {loadingDocuments ? <div className="p-4 text-center">Loading documents...</div> : eventDocuments.length === 0 ? <p className="text-muted-foreground">No documents uploaded</p> : <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-2">
-                    {eventDocuments.map(doc => <a key={doc.id} href={doc.document_url} target="_blank" rel="noopener noreferrer" className="border rounded-lg p-4 hover:bg-accent transition-colors">
-                        {doc.document_type.startsWith('image/') ? <img src={doc.document_url} alt="Event document" className="w-full h-32 object-cover rounded" /> : <div className="w-full h-32 flex items-center justify-center bg-muted rounded">
-                            <span className="text-sm text-muted-foreground">Document</span>
+                <Label className="text-muted-foreground">Documents</Label>
+                {loadingDocuments ? <div className="p-4 text-center text-muted-foreground">Loading documents...</div> : eventDocuments.length === 0 ? <p className="text-muted-foreground mt-2">No documents uploaded</p> : <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-2">
+                    {eventDocuments.map(doc => <a key={doc.id} href={doc.document_url} target="_blank" rel="noopener noreferrer" className="relative aspect-video rounded-lg overflow-hidden border hover:opacity-80 transition-opacity">
+                        {doc.document_type.startsWith("image/") ? <img src={doc.document_url} alt="Event document" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center bg-muted">
+                            <span className="text-sm text-muted-foreground">
+                              {doc.document_type.split("/")[1]?.toUpperCase() || "DOC"}
+                            </span>
                           </div>}
                       </a>)}
                   </div>}
-              </div>
-
-              <div className="text-sm text-muted-foreground">
-                <p>Created: {format(new Date(eventDetailsDialog.event.created_at), "MMM dd, yyyy 'at' hh:mm a")}</p>
               </div>
             </div>}
         </DialogContent>
