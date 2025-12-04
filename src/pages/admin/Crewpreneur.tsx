@@ -212,7 +212,23 @@ const Crewpreneur = () => {
   };
 
   const isImageUrl = (url: string) => {
-    return /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(url);
+    // Check for image extensions anywhere in the URL (handles query params)
+    return /\.(jpg|jpeg|png|gif|webp|svg|heic)/i.test(url);
+  };
+
+  const isDocumentUrl = (url: string) => {
+    // Check for document extensions anywhere in the URL
+    return /\.(pdf|doc|docx|xls|xlsx|ppt|pptx|txt|csv)/i.test(url);
+  };
+
+  const getDocumentName = (url: string) => {
+    try {
+      const pathname = new URL(url).pathname;
+      const filename = pathname.split('/').pop() || 'Document';
+      return decodeURIComponent(filename);
+    } catch {
+      return 'Document';
+    }
   };
 
   const renderPageNumbers = () => {
@@ -452,17 +468,22 @@ const Crewpreneur = () => {
               {/* Project Documents */}
               <div>
                 <h4 className="font-semibold mb-2">Project Documents</h4>
-                {viewingProject.visuals && viewingProject.visuals.filter((url) => !isImageUrl(url)).length > 0 ? (
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {viewingProject.visuals.filter((url) => !isImageUrl(url)).map((url, index) => (
+                {viewingProject.visuals && viewingProject.visuals.filter((url) => isDocumentUrl(url)).length > 0 ? (
+                  <div className="space-y-2">
+                    {viewingProject.visuals.filter((url) => isDocumentUrl(url)).map((url, index) => (
                       <a
                         key={index}
                         href={url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center justify-center h-24 bg-muted rounded-lg border hover:bg-muted/80 transition-colors"
+                        className="flex items-center gap-3 p-3 bg-muted rounded-lg border hover:bg-muted/80 transition-colors"
                       >
-                        <span className="text-sm text-muted-foreground">Document {index + 1}</span>
+                        <div className="flex-shrink-0 w-10 h-10 bg-primary/10 rounded flex items-center justify-center">
+                          <span className="text-xs font-medium text-primary">
+                            {url.match(/\.(pdf|doc|docx|xls|xlsx|ppt|pptx|txt|csv)/i)?.[1]?.toUpperCase() || 'DOC'}
+                          </span>
+                        </div>
+                        <span className="text-sm truncate">{getDocumentName(url)}</span>
                       </a>
                     ))}
                   </div>
