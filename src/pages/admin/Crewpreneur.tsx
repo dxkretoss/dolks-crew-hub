@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Search, Eye, Trash2, CheckCircle, XCircle, Loader2 } from "lucide-react";
+import { Search, Eye, Trash2, CheckCircle, XCircle, Loader2, Download } from "lucide-react";
 import { format } from "date-fns";
 
 interface Project {
@@ -484,20 +484,35 @@ const Crewpreneur = () => {
                   return docUrls.length > 0 ? (
                     <div className="space-y-2">
                       {docUrls.map((url, index) => (
-                        <a
+                        <div
                           key={index}
-                          href={url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-3 p-3 bg-muted rounded-lg border hover:bg-muted/80 transition-colors"
+                          className="flex items-center justify-between gap-3 p-3 bg-muted rounded-lg border"
                         >
-                          <div className="flex-shrink-0 w-10 h-10 bg-primary/10 rounded flex items-center justify-center">
-                            <span className="text-xs font-medium text-primary">
-                              {url.match(/\.(pdf|doc|docx|xls|xlsx|ppt|pptx|txt|csv)/i)?.[1]?.toUpperCase() || 'DOC'}
-                            </span>
+                          <div className="flex items-center gap-3 min-w-0">
+                            <div className="flex-shrink-0 w-10 h-10 bg-primary/10 rounded flex items-center justify-center">
+                              <span className="text-xs font-medium text-primary">
+                                {url.match(/\.(pdf|doc|docx|xls|xlsx|ppt|pptx|txt|csv)/i)?.[1]?.toUpperCase() || 'DOC'}
+                              </span>
+                            </div>
+                            <span className="text-sm truncate">{getDocumentName(url)}</span>
                           </div>
-                          <span className="text-sm truncate">{getDocumentName(url)}</span>
-                        </a>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              const link = document.createElement('a');
+                              link.href = url;
+                              link.download = getDocumentName(url);
+                              link.target = '_blank';
+                              document.body.appendChild(link);
+                              link.click();
+                              document.body.removeChild(link);
+                            }}
+                          >
+                            <Download className="h-4 w-4 mr-1" />
+                            Download
+                          </Button>
+                        </div>
                       ))}
                     </div>
                   ) : (
