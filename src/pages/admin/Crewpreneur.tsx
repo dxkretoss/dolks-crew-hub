@@ -59,17 +59,44 @@ const Crewpreneur = () => {
   const { data: projects = [], isLoading } = useQuery({
     queryKey: ["crewpreneur-projects"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // First fetch projects
+      const { data: projectsData, error: projectsError } = await supabase
         .from("projects")
-        .select(`
-          *,
-          profiles!fk_projects_user_id (full_name, email),
-          categories (name)
-        `)
+        .select("*")
         .order("created_at", { ascending: false });
 
-      if (error) throw error;
-      return data as Project[];
+      if (projectsError) throw projectsError;
+
+      // Then fetch profiles for each project
+      const projectsWithDetails = await Promise.all(
+        (projectsData || []).map(async (project) => {
+          // Fetch profile by matching profiles.id to project.user_id
+          const { data: profileData } = await supabase
+            .from("profiles")
+            .select("full_name, email")
+            .eq("id", project.user_id)
+            .maybeSingle();
+
+          // Fetch category if exists
+          let categoryData = null;
+          if (project.category_id) {
+            const { data: catData } = await supabase
+              .from("categories")
+              .select("name")
+              .eq("id", project.category_id)
+              .maybeSingle();
+            categoryData = catData;
+          }
+
+          return {
+            ...project,
+            profiles: profileData,
+            categories: categoryData,
+          };
+        })
+      );
+
+      return projectsWithDetails as Project[];
     },
   });
 

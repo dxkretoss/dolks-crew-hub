@@ -728,6 +728,7 @@ export type Database = {
       projects: {
         Row: {
           category_id: string | null
+          category_names: string | null
           created_at: string
           full_description: string
           id: string
@@ -736,6 +737,7 @@ export type Database = {
           short_description: string
           status: string
           tags: string[] | null
+          tags_ids: string | null
           title: string
           type: string
           updated_at: string
@@ -745,6 +747,7 @@ export type Database = {
         }
         Insert: {
           category_id?: string | null
+          category_names?: string | null
           created_at?: string
           full_description: string
           id?: string
@@ -753,6 +756,7 @@ export type Database = {
           short_description: string
           status?: string
           tags?: string[] | null
+          tags_ids?: string | null
           title: string
           type: string
           updated_at?: string
@@ -762,6 +766,7 @@ export type Database = {
         }
         Update: {
           category_id?: string | null
+          category_names?: string | null
           created_at?: string
           full_description?: string
           id?: string
@@ -770,6 +775,7 @@ export type Database = {
           short_description?: string
           status?: string
           tags?: string[] | null
+          tags_ids?: string | null
           title?: string
           type?: string
           updated_at?: string
@@ -783,13 +789,6 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "projects_category_id_fkey"
-            columns: ["category_id"]
-            isOneToOne: false
-            referencedRelation: "categories"
             referencedColumns: ["id"]
           },
         ]
