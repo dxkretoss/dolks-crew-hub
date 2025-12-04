@@ -22,6 +22,7 @@ interface Project {
   full_description: string;
   type: string;
   visuals: string[] | null;
+  documents: string | null;
   tags: string[] | null;
   link_to_dolks_profile: boolean;
   what_looking_for: string | null;
@@ -468,28 +469,41 @@ const Crewpreneur = () => {
               {/* Project Documents */}
               <div>
                 <h4 className="font-semibold mb-2">Project Documents</h4>
-                {viewingProject.visuals && viewingProject.visuals.filter((url) => isDocumentUrl(url)).length > 0 ? (
-                  <div className="space-y-2">
-                    {viewingProject.visuals.filter((url) => isDocumentUrl(url)).map((url, index) => (
-                      <a
-                        key={index}
-                        href={url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-3 p-3 bg-muted rounded-lg border hover:bg-muted/80 transition-colors"
-                      >
-                        <div className="flex-shrink-0 w-10 h-10 bg-primary/10 rounded flex items-center justify-center">
-                          <span className="text-xs font-medium text-primary">
-                            {url.match(/\.(pdf|doc|docx|xls|xlsx|ppt|pptx|txt|csv)/i)?.[1]?.toUpperCase() || 'DOC'}
-                          </span>
-                        </div>
-                        <span className="text-sm truncate">{getDocumentName(url)}</span>
-                      </a>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground">No documents uploaded</p>
-                )}
+                {(() => {
+                  // Parse documents - could be JSON array string or single URL
+                  let docUrls: string[] = [];
+                  if (viewingProject.documents) {
+                    try {
+                      const parsed = JSON.parse(viewingProject.documents);
+                      docUrls = Array.isArray(parsed) ? parsed : [viewingProject.documents];
+                    } catch {
+                      docUrls = [viewingProject.documents];
+                    }
+                  }
+                  
+                  return docUrls.length > 0 ? (
+                    <div className="space-y-2">
+                      {docUrls.map((url, index) => (
+                        <a
+                          key={index}
+                          href={url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-3 p-3 bg-muted rounded-lg border hover:bg-muted/80 transition-colors"
+                        >
+                          <div className="flex-shrink-0 w-10 h-10 bg-primary/10 rounded flex items-center justify-center">
+                            <span className="text-xs font-medium text-primary">
+                              {url.match(/\.(pdf|doc|docx|xls|xlsx|ppt|pptx|txt|csv)/i)?.[1]?.toUpperCase() || 'DOC'}
+                            </span>
+                          </div>
+                          <span className="text-sm truncate">{getDocumentName(url)}</span>
+                        </a>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">No documents uploaded</p>
+                  );
+                })()}
               </div>
 
               {viewingProject.status === "Rejected" && viewingProject.rejection_reason && (
