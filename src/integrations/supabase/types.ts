@@ -727,11 +727,14 @@ export type Database = {
       }
       projects: {
         Row: {
+          category_id: string | null
           created_at: string
           full_description: string
           id: string
           link_to_dolks_profile: boolean
+          rejection_reason: string | null
           short_description: string
+          status: string
           tags: string[] | null
           title: string
           type: string
@@ -741,11 +744,14 @@ export type Database = {
           what_looking_for: string | null
         }
         Insert: {
+          category_id?: string | null
           created_at?: string
           full_description: string
           id?: string
           link_to_dolks_profile?: boolean
+          rejection_reason?: string | null
           short_description: string
+          status?: string
           tags?: string[] | null
           title: string
           type: string
@@ -755,11 +761,14 @@ export type Database = {
           what_looking_for?: string | null
         }
         Update: {
+          category_id?: string | null
           created_at?: string
           full_description?: string
           id?: string
           link_to_dolks_profile?: boolean
+          rejection_reason?: string | null
           short_description?: string
+          status?: string
           tags?: string[] | null
           title?: string
           type?: string
@@ -774,6 +783,13 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "projects_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
             referencedColumns: ["id"]
           },
         ]
