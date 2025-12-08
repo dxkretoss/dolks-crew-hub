@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Outlet, useNavigate, NavLink, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Users, Building2, LogOut, Menu, X, Briefcase, ShieldCheck, LayoutDashboard, Calendar, ChevronDown, Settings, UserCog, Tag, Database, ClipboardList, Rss, Lightbulb } from "lucide-react";
+import { Users, Building2, LogOut, Menu, X, Briefcase, ShieldCheck, LayoutDashboard, Calendar, ChevronDown, Settings, UserCog, Tag, Database, ClipboardList, Rss, Lightbulb, FileImage } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import dolksLogo from "@/assets/dolks-logo.png";
@@ -117,6 +117,10 @@ const AdminLayout = () => {
     path: "/admin/crewpreneur",
     label: "Crewpreneur",
     icon: Lightbulb
+  }, {
+    path: "/admin/posts",
+    label: "Posts",
+    icon: FileImage
   }];
   const isMasterActive = masterItems.some(item => location.pathname === item.path);
   const isMembersActive = memberItems.some(item => location.pathname === item.path);

@@ -20,6 +20,7 @@ import Events from "./pages/admin/Events";
 import CompanyCrewRoles from "./pages/admin/CompanyCrewRoles";
 import JobRequests from "./pages/admin/JobRequests";
 import Crewpreneur from "./pages/admin/Crewpreneur";
+import Posts from "./pages/admin/Posts";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -56,6 +57,7 @@ const App = () => {
               <Route path="company-crew-roles" element={<CompanyCrewRoles />} />
               <Route path="job-requests" element={<JobRequests />} />
               <Route path="crewpreneur" element={<Crewpreneur />} />
+              <Route path="posts" element={<Posts />} />
             </Route>
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

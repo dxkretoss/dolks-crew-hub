@@ -592,7 +592,8 @@ export type Database = {
           image_url: string | null
           location: string | null
           mentions: string[] | null
-          tagged_user_ids: string[] | null
+          tag_ids: string[] | null
+          tags_name: string[] | null
           updated_at: string
           user_id: string
         }
@@ -603,7 +604,8 @@ export type Database = {
           image_url?: string | null
           location?: string | null
           mentions?: string[] | null
-          tagged_user_ids?: string[] | null
+          tag_ids?: string[] | null
+          tags_name?: string[] | null
           updated_at?: string
           user_id: string
         }
@@ -614,7 +616,8 @@ export type Database = {
           image_url?: string | null
           location?: string | null
           mentions?: string[] | null
-          tagged_user_ids?: string[] | null
+          tag_ids?: string[] | null
+          tags_name?: string[] | null
           updated_at?: string
           user_id?: string
         }
