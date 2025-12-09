@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
-import { Eye, CheckCircle, XCircle, Search, Calendar, MapPin, Euro, Pencil, Trash2 } from "lucide-react";
+import { Eye, CheckCircle, XCircle, Search, Calendar, MapPin, Euro, Pencil, Trash2, Download, FileText } from "lucide-react";
 import { format } from "date-fns";
 type JobRequest = {
   id: string;
@@ -513,9 +513,44 @@ const JobRequests = () => {
                 <h4 className="font-semibold mb-2">Documents/Images</h4>
                 {selectedJob.job_documents_images && selectedJob.job_documents_images.length > 0 ? (
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {selectedJob.job_documents_images.map((url, index) => <a key={index} href={url} target="_blank" rel="noopener noreferrer" className="relative aspect-video rounded-lg overflow-hidden border hover:opacity-80 transition-opacity">
-                        <img src={url} alt={`Document ${index + 1}`} className="w-full h-full object-cover" />
-                      </a>)}
+                    {selectedJob.job_documents_images.map((url, index) => {
+                      const fileName = url.split('/').pop() || `Document ${index + 1}`;
+                      const extension = fileName.split('.').pop()?.toLowerCase() || '';
+                      const isDocument = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'csv'].includes(extension);
+                      
+                      if (isDocument) {
+                        return (
+                          <div key={index} className="flex items-center gap-3 p-3 border rounded-lg bg-muted/30">
+                            <FileText className="h-8 w-8 text-muted-foreground flex-shrink-0" />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium truncate">{fileName}</p>
+                              <Badge variant="outline" className="text-xs mt-1">{extension.toUpperCase()}</Badge>
+                            </div>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                const link = document.createElement('a');
+                                link.href = url;
+                                link.download = fileName;
+                                link.target = '_blank';
+                                document.body.appendChild(link);
+                                link.click();
+                                document.body.removeChild(link);
+                              }}
+                            >
+                              <Download className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        );
+                      }
+                      
+                      return (
+                        <a key={index} href={url} target="_blank" rel="noopener noreferrer" className="relative aspect-video rounded-lg overflow-hidden border hover:opacity-80 transition-opacity">
+                          <img src={url} alt={`Image ${index + 1}`} className="w-full h-full object-cover" />
+                        </a>
+                      );
+                    })}
                   </div>
                 ) : (
                   <p className="text-sm text-muted-foreground">No documents uploaded</p>
