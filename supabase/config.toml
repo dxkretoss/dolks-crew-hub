@@ -1,1 +1,4 @@
 project_id = "onrfovsmfsftrlvpeuvk"
+
+[functions.get-job-post-list-company]
+verify_jwt = false
