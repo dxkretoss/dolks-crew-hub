@@ -291,7 +291,7 @@ const Posts = () => {
                   </TableCell>
                 </TableRow> : filteredPosts.map(post => <TableRow key={post.id}>
                     <TableCell>
-                      {post.image_url ? <ConvertibleImage src={post.image_url} alt="Post" className="w-12 h-12 object-cover rounded" /> : <div className="w-12 h-12 bg-muted rounded flex items-center justify-center text-xs text-muted-foreground">
+                      {post.image_url ? <ConvertibleImage src={post.image_url} alt="Post" className="w-12 h-12 object-cover rounded text-center " /> : <div className="w-12 h-12 bg-muted rounded flex items-center justify-center text-xs text-muted-foreground">
                           No image
                         </div>}
                     </TableCell>
