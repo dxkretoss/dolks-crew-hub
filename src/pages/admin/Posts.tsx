@@ -167,9 +167,9 @@ const Posts = () => {
       if (allUserIds.length > 0) {
         const {
           data: profilesData
-        } = await supabase.from("profiles").select("*").in("user_id", allUserIds);
+        } = await supabase.from("profiles").select("*").in("id", allUserIds);
         profilesData?.forEach(profile => {
-          userProfiles[profile.user_id] = profile;
+          userProfiles[profile.id] = profile;
         });
       }
 
