@@ -459,11 +459,11 @@ const Posts = () => {
                     <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
                   </div> : viewingPost.likes && viewingPost.likes.length > 0 ? <div className="bg-muted/30 rounded-lg p-3 max-h-48 overflow-y-auto">
                     <div className="space-y-2">
-                      {viewingPost.likes.map(like => <div key={like.id} className="flex items-center gap-3 p-2 bg-background rounded-lg">
-                          <ConvertibleAvatar src={like.profile?.profile_picture_url || ""} alt={like.profile?.full_name || "User"} fallback={like.profile?.full_name?.charAt(0) || "U"} className="h-8 w-8" />
+                    {viewingPost.likes.map(like => <div key={like.id} className="flex items-center gap-3 p-2 bg-background rounded-lg">
+                          <ConvertibleAvatar src={like.profile?.profile_picture_url || ""} alt={like.profile?.username || "User"} fallback={like.profile?.username?.charAt(0) || "U"} className="h-8 w-8" />
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium truncate">
-                              {like.profile?.full_name || "Unknown User"}
+                              {like.profile?.username || "Unknown User"}
                             </p>
                             <p className="text-xs text-muted-foreground">
                               {format(new Date(like.created_at), "MMM dd, yyyy HH:mm")}
@@ -486,10 +486,10 @@ const Posts = () => {
                     <div className="space-y-3">
                       {viewingPost.comments.map(comment => <div key={comment.id} className="p-3 bg-background rounded-lg">
                           <div className="flex items-center gap-3 mb-2">
-                            <ConvertibleAvatar src={comment.profile?.profile_picture_url || ""} alt={comment.profile?.full_name || "User"} fallback={comment.profile?.full_name?.charAt(0) || "U"} className="h-8 w-8" />
+                            <ConvertibleAvatar src={comment.profile?.profile_picture_url || ""} alt={comment.profile?.username || "User"} fallback={comment.profile?.username?.charAt(0) || "U"} className="h-8 w-8" />
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-medium truncate">
-                                {comment.profile?.full_name || "Unknown User"}
+                                {comment.profile?.username || "Unknown User"}
                               </p>
                               <p className="text-xs text-muted-foreground">
                                 {format(new Date(comment.created_at), "MMM dd, yyyy HH:mm")}
