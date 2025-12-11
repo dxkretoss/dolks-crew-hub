@@ -265,9 +265,9 @@ const Posts = () => {
       </div>
 
       <div className="mb-6">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-          <Input placeholder="Search by description, user, or location..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-9" />
+        <div className="relative">
+          <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+          <Input placeholder="Search by description, user, or location..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="pl-10" />
         </div>
       </div>
 
