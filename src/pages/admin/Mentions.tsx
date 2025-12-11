@@ -94,10 +94,16 @@ const Mentions = () => {
         return;
       }
 
+      // Prepend # if not already present
+      let mentionName = formData.name.trim();
+      if (!mentionName.startsWith("#")) {
+        mentionName = "#" + mentionName;
+      }
+
       if (editingMention) {
         const { error } = await supabase
           .from("mentions")
-          .update({ name: formData.name.trim() })
+          .update({ name: mentionName })
           .eq("id", editingMention.id);
 
         if (error) throw error;
@@ -109,7 +115,7 @@ const Mentions = () => {
       } else {
         const { error } = await supabase
           .from("mentions")
-          .insert({ name: formData.name.trim() });
+          .insert({ name: mentionName });
 
         if (error) throw error;
 
