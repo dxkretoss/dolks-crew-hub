@@ -15,7 +15,7 @@ interface Post {
   id: string;
   user_id: string;
   description: string | null;
-  image_url: string | null;
+  image_url: string[] | null;
   location: string | null;
   mentions: string[] | null;
   tag_ids: string[] | null;
@@ -291,7 +291,7 @@ const Posts = () => {
                   </TableCell>
                 </TableRow> : filteredPosts.map(post => <TableRow key={post.id}>
                     <TableCell>
-                      {post.image_url ? <ConvertibleImage src={post.image_url} alt="Post" className="w-12 h-12 object-cover rounded text-center " /> : <div className="w-12 h-12 bg-muted rounded flex items-center justify-center text-xs text-muted-foreground">
+                      {post.image_url && post.image_url.length > 0 ? <ConvertibleImage src={post.image_url[0]} alt="Post" className="w-12 h-12 object-cover rounded text-center" /> : <div className="w-12 h-12 bg-muted rounded flex items-center justify-center text-xs text-muted-foreground">
                           No image
                         </div>}
                     </TableCell>
@@ -387,10 +387,29 @@ const Posts = () => {
                 </div>
               </div>
 
-              {/* Post Image */}
-              {viewingPost.image_url && <div>
-                  <h4 className="font-semibold mb-2">Post Image</h4>
-                  <ConvertibleImage src={viewingPost.image_url} alt="Post" className="w-40 max-h-45 object-contain rounded-lg border" />
+              {/* Post Media */}
+              {viewingPost.image_url && viewingPost.image_url.length > 0 && <div>
+                  <h4 className="font-semibold mb-2">Post Media ({viewingPost.image_url.length})</h4>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    {viewingPost.image_url.map((url, index) => {
+                      const isVideo = url.match(/\.(mp4|webm|mov|avi|mkv)$/i);
+                      return isVideo ? (
+                        <video
+                          key={index}
+                          src={url}
+                          controls
+                          className="w-full h-40 object-cover rounded-lg border"
+                        />
+                      ) : (
+                        <ConvertibleImage
+                          key={index}
+                          src={url}
+                          alt={`Post media ${index + 1}`}
+                          className="w-full h-40 object-cover rounded-lg border"
+                        />
+                      );
+                    })}
+                  </div>
                 </div>}
 
               {/* Description */}
