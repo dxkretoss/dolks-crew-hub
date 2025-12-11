@@ -368,7 +368,7 @@ const Posts = () => {
           </DialogHeader>
           {viewingPost && <div className="space-y-6">
               {/* User Information */}
-              <div className="bg-muted/50 p-4 rounded-lg">
+              <div className="bg-muted/50 p-4 rounded-lg py-[5px] px-[5px]">
                 <h4 className="font-semibold mb-3">Posted By</h4>
                 <div className="flex items-start gap-4">
                   <ConvertibleAvatar src={viewingPost.profile?.profile_picture_url || ""} alt={viewingPost.profile?.full_name || "User"} fallback={viewingPost.profile?.full_name?.charAt(0) || "U"} className="h-16 w-16" />
@@ -394,23 +394,9 @@ const Posts = () => {
                   <h4 className="font-semibold mb-2">Post Media ({viewingPost.image_url.length})</h4>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                     {viewingPost.image_url.map((url, index) => {
-                      const isVideo = url.match(/\.(mp4|webm|mov|avi|mkv)$/i);
-                      return isVideo ? (
-                        <video
-                          key={index}
-                          src={url}
-                          controls
-                          className="w-full h-40 object-cover rounded-lg border"
-                        />
-                      ) : (
-                        <ConvertibleImage
-                          key={index}
-                          src={url}
-                          alt={`Post media ${index + 1}`}
-                          className="w-full h-40 object-cover rounded-lg border"
-                        />
-                      );
-                    })}
+                const isVideo = url.match(/\.(mp4|webm|mov|avi|mkv)$/i);
+                return isVideo ? <video key={index} src={url} controls className="w-full h-40 object-cover rounded-lg border" /> : <ConvertibleImage key={index} src={url} alt={`Post media ${index + 1}`} className="w-full h-40 object-cover rounded-lg border" />;
+              })}
                   </div>
                 </div>}
 
