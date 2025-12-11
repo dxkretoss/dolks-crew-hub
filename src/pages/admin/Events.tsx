@@ -606,8 +606,7 @@ export default function Events() {
               <div>
                 <Label>Cover Picture</Label>
                 <div className="mt-2">
-                  {coverPicturePreview ? (
-                    <div className="relative w-full h-48 rounded-lg overflow-hidden border">
+                  {coverPicturePreview ? <div className="relative w-full h-48 rounded-lg overflow-hidden border">
                       <img src={coverPicturePreview} alt="Cover preview" className="w-full h-full object-cover" />
                       <label className="absolute top-2 right-2 cursor-pointer">
                         <Button type="button" variant="secondary" size="sm" asChild>
@@ -617,9 +616,7 @@ export default function Events() {
                         </Button>
                         <input type="file" className="hidden" accept="image/*" onChange={handleCoverPictureChange} />
                       </label>
-                    </div>
-                  ) : (
-                    <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
+                    </div> : <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
                       <div className="flex flex-col items-center justify-center pt-5 pb-6">
                         <ImageIcon className="w-10 h-10 mb-3 text-muted-foreground" />
                         <p className="mb-2 text-sm text-muted-foreground">
@@ -627,8 +624,7 @@ export default function Events() {
                         </p>
                       </div>
                       <input type="file" className="hidden" accept="image/*" onChange={handleCoverPictureChange} />
-                    </label>
-                  )}
+                    </label>}
                 </div>
               </div>
 
@@ -763,25 +759,21 @@ export default function Events() {
               <div>
                 <Label htmlFor="documents">Documents/Images (Multiple)</Label>
                 <Input id="documents" type="file" multiple accept="image/*,.pdf,.doc,.docx" onChange={e => setSelectedFiles(e.target.files)} className="mt-1" />
-                {selectedFiles && selectedFiles.length > 0 && (
-                  <p className="text-sm text-muted-foreground mt-1">{selectedFiles.length} file(s) selected</p>
-                )}
+                {selectedFiles && selectedFiles.length > 0 && <p className="text-sm text-muted-foreground mt-1">{selectedFiles.length} file(s) selected</p>}
               </div>
 
               <div className="flex justify-end space-x-2">
                 <Button type="button" variant="outline" onClick={() => {
-                  setIsDialogOpen(false);
-                  resetForm();
-                }} disabled={submitting}>
+                setIsDialogOpen(false);
+                resetForm();
+              }} disabled={submitting}>
                   Cancel
                 </Button>
                 <Button type="submit" disabled={submitting || uploading}>
-                  {submitting ? (
-                    <>
+                  {submitting ? <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       {editingEvent ? "Updating..." : "Creating..."}
-                    </>
-                  ) : editingEvent ? "Update" : "Create"}
+                    </> : editingEvent ? "Update" : "Create"}
                 </Button>
               </div>
             </form>
@@ -1006,7 +998,7 @@ export default function Events() {
 
               {eventDetailsDialog.event.meeting_url && <div>
                   <Label className="text-muted-foreground">Meeting URL</Label>
-                  <a href={eventDetailsDialog.event.meeting_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
+                  <a href={eventDetailsDialog.event.meeting_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium mx-[10px] my-0 px-0 py-0">
                     {eventDetailsDialog.event.meeting_url}
                   </a>
                 </div>}
