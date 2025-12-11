@@ -309,7 +309,7 @@ const Posts = () => {
                           );
                         })()
                       ) : (
-                        <div className="w-12 h-12 bg-muted rounded flex items-center justify-center text-xs text-muted-foreground">
+                        <div className="w-12 h-12 bg-muted rounded flex items-center justify-center text-xs text-muted-foreground text-center">
                           No image
                         </div>
                       )}
