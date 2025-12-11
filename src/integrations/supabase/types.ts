@@ -593,6 +593,8 @@ export type Database = {
           location: string | null
           mentions: string[] | null
           tag_ids: string[] | null
+          tag_people_ids: string[] | null
+          tag_people_name: string[] | null
           tags_name: string[] | null
           updated_at: string
           user_id: string
@@ -605,6 +607,8 @@ export type Database = {
           location?: string | null
           mentions?: string[] | null
           tag_ids?: string[] | null
+          tag_people_ids?: string[] | null
+          tag_people_name?: string[] | null
           tags_name?: string[] | null
           updated_at?: string
           user_id: string
@@ -617,6 +621,8 @@ export type Database = {
           location?: string | null
           mentions?: string[] | null
           tag_ids?: string[] | null
+          tag_people_ids?: string[] | null
+          tag_people_name?: string[] | null
           tags_name?: string[] | null
           updated_at?: string
           user_id?: string
