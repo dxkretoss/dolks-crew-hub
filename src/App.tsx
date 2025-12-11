@@ -16,6 +16,7 @@ import Categories from "./pages/admin/Categories";
 import Services from "./pages/admin/Services";
 import Hobbies from "./pages/admin/Hobbies";
 import Tags from "./pages/admin/Tags";
+import Mentions from "./pages/admin/Mentions";
 import Events from "./pages/admin/Events";
 import CompanyCrewRoles from "./pages/admin/CompanyCrewRoles";
 import JobRequests from "./pages/admin/JobRequests";
@@ -54,6 +55,7 @@ const App = () => {
               <Route path="company-services" element={<Services />} />
               <Route path="hobbies" element={<Hobbies />} />
               <Route path="tags" element={<Tags />} />
+              <Route path="mentions" element={<Mentions />} />
               <Route path="company-crew-roles" element={<CompanyCrewRoles />} />
               <Route path="job-requests" element={<JobRequests />} />
               <Route path="crewpreneur" element={<Crewpreneur />} />
