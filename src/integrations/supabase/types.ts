@@ -611,7 +611,9 @@ export type Database = {
           description: string | null
           id: string
           image_url: string[] | null
+          latitude: string | null
           location: string | null
+          longitude: string | null
           mentions: string[] | null
           tag_ids: string[] | null
           tag_people_ids: string[] | null
@@ -625,7 +627,9 @@ export type Database = {
           description?: string | null
           id?: string
           image_url?: string[] | null
+          latitude?: string | null
           location?: string | null
+          longitude?: string | null
           mentions?: string[] | null
           tag_ids?: string[] | null
           tag_people_ids?: string[] | null
@@ -639,7 +643,9 @@ export type Database = {
           description?: string | null
           id?: string
           image_url?: string[] | null
+          latitude?: string | null
           location?: string | null
+          longitude?: string | null
           mentions?: string[] | null
           tag_ids?: string[] | null
           tag_people_ids?: string[] | null
