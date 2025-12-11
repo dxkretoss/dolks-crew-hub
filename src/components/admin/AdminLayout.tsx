@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Outlet, useNavigate, NavLink, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Users, Building2, LogOut, Menu, X, Briefcase, ShieldCheck, LayoutDashboard, Calendar, ChevronDown, Settings, UserCog, Tag, Database, ClipboardList, Rss, Lightbulb, FileImage } from "lucide-react";
+import { Users, Building2, LogOut, Menu, X, Briefcase, ShieldCheck, LayoutDashboard, Calendar, ChevronDown, Settings, UserCog, Tag, Database, ClipboardList, Rss, Lightbulb, FileImage, AtSign } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import dolksLogo from "@/assets/dolks-logo.png";
@@ -91,6 +91,10 @@ const AdminLayout = () => {
     path: "/admin/tags",
     label: "Tags",
     icon: Tag
+  }, {
+    path: "/admin/mentions",
+    label: "Mentions",
+    icon: AtSign
   }, {
     path: "/admin/company-crew-roles",
     label: "Company/Crew Roles",
