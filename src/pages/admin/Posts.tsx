@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Search, Eye, Trash2, Loader2, Heart, MessageCircle, Share2, MapPin } from "lucide-react";
+import { Search, Eye, Trash2, Loader2, Heart, MessageCircle, Share2, MapPin, Play } from "lucide-react";
 import { format } from "date-fns";
 import { ConvertibleImage } from "@/components/ConvertibleImage";
 import { ConvertibleAvatar } from "@/components/ConvertibleAvatar";
@@ -293,9 +293,26 @@ const Posts = () => {
                   </TableCell>
                 </TableRow> : filteredPosts.map(post => <TableRow key={post.id}>
                     <TableCell>
-                      {post.image_url && post.image_url.length > 0 ? <ConvertibleImage src={post.image_url[0]} alt="Post" className="w-12 h-12 object-cover rounded text-center" /> : <div className="w-12 h-12 bg-muted rounded flex items-center justify-center text-xs text-muted-foreground">
+                      {post.image_url && post.image_url.length > 0 ? (
+                        (() => {
+                          const firstUrl = post.image_url[0];
+                          const isVideo = firstUrl.match(/\.(mp4|webm|mov|avi|mkv)$/i);
+                          return isVideo ? (
+                            <div className="relative w-12 h-12">
+                              <video src={firstUrl} className="w-12 h-12 object-cover rounded" muted preload="metadata" />
+                              <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded">
+                                <Play className="h-4 w-4 text-white fill-white" />
+                              </div>
+                            </div>
+                          ) : (
+                            <ConvertibleImage src={firstUrl} alt="Post" className="w-12 h-12 object-cover rounded" />
+                          );
+                        })()
+                      ) : (
+                        <div className="w-12 h-12 bg-muted rounded flex items-center justify-center text-xs text-muted-foreground">
                           No image
-                        </div>}
+                        </div>
+                      )}
                     </TableCell>
                     <TableCell className="max-w-[150px]">
                       <div className="break-words text-sm">
