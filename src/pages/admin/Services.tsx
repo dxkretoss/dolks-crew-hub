@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Search, Pencil, Trash2, Plus } from "lucide-react";
+import { Search, Pencil, Trash2, Plus, Upload, X, ImageIcon } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -29,8 +29,11 @@ const Services = () => {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: "",
-    category_id: ""
+    category_id: "",
+    imageFile: null as File | null,
+    imagePreview: "" as string
   });
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
   useEffect(() => {
@@ -63,18 +66,22 @@ const Services = () => {
       setLoading(false);
     }
   };
-  const handleOpenDialog = (service?: Service) => {
+  const handleOpenDialog = (service?: ServiceWithCategory) => {
     if (service) {
       setEditingService(service);
       setFormData({
         name: service.name,
-        category_id: service.category_id || ""
+        category_id: service.category_id || "",
+        imageFile: null,
+        imagePreview: service.image_url || ""
       });
     } else {
       setEditingService(null);
       setFormData({
         name: "",
-        category_id: ""
+        category_id: "",
+        imageFile: null,
+        imagePreview: ""
       });
     }
     setIsDialogOpen(true);
@@ -84,8 +91,63 @@ const Services = () => {
     setEditingService(null);
     setFormData({
       name: "",
-      category_id: ""
+      category_id: "",
+      imageFile: null,
+      imagePreview: ""
     });
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith("image/")) {
+        toast({
+          title: "Error",
+          description: "Please select an image file",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData(prev => ({
+          ...prev,
+          imageFile: file,
+          imagePreview: reader.result as string
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setFormData(prev => ({
+      ...prev,
+      imageFile: null,
+      imagePreview: ""
+    }));
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const uploadImage = async (file: File, serviceId: string): Promise<string> => {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${serviceId}-${Date.now()}.${fileExt}`;
+    const filePath = `${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('service-images')
+      .upload(filePath, file);
+
+    if (uploadError) throw uploadError;
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('service-images')
+      .getPublicUrl(filePath);
+
+    return publicUrl;
   };
   const handleSave = async () => {
     try {
@@ -97,24 +159,68 @@ const Services = () => {
         });
         return;
       }
-      const payload = {
-        name: formData.name.trim(),
-        category_id: formData.category_id || null
-      };
+
+      let imageUrl: string | null = null;
+
       if (editingService) {
-        const {
-          error
-        } = await supabase.from("company_services").update(payload).eq("id", editingService.id);
+        // Handle image changes for existing service
+        if (formData.imageFile) {
+          // Delete old image if exists
+          if (editingService.image_url) {
+            const oldFileName = editingService.image_url.split('/').pop();
+            if (oldFileName) {
+              await supabase.storage.from('service-images').remove([oldFileName]);
+            }
+          }
+          // Upload new image
+          imageUrl = await uploadImage(formData.imageFile, editingService.id);
+        } else if (formData.imagePreview === "" && editingService.image_url) {
+          // Image was removed
+          const oldFileName = editingService.image_url.split('/').pop();
+          if (oldFileName) {
+            await supabase.storage.from('service-images').remove([oldFileName]);
+          }
+          imageUrl = null;
+        } else {
+          // Keep existing image
+          imageUrl = editingService.image_url || null;
+        }
+
+        const { error } = await supabase
+          .from("company_services")
+          .update({
+            name: formData.name.trim(),
+            category_id: formData.category_id || null,
+            image_url: imageUrl
+          })
+          .eq("id", editingService.id);
         if (error) throw error;
         toast({
           title: "Success",
           description: "Service updated successfully"
         });
       } else {
-        const {
-          error
-        } = await supabase.from("company_services").insert(payload);
-        if (error) throw error;
+        // Create new service first to get ID
+        const { data: newService, error: insertError } = await supabase
+          .from("company_services")
+          .insert({
+            name: formData.name.trim(),
+            category_id: formData.category_id || null
+          })
+          .select()
+          .single();
+        if (insertError) throw insertError;
+
+        // Upload image if provided
+        if (formData.imageFile && newService) {
+          imageUrl = await uploadImage(formData.imageFile, newService.id);
+          const { error: updateError } = await supabase
+            .from("company_services")
+            .update({ image_url: imageUrl })
+            .eq("id", newService.id);
+          if (updateError) throw updateError;
+        }
+
         toast({
           title: "Success",
           description: "Service created successfully"
@@ -257,6 +363,7 @@ const Services = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead>Image</TableHead>
                     <TableHead>Name</TableHead>
                     <TableHead>Category</TableHead>
                     <TableHead>Created At</TableHead>
@@ -265,6 +372,19 @@ const Services = () => {
                 </TableHeader>
                 <TableBody>
                   {currentServices.map(service => <TableRow key={service.id}>
+                      <TableCell>
+                        {service.image_url ? (
+                          <img 
+                            src={service.image_url} 
+                            alt={service.name}
+                            className="w-12 h-12 object-cover rounded"
+                          />
+                        ) : (
+                          <div className="w-12 h-12 bg-muted rounded flex items-center justify-center">
+                            <ImageIcon className="h-5 w-5 text-muted-foreground" />
+                          </div>
+                        )}
+                      </TableCell>
                       <TableCell className="font-medium">
                         {service.name}
                       </TableCell>
@@ -339,6 +459,44 @@ const Services = () => {
                     </SelectItem>)}
                 </SelectContent>
               </Select>
+            </div>
+            <div>
+              <Label>Image</Label>
+              <div className="mt-2">
+                {formData.imagePreview ? (
+                  <div className="relative inline-block">
+                    <img 
+                      src={formData.imagePreview} 
+                      alt="Service preview" 
+                      className="w-32 h-32 object-cover rounded border"
+                    />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="icon"
+                      className="absolute -top-2 -right-2 h-6 w-6"
+                      onClick={removeImage}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div 
+                    className="w-32 h-32 border-2 border-dashed border-muted-foreground/25 rounded flex flex-col items-center justify-center cursor-pointer hover:border-muted-foreground/50 transition-colors"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <Upload className="h-8 w-8 text-muted-foreground mb-2" />
+                    <span className="text-xs text-muted-foreground">Upload Image</span>
+                  </div>
+                )}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageChange}
+                />
+              </div>
             </div>
           </div>
           <DialogFooter>
