@@ -293,26 +293,18 @@ const Posts = () => {
                   </TableCell>
                 </TableRow> : filteredPosts.map(post => <TableRow key={post.id}>
                     <TableCell>
-                      {post.image_url && post.image_url.length > 0 ? (
-                        (() => {
-                          const firstUrl = post.image_url[0];
-                          const isVideo = firstUrl.match(/\.(mp4|webm|mov|avi|mkv)$/i);
-                          return isVideo ? (
-                            <div className="relative w-12 h-12">
+                      {post.image_url && post.image_url.length > 0 ? (() => {
+                const firstUrl = post.image_url[0];
+                const isVideo = firstUrl.match(/\.(mp4|webm|mov|avi|mkv)$/i);
+                return isVideo ? <div className="relative w-12 h-12">
                               <video src={firstUrl} className="w-12 h-12 object-cover rounded" muted preload="metadata" />
                               <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded">
                                 <Play className="h-4 w-4 text-white fill-white" />
                               </div>
-                            </div>
-                          ) : (
-                            <ConvertibleImage src={firstUrl} alt="Post" className="w-12 h-12 object-cover rounded" />
-                          );
-                        })()
-                      ) : (
-                        <div className="w-12 h-12 bg-muted rounded flex items-center justify-center text-xs text-muted-foreground text-center">
+                            </div> : <ConvertibleImage src={firstUrl} alt="Post" className="w-12 h-12 object-cover rounded" />;
+              })() : <div className="w-12 h-12 bg-muted rounded flex items-center justify-center text-xs text-muted-foreground text-center">
                           No image
-                        </div>
-                      )}
+                        </div>}
                     </TableCell>
                     <TableCell className="max-w-[150px]">
                       <div className="break-words text-sm">
@@ -493,7 +485,7 @@ const Posts = () => {
                     <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
                   </div> : viewingPost.likes && viewingPost.likes.length > 0 ? <div className={`bg-muted/30 rounded-lg p-3 ${viewingPost.likes.length > 5 ? 'max-h-64 overflow-y-auto' : ''}`}>
                     <div className="space-y-2">
-                    {viewingPost.likes.map(like => <div key={like.id} className="flex items-center gap-3 p-2 bg-background rounded-lg">
+                    {viewingPost.likes.map(like => <div key={like.id} className="flex items-center gap-3 p-2 rounded-lg bg-white">
                           <ConvertibleAvatar src={like.profile?.profile_picture_url || ""} alt={like.profile?.username || "User"} fallback={like.profile?.username?.charAt(0) || "U"} className="h-8 w-8" />
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium truncate">
@@ -518,7 +510,7 @@ const Posts = () => {
                     <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
                   </div> : viewingPost.comments && viewingPost.comments.length > 0 ? <div className={`bg-muted/30 rounded-lg p-3 ${viewingPost.comments.length > 5 ? 'max-h-72 overflow-y-auto' : ''}`}>
                     <div className="space-y-3">
-                      {viewingPost.comments.map(comment => <div key={comment.id} className="p-3 bg-background rounded-lg">
+                      {viewingPost.comments.map(comment => <div key={comment.id} className="p-3 rounded-lg bg-white">
                           <div className="flex items-center gap-3 mb-2">
                             <ConvertibleAvatar src={comment.profile?.profile_picture_url || ""} alt={comment.profile?.username || "User"} fallback={comment.profile?.username?.charAt(0) || "U"} className="h-8 w-8" />
                             <div className="flex-1 min-w-0">
