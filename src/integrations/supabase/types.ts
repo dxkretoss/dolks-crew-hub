@@ -118,6 +118,7 @@ export type Database = {
           links: string | null
           location: string
           longitude: string | null
+          our_team_ids: string[] | null
           tags: string | null
           tags_ids: string | null
           team: string | null
@@ -141,6 +142,7 @@ export type Database = {
           links?: string | null
           location: string
           longitude?: string | null
+          our_team_ids?: string[] | null
           tags?: string | null
           tags_ids?: string | null
           team?: string | null
@@ -164,6 +166,7 @@ export type Database = {
           links?: string | null
           location?: string
           longitude?: string | null
+          our_team_ids?: string[] | null
           tags?: string | null
           tags_ids?: string | null
           team?: string | null
@@ -688,6 +691,7 @@ export type Database = {
           otp_created_at: string | null
           phone_number: string
           profile_picture_url: string | null
+          profile_type: string | null
           refresh_token: string | null
           rejection_reason: string | null
           role: string | null
@@ -722,6 +726,7 @@ export type Database = {
           otp_created_at?: string | null
           phone_number: string
           profile_picture_url?: string | null
+          profile_type?: string | null
           refresh_token?: string | null
           rejection_reason?: string | null
           role?: string | null
@@ -756,6 +761,7 @@ export type Database = {
           otp_created_at?: string | null
           phone_number?: string
           profile_picture_url?: string | null
+          profile_type?: string | null
           refresh_token?: string | null
           rejection_reason?: string | null
           role?: string | null
