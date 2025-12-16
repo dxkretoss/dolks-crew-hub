@@ -530,7 +530,10 @@ const JobRequests = () => {
                               <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() => window.open(url, '_blank')}
+                                onClick={() => {
+                                  const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
+                                  window.open(viewerUrl, '_blank');
+                                }}
                               >
                                 <Eye className="h-4 w-4" />
                               </Button>
