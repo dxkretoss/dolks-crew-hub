@@ -587,12 +587,12 @@ const Posts = () => {
 
       {/* Media Preview Dialog */}
       <Dialog open={!!previewMedia} onOpenChange={() => setPreviewMedia(null)}>
-        <DialogContent className="max-w-4xl p-0 overflow-hidden">
+        <DialogContent className="max-w-4xl p-0 overflow-hidden border-none bg-black/90 [&>button]:text-white [&>button]:bg-black/50 [&>button]:rounded-full [&>button]:p-1 [&>button]:hover:bg-black/70">
           <DialogHeader className="sr-only">
             <DialogTitle>Media Preview</DialogTitle>
           </DialogHeader>
           {previewMedia && (
-            <div className="flex items-center justify-center bg-black">
+            <div className="flex items-center justify-center">
               {previewMedia.isVideo ? (
                 <video
                   src={previewMedia.url}
