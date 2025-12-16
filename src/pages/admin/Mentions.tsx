@@ -279,14 +279,14 @@ const Mentions = () => {
     <div className="p-6 lg:p-8 space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Mentions</h1>
+          <h1 className="text-3xl font-bold">Hashtags</h1>
           <p className="text-muted-foreground mt-1">
-            Manage mentions for the application
+            Manage hashtags for the application
           </p>
         </div>
         <Button onClick={() => handleOpenDialog()}>
           <Plus className="h-4 w-4 mr-2" />
-          Add Mention
+          Add Hashtag
         </Button>
       </div>
 
@@ -296,7 +296,7 @@ const Mentions = () => {
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search mentions..."
+                placeholder="Search hashtags..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-9"

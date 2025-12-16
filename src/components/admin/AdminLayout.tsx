@@ -93,7 +93,7 @@ const AdminLayout = () => {
     icon: Tag
   }, {
     path: "/admin/mentions",
-    label: "Mentions",
+    label: "Hashtags",
     icon: Hash
   }, {
     path: "/admin/company-crew-roles",
