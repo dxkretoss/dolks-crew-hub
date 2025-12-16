@@ -628,6 +628,7 @@ export type Database = {
           tag_people_ids: string[] | null
           tag_people_name: string[] | null
           tags_name: string[] | null
+          thumbnail_urls: string[] | null
           updated_at: string
           user_id: string
         }
@@ -644,6 +645,7 @@ export type Database = {
           tag_people_ids?: string[] | null
           tag_people_name?: string[] | null
           tags_name?: string[] | null
+          thumbnail_urls?: string[] | null
           updated_at?: string
           user_id: string
         }
@@ -660,6 +662,7 @@ export type Database = {
           tag_people_ids?: string[] | null
           tag_people_name?: string[] | null
           tags_name?: string[] | null
+          thumbnail_urls?: string[] | null
           updated_at?: string
           user_id?: string
         }
@@ -667,6 +670,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          bio: string | null
           birth_date: string | null
           company_crew_ids: string | null
           company_crew_type: string | null
@@ -686,12 +690,16 @@ export type Database = {
           is_onboarded: boolean | null
           is_otp_verified: boolean | null
           jwt_token: string | null
+          latitude: string | null
+          location: string | null
+          longitude: string | null
           nationality: string | null
           otp: string | null
           otp_created_at: string | null
           phone_number: string
           profile_picture_url: string | null
           profile_type: string | null
+          provider_type: string | null
           refresh_token: string | null
           rejection_reason: string | null
           role: string | null
@@ -702,6 +710,7 @@ export type Database = {
           username: string
         }
         Insert: {
+          bio?: string | null
           birth_date?: string | null
           company_crew_ids?: string | null
           company_crew_type?: string | null
@@ -721,12 +730,16 @@ export type Database = {
           is_onboarded?: boolean | null
           is_otp_verified?: boolean | null
           jwt_token?: string | null
+          latitude?: string | null
+          location?: string | null
+          longitude?: string | null
           nationality?: string | null
           otp?: string | null
           otp_created_at?: string | null
           phone_number: string
           profile_picture_url?: string | null
           profile_type?: string | null
+          provider_type?: string | null
           refresh_token?: string | null
           rejection_reason?: string | null
           role?: string | null
@@ -737,6 +750,7 @@ export type Database = {
           username: string
         }
         Update: {
+          bio?: string | null
           birth_date?: string | null
           company_crew_ids?: string | null
           company_crew_type?: string | null
@@ -756,12 +770,16 @@ export type Database = {
           is_onboarded?: boolean | null
           is_otp_verified?: boolean | null
           jwt_token?: string | null
+          latitude?: string | null
+          location?: string | null
+          longitude?: string | null
           nationality?: string | null
           otp?: string | null
           otp_created_at?: string | null
           phone_number?: string
           profile_picture_url?: string | null
           profile_type?: string | null
+          provider_type?: string | null
           refresh_token?: string | null
           rejection_reason?: string | null
           role?: string | null
