@@ -88,7 +88,7 @@ const Mentions = () => {
       if (!formData.name.trim()) {
         toast({
           title: "Error",
-          description: "Mention name is required",
+          description: "Hashtag name is required",
           variant: "destructive",
         });
         return;
@@ -110,7 +110,7 @@ const Mentions = () => {
 
         toast({
           title: "Success",
-          description: "Mention updated successfully",
+          description: "Hashtag updated successfully",
         });
       } else {
         const { error } = await supabase
@@ -121,7 +121,7 @@ const Mentions = () => {
 
         toast({
           title: "Success",
-          description: "Mention created successfully",
+          description: "Hashtag created successfully",
         });
       }
 
@@ -149,7 +149,7 @@ const Mentions = () => {
 
       toast({
         title: "Success",
-        description: "Mention deleted successfully",
+        description: "Hashtag deleted successfully",
       });
 
       setIsDeleteDialogOpen(false);
@@ -307,11 +307,11 @@ const Mentions = () => {
         <CardContent>
           {loading ? (
             <div className="text-center py-8 text-muted-foreground">
-              Loading mentions...
+              Loading hashtags...
             </div>
           ) : filteredMentions.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              No mentions found
+              No hashtags found
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -385,10 +385,10 @@ const Mentions = () => {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {editingMention ? "Edit Mention" : "Add Mention"}
+              {editingMention ? "Edit Hashtag" : "Add Hashtag"}
             </DialogTitle>
             <DialogDescription>
-              {editingMention ? "Update the mention details below." : "Enter the details for the new mention."}
+              {editingMention ? "Update the hashtag details below." : "Enter the details for the new hashtag."}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
@@ -398,7 +398,7 @@ const Mentions = () => {
                 id="name"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Enter mention name"
+                placeholder="Enter hashtag name"
                 className="my-[5px]"
               />
             </div>
@@ -419,7 +419,7 @@ const Mentions = () => {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the mention.
+              This action cannot be undone. This will permanently delete the hashtag.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
