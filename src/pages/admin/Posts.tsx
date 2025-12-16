@@ -70,6 +70,7 @@ const Posts = () => {
   const [deletingPostId, setDeletingPostId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
+  const [previewMedia, setPreviewMedia] = useState<{ url: string; isVideo: boolean } | null>(null);
   const {
     toast
   } = useToast();
@@ -403,8 +404,25 @@ const Posts = () => {
                   <h4 className="font-semibold mb-2">Post Media ({viewingPost.image_url.length})</h4>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                     {viewingPost.image_url.map((url, index) => {
-                const isVideo = url.match(/\.(mp4|webm|mov|avi|mkv)$/i);
-                return isVideo ? <video key={index} src={url} controls className="w-full h-40 object-cover rounded-lg border" /> : <ConvertibleImage key={index} src={url} alt={`Post media ${index + 1}`} className="w-full h-40 object-cover rounded-lg border" />;
+                const isVideo = !!url.match(/\.(mp4|webm|mov|avi|mkv)$/i);
+                return (
+                  <div
+                    key={index}
+                    className="cursor-pointer hover:opacity-80 transition-opacity relative"
+                    onClick={() => setPreviewMedia({ url, isVideo })}
+                  >
+                    {isVideo ? (
+                      <>
+                        <video src={url} className="w-full h-40 object-cover rounded-lg border" muted preload="metadata" />
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-lg">
+                          <Play className="h-8 w-8 text-white fill-white" />
+                        </div>
+                      </>
+                    ) : (
+                      <ConvertibleImage src={url} alt={`Post media ${index + 1}`} className="w-full h-40 object-cover rounded-lg border" />
+                    )}
+                  </div>
+                );
               })}
                   </div>
                 </div>}
@@ -566,6 +584,33 @@ const Posts = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Media Preview Dialog */}
+      <Dialog open={!!previewMedia} onOpenChange={() => setPreviewMedia(null)}>
+        <DialogContent className="max-w-4xl p-0 overflow-hidden">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Media Preview</DialogTitle>
+          </DialogHeader>
+          {previewMedia && (
+            <div className="flex items-center justify-center bg-black">
+              {previewMedia.isVideo ? (
+                <video
+                  src={previewMedia.url}
+                  controls
+                  autoPlay
+                  className="max-h-[80vh] max-w-full"
+                />
+              ) : (
+                <img
+                  src={previewMedia.url}
+                  alt="Preview"
+                  className="max-h-[80vh] max-w-full object-contain"
+                />
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>;
 };
 export default Posts;
