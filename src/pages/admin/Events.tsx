@@ -9,7 +9,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Edit, Check, X, Search, Users, Eye, Upload, Image as ImageIcon, Loader2, Download, FileText } from "lucide-react";
+import { Plus, Trash2, Edit, Check, X, Search, Users, Eye, Upload, Image as ImageIcon, Loader2, Download, FileText, Star } from "lucide-react";
 import { format } from "date-fns";
 import { z } from "zod";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -28,6 +28,7 @@ interface Event {
   tags: string[] | null;
   tag_ids: string[] | null;
   is_allowed: boolean | null;
+  is_featured: boolean | null;
   user_id: string;
   created_at: string;
   cover_picture: string | null;
@@ -575,10 +576,18 @@ export default function Events() {
     return categoryNames.length > 0 ? categoryNames.join(", ") : "N/A";
   };
   const filteredEvents = events.filter(event => event.title.toLowerCase().includes(searchTerm.toLowerCase()));
-  const totalPages = Math.ceil(filteredEvents.length / itemsPerPage);
+  
+  // Sort events: featured first, then by created_at descending
+  const sortedEvents = [...filteredEvents].sort((a, b) => {
+    if (a.is_featured && !b.is_featured) return -1;
+    if (!a.is_featured && b.is_featured) return 1;
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  });
+  
+  const totalPages = Math.ceil(sortedEvents.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const currentEvents = filteredEvents.slice(startIndex, endIndex);
+  const currentEvents = sortedEvents.slice(startIndex, endIndex);
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
@@ -639,6 +648,29 @@ export default function Events() {
     if (isAllowed === null) return <span className="text-yellow-500">Pending</span>;
     if (isAllowed) return <span className="text-green-500">Approved</span>;
     return <span className="text-red-500">Rejected</span>;
+  };
+
+  const handleToggleFeatured = async (event: Event) => {
+    try {
+      const { error } = await supabase
+        .from("events")
+        .update({ is_featured: !event.is_featured })
+        .eq("id", event.id);
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Success",
+        description: event.is_featured ? "Event unfeatured" : "Event featured"
+      });
+      fetchEvents();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
   };
   return <div className="p-6">
       <div className="flex justify-between items-center mb-6">
@@ -886,6 +918,7 @@ export default function Events() {
                   <TableHead>Category</TableHead>
                   <TableHead>Date & Time</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Featured</TableHead>
                   <TableHead>Interested</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
@@ -898,6 +931,16 @@ export default function Events() {
                       {format(new Date(event.event_date), "MMM dd, yyyy")} at {event.event_time}
                     </TableCell>
                     <TableCell>{getApprovalBadge(event.is_allowed)}</TableCell>
+                    <TableCell>
+                      <Button 
+                        size="sm" 
+                        variant={event.is_featured ? "default" : "outline"} 
+                        onClick={() => handleToggleFeatured(event)}
+                        className={event.is_featured ? "bg-yellow-500 hover:bg-yellow-600 text-white" : ""}
+                      >
+                        <Star className={`h-4 w-4 ${event.is_featured ? "fill-current" : ""}`} />
+                      </Button>
+                    </TableCell>
                     <TableCell>
                       <Button size="sm" variant="outline" onClick={() => handleViewInterestedUsers(event)}>
                         <Users className="h-4 w-4" />
@@ -942,7 +985,7 @@ export default function Events() {
           </div>}
       </div>
 
-      {!loading && filteredEvents.length > itemsPerPage && <div className="mt-4">
+      {!loading && sortedEvents.length > itemsPerPage && <div className="mt-4">
           <Pagination>
             <PaginationContent>
               <PaginationItem>
