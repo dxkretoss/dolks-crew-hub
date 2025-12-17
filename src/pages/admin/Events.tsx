@@ -257,7 +257,7 @@ export default function Events() {
       const selectedCategoryNames = formData.category_ids.map(catId => categories.find(c => c.id === catId)?.name).filter(Boolean) as string[];
       
       let coverPictureUrl = editingEvent?.cover_picture || null;
-      const eventData = {
+      const eventData: any = {
         title: formData.title.trim(),
         event_date: formData.event_date,
         event_time: formData.event_time,
@@ -273,10 +273,14 @@ export default function Events() {
         meeting_url: formData.meeting_url.trim() || null,
         tags: selectedTagNames.length > 0 ? selectedTagNames : null,
         tag_ids: formData.tag_ids.length > 0 ? formData.tag_ids : null,
-        user_id: user.id,
         is_allowed: true,
         cover_picture: coverPictureUrl
       };
+      
+      // Only set user_id for new events, preserve original creator when editing
+      if (!editingEvent) {
+        eventData.user_id = user.id;
+      }
       let eventId: string;
       if (editingEvent) {
         // Upload cover picture if new one selected
