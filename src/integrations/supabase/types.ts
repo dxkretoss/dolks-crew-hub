@@ -282,7 +282,8 @@ export type Database = {
       }
       events: {
         Row: {
-          category_id: string | null
+          category_id: string[] | null
+          category_names: string | null
           cover_picture: string | null
           created_at: string
           duration: string | null
@@ -295,6 +296,7 @@ export type Database = {
           location: string | null
           meeting_url: string | null
           short_description: string
+          tag_ids: string[] | null
           tags: string[] | null
           title: string
           type: string
@@ -303,7 +305,8 @@ export type Database = {
           where_to_host: string | null
         }
         Insert: {
-          category_id?: string | null
+          category_id?: string[] | null
+          category_names?: string | null
           cover_picture?: string | null
           created_at?: string
           duration?: string | null
@@ -316,6 +319,7 @@ export type Database = {
           location?: string | null
           meeting_url?: string | null
           short_description: string
+          tag_ids?: string[] | null
           tags?: string[] | null
           title: string
           type: string
@@ -324,7 +328,8 @@ export type Database = {
           where_to_host?: string | null
         }
         Update: {
-          category_id?: string | null
+          category_id?: string[] | null
+          category_names?: string | null
           cover_picture?: string | null
           created_at?: string
           duration?: string | null
@@ -337,6 +342,7 @@ export type Database = {
           location?: string | null
           meeting_url?: string | null
           short_description?: string
+          tag_ids?: string[] | null
           tags?: string[] | null
           title?: string
           type?: string
@@ -344,15 +350,7 @@ export type Database = {
           user_id?: string
           where_to_host?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "events_category_id_fkey"
-            columns: ["category_id"]
-            isOneToOne: false
-            referencedRelation: "categories"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       hobbies: {
         Row: {

@@ -9,7 +9,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Edit, Check, X, Search, Users, Eye, Upload, Image as ImageIcon, Loader2 } from "lucide-react";
+import { Plus, Trash2, Edit, Check, X, Search, Users, Eye, Upload, Image as ImageIcon, Loader2, Download, FileText } from "lucide-react";
 import { format } from "date-fns";
 import { z } from "zod";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -1025,13 +1025,58 @@ export default function Events() {
               <div>
                 <Label className="text-muted-foreground">Documents</Label>
                 {loadingDocuments ? <div className="p-4 text-center text-muted-foreground">Loading documents...</div> : eventDocuments.length === 0 ? <p className="text-muted-foreground mt-2">No documents uploaded</p> : <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-2">
-                    {eventDocuments.map(doc => <a key={doc.id} href={doc.document_url} target="_blank" rel="noopener noreferrer" className="relative aspect-video rounded-lg overflow-hidden border hover:opacity-80 transition-opacity">
-                        {doc.document_type.startsWith("image/") ? <img src={doc.document_url} alt="Event document" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center bg-muted">
-                            <span className="text-sm text-muted-foreground">
-                              {doc.document_type.split("/")[1]?.toUpperCase() || "DOC"}
-                            </span>
-                          </div>}
-                      </a>)}
+                    {eventDocuments.map(doc => {
+                      const isPdf = doc.document_type === "application/pdf" || doc.document_url.toLowerCase().endsWith('.pdf');
+                      const isImage = doc.document_type.startsWith("image/");
+                      
+                      return (
+                        <div key={doc.id} className="relative rounded-lg overflow-hidden border">
+                          {isImage ? (
+                            <a href={doc.document_url} target="_blank" rel="noopener noreferrer" className="block aspect-video hover:opacity-80 transition-opacity">
+                              <img src={doc.document_url} alt="Event document" className="w-full h-full object-cover" />
+                            </a>
+                          ) : (
+                            <div className="aspect-video flex flex-col items-center justify-center bg-muted p-2">
+                              <FileText className="h-8 w-8 text-muted-foreground mb-2" />
+                              <span className="text-xs text-muted-foreground mb-2">
+                                {doc.document_type.split("/")[1]?.toUpperCase() || "DOC"}
+                              </span>
+                              <div className="flex gap-2">
+                                {isPdf && (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => {
+                                      const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(doc.document_url)}&embedded=true`;
+                                      window.open(viewerUrl, '_blank');
+                                    }}
+                                  >
+                                    <Eye className="h-3 w-3 mr-1" />
+                                    View
+                                  </Button>
+                                )}
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => {
+                                    const link = document.createElement('a');
+                                    link.href = doc.document_url;
+                                    link.download = doc.document_url.split('/').pop() || 'document';
+                                    link.target = '_blank';
+                                    document.body.appendChild(link);
+                                    link.click();
+                                    document.body.removeChild(link);
+                                  }}
+                                >
+                                  <Download className="h-3 w-3 mr-1" />
+                                  Download
+                                </Button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>}
               </div>
             </div>}
