@@ -964,7 +964,20 @@ export default function Events() {
                 </div>
                 <div>
                   <Label className="text-muted-foreground">Category</Label>
-                  <p className="font-medium">{getCategoryName(eventDetailsDialog.event.category_id)}</p>
+                  {eventDetailsDialog.event.category_id && eventDetailsDialog.event.category_id.length > 0 ? (
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      {eventDetailsDialog.event.category_id.map((catId, index) => {
+                        const categoryName = categories.find(c => c.id === catId)?.name || "Unknown";
+                        return (
+                          <span key={index} className="px-2 py-1 bg-primary/10 text-primary rounded-full text-sm font-medium">
+                            {categoryName}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <p className="font-medium">N/A</p>
+                  )}
                 </div>
                 <div>
                   <Label className="text-muted-foreground">Event Date</Label>
