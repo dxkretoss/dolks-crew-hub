@@ -274,7 +274,7 @@ export default function Events() {
         tags: selectedTagNames.length > 0 ? selectedTagNames : null,
         tag_ids: formData.tag_ids.length > 0 ? formData.tag_ids : null,
         user_id: user.id,
-        is_allowed: editingEvent ? null : true,
+        is_allowed: true,
         cover_picture: coverPictureUrl
       };
       let eventId: string;
@@ -299,7 +299,7 @@ export default function Events() {
         eventId = editingEvent.id;
         toast({
           title: "Success",
-          description: "Event updated successfully. Pending admin approval."
+          description: "Event updated successfully."
         });
       } else {
         const {
