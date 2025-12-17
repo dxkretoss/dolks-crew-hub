@@ -26,12 +26,14 @@ interface Event {
   location: string | null;
   meeting_url: string | null;
   tags: string[] | null;
+  tag_ids: string[] | null;
   is_allowed: boolean | null;
   user_id: string;
   created_at: string;
   cover_picture: string | null;
   duration: string | null;
   category_id: string[] | null;
+  category_names: string | null;
 }
 interface EventDocument {
   id: string;
@@ -53,6 +55,12 @@ interface Tag {
   id: string;
   name: string;
 }
+
+const WHERE_TO_HOST_OPTIONS = [
+  { value: "online", label: "Online" },
+  { value: "in-person", label: "In Person" },
+  { value: "hybrid", label: "Hybrid" },
+];
 export default function Events() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
@@ -103,17 +111,19 @@ export default function Events() {
     event_time: "",
     duration: "",
     short_description: "",
-    category_id: "",
+    category_ids: [] as string[],
     full_description: "",
     link_to_dolk_profile: false,
     where_to_host: "",
     location: "",
     meeting_url: "",
-    tags: [] as string[]
+    tag_ids: [] as string[]
   });
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
   const [coverPictureFile, setCoverPictureFile] = useState<File | null>(null);
   const [coverPicturePreview, setCoverPicturePreview] = useState<string | null>(null);
+  const [existingDocuments, setExistingDocuments] = useState<EventDocument[]>([]);
+  const [documentsToDelete, setDocumentsToDelete] = useState<string[]>([]);
   useEffect(() => {
     fetchEvents();
     fetchCategories();
@@ -232,7 +242,11 @@ export default function Events() {
       if (!user) throw new Error("User not authenticated");
 
       // Get tag names from selected tag IDs
-      const selectedTagNames = formData.tags.map(tagId => tags.find(t => t.id === tagId)?.name).filter(Boolean) as string[];
+      const selectedTagNames = formData.tag_ids.map(tagId => tags.find(t => t.id === tagId)?.name).filter(Boolean) as string[];
+      
+      // Get category names from selected category IDs
+      const selectedCategoryNames = formData.category_ids.map(catId => categories.find(c => c.id === catId)?.name).filter(Boolean) as string[];
+      
       let coverPictureUrl = editingEvent?.cover_picture || null;
       const eventData = {
         title: formData.title.trim(),
@@ -240,15 +254,16 @@ export default function Events() {
         event_time: formData.event_time,
         duration: formData.duration.trim() || null,
         short_description: formData.short_description.trim(),
-        category_id: formData.category_id ? [formData.category_id] : null,
+        category_id: formData.category_ids.length > 0 ? formData.category_ids : null,
+        category_names: selectedCategoryNames.length > 0 ? selectedCategoryNames.join(", ") : null,
         type: "event",
-        // Default type value
         full_description: formData.full_description.trim(),
         link_to_dolk_profile: formData.link_to_dolk_profile,
         where_to_host: formData.where_to_host || null,
         location: formData.location.trim() || null,
         meeting_url: formData.meeting_url.trim() || null,
         tags: selectedTagNames.length > 0 ? selectedTagNames : null,
+        tag_ids: formData.tag_ids.length > 0 ? formData.tag_ids : null,
         user_id: user.id,
         is_allowed: editingEvent ? null : true,
         cover_picture: coverPictureUrl
@@ -260,6 +275,14 @@ export default function Events() {
           coverPictureUrl = await uploadCoverPicture(editingEvent.id);
           eventData.cover_picture = coverPictureUrl;
         }
+        
+        // Delete documents marked for deletion
+        if (documentsToDelete.length > 0) {
+          for (const docId of documentsToDelete) {
+            await supabase.from("event_documents").delete().eq("id", docId);
+          }
+        }
+        
         const {
           error
         } = await supabase.from("events").update(eventData).eq("id", editingEvent.id);
@@ -452,24 +475,30 @@ export default function Events() {
     });
     await fetchEventDocuments(event.id);
   };
-  const handleEdit = (event: Event) => {
+  const handleEdit = async (event: Event) => {
     setEditingEvent(event);
 
-    // Find tag IDs from tag names
-    const tagIds = event.tags ? event.tags.map(tagName => tags.find(t => t.name === tagName)?.id).filter(Boolean) as string[] : [];
+    // Use tag_ids from event if available, otherwise find IDs from tag names
+    const tagIds = event.tag_ids || (event.tags ? event.tags.map(tagName => tags.find(t => t.name === tagName)?.id).filter(Boolean) as string[] : []);
+    
+    // Fetch existing documents for this event
+    const { data: docs } = await supabase.from("event_documents").select("*").eq("event_id", event.id);
+    setExistingDocuments(docs || []);
+    setDocumentsToDelete([]);
+    
     setFormData({
       title: event.title,
       event_date: event.event_date,
       event_time: event.event_time,
       duration: event.duration || "",
       short_description: event.short_description,
-      category_id: event.category_id?.[0] || "",
+      category_ids: event.category_id || [],
       full_description: event.full_description,
       link_to_dolk_profile: event.link_to_dolk_profile,
       where_to_host: event.where_to_host || "",
       location: event.location || "",
       meeting_url: event.meeting_url || "",
-      tags: tagIds
+      tag_ids: tagIds
     });
     setCoverPicturePreview(event.cover_picture || null);
     setIsDialogOpen(true);
@@ -481,18 +510,20 @@ export default function Events() {
       event_time: "",
       duration: "",
       short_description: "",
-      category_id: "",
+      category_ids: [],
       full_description: "",
       link_to_dolk_profile: false,
       where_to_host: "",
       location: "",
       meeting_url: "",
-      tags: []
+      tag_ids: []
     });
     setEditingEvent(null);
     setSelectedFiles(null);
     setCoverPictureFile(null);
     setCoverPicturePreview(null);
+    setExistingDocuments([]);
+    setDocumentsToDelete([]);
   };
   const handleCoverPictureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -508,8 +539,20 @@ export default function Events() {
   const handleTagToggle = (tagId: string) => {
     setFormData(prev => ({
       ...prev,
-      tags: prev.tags.includes(tagId) ? prev.tags.filter(id => id !== tagId) : [...prev.tags, tagId]
+      tag_ids: prev.tag_ids.includes(tagId) ? prev.tag_ids.filter(id => id !== tagId) : [...prev.tag_ids, tagId]
     }));
+  };
+  
+  const handleCategoryToggle = (categoryId: string) => {
+    setFormData(prev => ({
+      ...prev,
+      category_ids: prev.category_ids.includes(categoryId) ? prev.category_ids.filter(id => id !== categoryId) : [...prev.category_ids, categoryId]
+    }));
+  };
+  
+  const handleDeleteExistingDocument = (docId: string) => {
+    setDocumentsToDelete(prev => [...prev, docId]);
+    setExistingDocuments(prev => prev.filter(doc => doc.id !== docId));
   };
   const getCategoryName = (categoryId: string[] | null) => {
     if (!categoryId || categoryId.length === 0) return "N/A";
@@ -676,20 +719,15 @@ export default function Events() {
 
               {/* Category */}
               <div>
-                <Label htmlFor="category_id">Category</Label>
-                <Select value={formData.category_id} onValueChange={value => setFormData({
-                ...formData,
-                category_id: value
-              })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map(category => <SelectItem key={category.id} value={category.id}>
-                        {category.name}
-                      </SelectItem>)}
-                  </SelectContent>
-                </Select>
+                <Label>Category</Label>
+                <div className="mt-2 flex flex-wrap gap-2 p-3 border rounded-lg max-h-32 overflow-y-auto">
+                  {categories.length === 0 ? <p className="text-sm text-muted-foreground">No categories available</p> : categories.map(category => <div key={category.id} className="flex items-center space-x-2">
+                        <Checkbox id={`category-${category.id}`} checked={formData.category_ids.includes(category.id)} onCheckedChange={() => handleCategoryToggle(category.id)} />
+                        <label htmlFor={`category-${category.id}`} className="text-sm cursor-pointer">
+                          {category.name}
+                        </label>
+                      </div>)}
+                </div>
               </div>
 
               {/* Full Description */}
@@ -712,14 +750,17 @@ export default function Events() {
                     <SelectValue placeholder="Select hosting type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="online">Online</SelectItem>
-                    <SelectItem value="in-person">In Person</SelectItem>
+                    {WHERE_TO_HOST_OPTIONS.map(option => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
 
-              {/* Location (for in-person) */}
-              {formData.where_to_host === "in-person" && <div>
+              {/* Location (for in-person or hybrid) */}
+              {(formData.where_to_host === "in-person" || formData.where_to_host === "hybrid") && <div>
                   <Label htmlFor="location">Location *</Label>
                   <Input id="location" value={formData.location} onChange={e => setFormData({
                 ...formData,
@@ -727,8 +768,8 @@ export default function Events() {
               })} placeholder="Enter event location" required />
                 </div>}
 
-              {/* Meeting URL (for online) */}
-              {formData.where_to_host === "online" && <div>
+              {/* Meeting URL (for online or hybrid) */}
+              {(formData.where_to_host === "online" || formData.where_to_host === "hybrid") && <div>
                   <Label htmlFor="meeting_url">Meeting URL</Label>
                   <Input id="meeting_url" type="url" value={formData.meeting_url} onChange={e => setFormData({
                 ...formData,
@@ -741,7 +782,7 @@ export default function Events() {
                 <Label>Tags</Label>
                 <div className="mt-2 flex flex-wrap gap-2 p-3 border rounded-lg max-h-32 overflow-y-auto">
                   {tags.length === 0 ? <p className="text-sm text-muted-foreground">No tags available</p> : tags.map(tag => <div key={tag.id} className="flex items-center space-x-2">
-                        <Checkbox id={`tag-${tag.id}`} checked={formData.tags.includes(tag.id)} onCheckedChange={() => handleTagToggle(tag.id)} />
+                        <Checkbox id={`tag-${tag.id}`} checked={formData.tag_ids.includes(tag.id)} onCheckedChange={() => handleTagToggle(tag.id)} />
                         <label htmlFor={`tag-${tag.id}`} className="text-sm cursor-pointer">
                           {tag.name}
                         </label>
@@ -758,9 +799,41 @@ export default function Events() {
                 <Label htmlFor="link_to_dolk_profile">Show Personal Details</Label>
               </div>
 
+              {/* Existing Documents (when editing) */}
+              {editingEvent && existingDocuments.length > 0 && (
+                <div>
+                  <Label>Existing Documents/Images</Label>
+                  <div className="mt-2 grid grid-cols-3 gap-2">
+                    {existingDocuments.map(doc => {
+                      const isImage = doc.document_type.startsWith("image/");
+                      return (
+                        <div key={doc.id} className="relative border rounded-lg overflow-hidden">
+                          {isImage ? (
+                            <img src={doc.document_url} alt="Document" className="w-full h-20 object-cover" />
+                          ) : (
+                            <div className="w-full h-20 flex items-center justify-center bg-muted">
+                              <FileText className="h-8 w-8 text-muted-foreground" />
+                            </div>
+                          )}
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="sm"
+                            className="absolute top-1 right-1 h-6 w-6 p-0"
+                            onClick={() => handleDeleteExistingDocument(doc.id)}
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               {/* Documents Upload */}
               <div>
-                <Label htmlFor="documents">Documents/Images (Multiple)</Label>
+                <Label htmlFor="documents">{editingEvent ? "Add New Documents/Images" : "Documents/Images (Multiple)"}</Label>
                 <Input id="documents" type="file" multiple accept="image/*,.pdf,.doc,.docx" onChange={e => setSelectedFiles(e.target.files)} className="mt-1" />
                 {selectedFiles && selectedFiles.length > 0 && <p className="text-sm text-muted-foreground mt-1">{selectedFiles.length} file(s) selected</p>}
               </div>
