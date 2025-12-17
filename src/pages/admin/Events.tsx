@@ -255,7 +255,7 @@ export default function Events() {
         duration: formData.duration.trim() || null,
         short_description: formData.short_description.trim(),
         category_id: formData.category_ids.length > 0 ? formData.category_ids : null,
-        category_names: selectedCategoryNames.length > 0 ? selectedCategoryNames.join(", ") : null,
+        category_names: selectedCategoryNames.length > 0 ? JSON.stringify(selectedCategoryNames) : null,
         type: "event",
         full_description: formData.full_description.trim(),
         link_to_dolk_profile: formData.link_to_dolk_profile,
