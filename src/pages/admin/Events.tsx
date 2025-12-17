@@ -513,7 +513,10 @@ export default function Events() {
   };
   const getCategoryName = (categoryId: string[] | null) => {
     if (!categoryId || categoryId.length === 0) return "N/A";
-    return categories.find(c => c.id === categoryId[0])?.name || "N/A";
+    const categoryNames = categoryId
+      .map(id => categories.find(c => c.id === id)?.name)
+      .filter(Boolean);
+    return categoryNames.length > 0 ? categoryNames.join(", ") : "N/A";
   };
   const filteredEvents = events.filter(event => event.title.toLowerCase().includes(searchTerm.toLowerCase()));
   const totalPages = Math.ceil(filteredEvents.length / itemsPerPage);
