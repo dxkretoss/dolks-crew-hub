@@ -31,7 +31,7 @@ interface Event {
   created_at: string;
   cover_picture: string | null;
   duration: string | null;
-  category_id: string | null;
+  category_id: string[] | null;
 }
 interface EventDocument {
   id: string;
@@ -240,7 +240,7 @@ export default function Events() {
         event_time: formData.event_time,
         duration: formData.duration.trim() || null,
         short_description: formData.short_description.trim(),
-        category_id: formData.category_id || null,
+        category_id: formData.category_id ? [formData.category_id] : null,
         type: "event",
         // Default type value
         full_description: formData.full_description.trim(),
@@ -463,7 +463,7 @@ export default function Events() {
       event_time: event.event_time,
       duration: event.duration || "",
       short_description: event.short_description,
-      category_id: event.category_id || "",
+      category_id: event.category_id?.[0] || "",
       full_description: event.full_description,
       link_to_dolk_profile: event.link_to_dolk_profile,
       where_to_host: event.where_to_host || "",
@@ -511,9 +511,9 @@ export default function Events() {
       tags: prev.tags.includes(tagId) ? prev.tags.filter(id => id !== tagId) : [...prev.tags, tagId]
     }));
   };
-  const getCategoryName = (categoryId: string | null) => {
-    if (!categoryId) return "N/A";
-    return categories.find(c => c.id === categoryId)?.name || "N/A";
+  const getCategoryName = (categoryId: string[] | null) => {
+    if (!categoryId || categoryId.length === 0) return "N/A";
+    return categories.find(c => c.id === categoryId[0])?.name || "N/A";
   };
   const filteredEvents = events.filter(event => event.title.toLowerCase().includes(searchTerm.toLowerCase()));
   const totalPages = Math.ceil(filteredEvents.length / itemsPerPage);
