@@ -101,6 +101,7 @@ export default function Events() {
   const [eventDocuments, setEventDocuments] = useState<EventDocument[]>([]);
   const [loadingDocuments, setLoadingDocuments] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const itemsPerPage = 10;
   const {
     toast
@@ -125,10 +126,18 @@ export default function Events() {
   const [existingDocuments, setExistingDocuments] = useState<EventDocument[]>([]);
   const [documentsToDelete, setDocumentsToDelete] = useState<string[]>([]);
   useEffect(() => {
+    fetchCurrentUser();
     fetchEvents();
     fetchCategories();
     fetchTags();
   }, []);
+
+  const fetchCurrentUser = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      setCurrentUserId(user.id);
+    }
+  };
   const fetchEvents = async () => {
     try {
       const {
@@ -911,6 +920,11 @@ export default function Events() {
                               <X className="h-4 w-4" />
                             </Button>
                           </>}
+                        {currentUserId && event.user_id === currentUserId && (
+                          <Button size="sm" variant="outline" onClick={() => handleEdit(event)}>
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        )}
                         <Button size="sm" variant="outline" onClick={() => setConfirmDialog({
                     open: true,
                     type: 'delete',
