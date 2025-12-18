@@ -29,6 +29,7 @@ interface Project {
   status: string;
   rejection_reason: string | null;
   category_id: string | null;
+  category_names: string | null;
   created_at: string;
   updated_at: string;
   profiles?: {
@@ -38,9 +39,6 @@ interface Project {
     country_code: string | null;
     profile_picture_url: string | null;
     role: string | null;
-  } | null;
-  categories?: {
-    name: string;
   } | null;
 }
 
@@ -77,20 +75,9 @@ const Crewpreneur = () => {
             .eq("user_id", project.user_id)
             .maybeSingle();
 
-          let categoryData = null;
-          if (project.category_id) {
-            const { data: catData } = await supabase
-              .from("categories")
-              .select("name")
-              .eq("id", project.category_id)
-              .maybeSingle();
-            categoryData = catData;
-          }
-
           return {
             ...project,
             profiles: profileData,
-            categories: categoryData,
           };
         })
       );
@@ -236,6 +223,21 @@ const Crewpreneur = () => {
     }
   };
 
+  const getCategoryNamesArray = (categoryNames: string | null): string[] => {
+    if (!categoryNames) return [];
+    try {
+      const parsed = JSON.parse(categoryNames);
+      return Array.isArray(parsed) ? parsed : [categoryNames];
+    } catch {
+      return categoryNames ? [categoryNames] : [];
+    }
+  };
+
+  const parseCategoryNames = (categoryNames: string | null): string => {
+    const names = getCategoryNamesArray(categoryNames);
+    return names.join(", ");
+  };
+
   const renderPageNumbers = () => {
     const pages: (number | string)[] = [];
     if (totalPages <= 7) {
@@ -324,7 +326,7 @@ const Crewpreneur = () => {
                   <TableCell className="max-w-[150px]">
                     <div className="break-words text-sm">{project.profiles?.full_name || project.profiles?.email || "N/A"}</div>
                   </TableCell>
-                  <TableCell>{project.categories?.name || project.type || "-"}</TableCell>
+                  <TableCell>{parseCategoryNames(project.category_names) || project.type || "-"}</TableCell>
                   <TableCell>{getStatusBadge(project.status)}</TableCell>
                   <TableCell className="text-sm text-muted-foreground">
                     {format(new Date(project.created_at), "MMM dd, yyyy")}
@@ -444,7 +446,15 @@ const Crewpreneur = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <h4 className="font-semibold mb-1">Category</h4>
-                  <p className="text-sm">{viewingProject.categories?.name || viewingProject.type || "-"}</p>
+                  <div className="flex flex-wrap gap-1">
+                    {getCategoryNamesArray(viewingProject.category_names).length > 0 ? (
+                      getCategoryNamesArray(viewingProject.category_names).map((cat, idx) => (
+                        <Badge key={idx} variant="outline" className="bg-blue-100 text-blue-800 border-blue-300">{cat}</Badge>
+                      ))
+                    ) : (
+                      <span className="text-sm">{viewingProject.type || "-"}</span>
+                    )}
+                  </div>
                 </div>
                 <div>
                   <h4 className="font-semibold mb-1">Show Personal Details</h4>
