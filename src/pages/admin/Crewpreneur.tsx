@@ -34,6 +34,10 @@ interface Project {
   profiles?: {
     full_name: string | null;
     email: string;
+    phone_number: string | null;
+    country_code: string | null;
+    profile_picture_url: string | null;
+    role: string | null;
   } | null;
   categories?: {
     name: string;
@@ -69,8 +73,8 @@ const Crewpreneur = () => {
         (projectsData || []).map(async (project) => {
           const { data: profileData } = await supabase
             .from("profiles")
-            .select("full_name, email")
-            .eq("id", project.user_id)
+            .select("full_name, email, phone_number, country_code, profile_picture_url, role")
+            .eq("user_id", project.user_id)
             .maybeSingle();
 
           let categoryData = null;
@@ -401,12 +405,43 @@ const Crewpreneur = () => {
                 <div>{getStatusBadge(viewingProject.status)}</div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <h4 className="font-semibold mb-1">Submitted By</h4>
-                  <p className="text-sm">{viewingProject.profiles?.full_name || "N/A"}</p>
-                  <p className="text-sm text-muted-foreground">{viewingProject.profiles?.email}</p>
+              {/* User Information Section */}
+              <div className="border rounded-lg p-4 bg-muted/30">
+                <h4 className="font-semibold mb-3">User Information</h4>
+                <div className="flex items-start gap-4">
+                  {viewingProject.profiles?.profile_picture_url && (
+                    <img 
+                      src={viewingProject.profiles.profile_picture_url} 
+                      alt="Profile" 
+                      className="w-16 h-16 rounded-full object-cover border"
+                    />
+                  )}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 flex-1">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Full Name</p>
+                      <p className="text-sm font-medium">{viewingProject.profiles?.full_name || "N/A"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Email</p>
+                      <p className="text-sm font-medium">{viewingProject.profiles?.email || "N/A"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Contact Number</p>
+                      <p className="text-sm font-medium">
+                        {viewingProject.profiles?.phone_number 
+                          ? `${viewingProject.profiles?.country_code || ''} ${viewingProject.profiles.phone_number}`
+                          : "N/A"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Role</p>
+                      <p className="text-sm font-medium">{viewingProject.profiles?.role || "N/A"}</p>
+                    </div>
+                  </div>
                 </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <h4 className="font-semibold mb-1">Category</h4>
                   <p className="text-sm">{viewingProject.categories?.name || viewingProject.type || "-"}</p>
