@@ -355,6 +355,35 @@ export type Database = {
         }
         Relationships: []
       }
+      events_favorites: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "events_favorites_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       hobbies: {
         Row: {
           created_at: string
@@ -853,15 +882,7 @@ export type Database = {
           visuals?: string[] | null
           what_looking_for?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "fk_projects_user_id"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       skills: {
         Row: {
