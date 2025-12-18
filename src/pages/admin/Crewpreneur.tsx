@@ -310,7 +310,7 @@ const Crewpreneur = () => {
             <TableRow>
               <TableHead>Project Title</TableHead>
               <TableHead>Submitted By</TableHead>
-              <TableHead>Category</TableHead>
+              <TableHead>Short Description</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Created</TableHead>
               <TableHead className="text-right">Actions</TableHead>
@@ -326,7 +326,9 @@ const Crewpreneur = () => {
                   <TableCell className="max-w-[150px]">
                     <div className="break-words text-sm">{project.profiles?.full_name || project.profiles?.email || "N/A"}</div>
                   </TableCell>
-                  <TableCell>{parseCategoryNames(project.category_names) || project.type || "-"}</TableCell>
+                  <TableCell className="max-w-[250px]">
+                    <div className="break-words text-sm text-muted-foreground line-clamp-2">{project.short_description}</div>
+                  </TableCell>
                   <TableCell>{getStatusBadge(project.status)}</TableCell>
                   <TableCell className="text-sm text-muted-foreground">
                     {format(new Date(project.created_at), "MMM dd, yyyy")}
