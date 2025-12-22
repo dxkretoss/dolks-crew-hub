@@ -916,7 +916,7 @@ export default function Events() {
                 <TableRow>
                   <TableHead>Title</TableHead>
                   <TableHead>Category</TableHead>
-                  <TableHead>Date & Time</TableHead>
+                  <TableHead>Event Date & Time</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Featured</TableHead>
                   <TableHead>Interested</TableHead>
@@ -1172,22 +1172,61 @@ export default function Events() {
                 {loadingDocuments ? <div className="p-4 text-center text-muted-foreground">Loading documents...</div> : eventDocuments.length === 0 ? <p className="text-muted-foreground mt-2">No documents uploaded</p> : <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-2">
                     {eventDocuments.map(doc => {
                       const isPdf = doc.document_type === "application/pdf" || doc.document_url.toLowerCase().endsWith('.pdf');
+                      const isDoc = doc.document_type.includes("word") || doc.document_url.toLowerCase().endsWith('.doc') || doc.document_url.toLowerCase().endsWith('.docx');
                       const isImage = doc.document_type.startsWith("image/");
+                      
+                      // Extract a readable file name from URL
+                      const urlParts = doc.document_url.split('/');
+                      const rawFileName = urlParts[urlParts.length - 1] || 'document';
+                      // Remove timestamp prefix if present (e.g., "1234567890_0.pdf" -> "document.pdf")
+                      const fileExtension = rawFileName.split('.').pop() || '';
+                      const displayFileName = fileExtension ? `Event_Document.${fileExtension}` : rawFileName;
                       
                       return (
                         <div key={doc.id} className="relative rounded-lg overflow-hidden border">
                           {isImage ? (
-                            <a href={doc.document_url} target="_blank" rel="noopener noreferrer" className="block aspect-video hover:opacity-80 transition-opacity">
-                              <img src={doc.document_url} alt="Event document" className="w-full h-full object-cover" />
-                            </a>
+                            <div className="flex flex-col">
+                              <a href={doc.document_url} target="_blank" rel="noopener noreferrer" className="block aspect-video hover:opacity-80 transition-opacity">
+                                <img src={doc.document_url} alt="Event document" className="w-full h-full object-cover" />
+                              </a>
+                              <div className="flex gap-2 p-2 bg-muted/50 justify-center">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => window.open(doc.document_url, '_blank')}
+                                >
+                                  <Eye className="h-3 w-3 mr-1" />
+                                  View
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => {
+                                    const link = document.createElement('a');
+                                    link.href = doc.document_url;
+                                    link.download = displayFileName;
+                                    link.target = '_blank';
+                                    document.body.appendChild(link);
+                                    link.click();
+                                    document.body.removeChild(link);
+                                  }}
+                                >
+                                  <Download className="h-3 w-3 mr-1" />
+                                  Download
+                                </Button>
+                              </div>
+                            </div>
                           ) : (
                             <div className="aspect-video flex flex-col items-center justify-center bg-muted p-2">
                               <FileText className="h-8 w-8 text-muted-foreground mb-2" />
-                              <span className="text-xs text-muted-foreground mb-2">
-                                {doc.document_type.split("/")[1]?.toUpperCase() || "DOC"}
+                              <span className="text-xs text-muted-foreground mb-1 font-medium">
+                                {isPdf ? "PDF" : isDoc ? "DOC" : doc.document_type.split("/")[1]?.toUpperCase() || "DOC"}
+                              </span>
+                              <span className="text-xs text-muted-foreground mb-2 max-w-full truncate px-2" title={displayFileName}>
+                                {displayFileName}
                               </span>
                               <div className="flex gap-2">
-                                {isPdf && (
+                                {(isPdf || isDoc) && (
                                   <Button
                                     size="sm"
                                     variant="outline"
@@ -1206,7 +1245,7 @@ export default function Events() {
                                   onClick={() => {
                                     const link = document.createElement('a');
                                     link.href = doc.document_url;
-                                    link.download = doc.document_url.split('/').pop() || 'document';
+                                    link.download = displayFileName;
                                     link.target = '_blank';
                                     document.body.appendChild(link);
                                     link.click();

@@ -23,8 +23,8 @@ type JobRequest = {
   job_full_description: string;
   job_start_date: string;
   job_location: string;
-  job_latitude: string;
-  job_longitude: string;
+  job_latitude: number | null;
+  job_longitude: number | null;
   job_complete_date: string;
   job_special_requirements: string;
   job_budget: string | null;

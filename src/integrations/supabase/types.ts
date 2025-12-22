@@ -41,6 +41,118 @@ export type Database = {
         }
         Relationships: []
       }
+      chat_messages: {
+        Row: {
+          chat_id: string
+          created_at: string | null
+          id: string
+          message: string
+          message_type: string
+          push_sent: boolean | null
+          receiver_id: string | null
+          sender_id: string
+        }
+        Insert: {
+          chat_id: string
+          created_at?: string | null
+          id?: string
+          message: string
+          message_type?: string
+          push_sent?: boolean | null
+          receiver_id?: string | null
+          sender_id: string
+        }
+        Update: {
+          chat_id?: string
+          created_at?: string | null
+          id?: string
+          message?: string
+          message_type?: string
+          push_sent?: boolean | null
+          receiver_id?: string | null
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_chat_id_fkey"
+            columns: ["chat_id"]
+            isOneToOne: false
+            referencedRelation: "chats"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_read_states: {
+        Row: {
+          chat_id: string
+          id: string
+          last_read_at: string | null
+          user_id: string
+        }
+        Insert: {
+          chat_id: string
+          id?: string
+          last_read_at?: string | null
+          user_id: string
+        }
+        Update: {
+          chat_id?: string
+          id?: string
+          last_read_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_read_states_chat_id_fkey"
+            columns: ["chat_id"]
+            isOneToOne: false
+            referencedRelation: "chats"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chats: {
+        Row: {
+          channel_name: string
+          created_at: string | null
+          id: string
+          job_request_id: string | null
+          receiver_id: string
+          sender_id: string
+        }
+        Insert: {
+          channel_name: string
+          created_at?: string | null
+          id?: string
+          job_request_id?: string | null
+          receiver_id: string
+          sender_id: string
+        }
+        Update: {
+          channel_name?: string
+          created_at?: string | null
+          id?: string
+          job_request_id?: string | null
+          receiver_id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chats_receiver_id_fkey"
+            columns: ["receiver_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "chats_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       company_crew_roles: {
         Row: {
           created_at: string
@@ -114,10 +226,10 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
-          latitude: string | null
+          latitude: number | null
           links: string | null
           location: string
-          longitude: string | null
+          longitude: number | null
           our_team_ids: string[] | null
           tags: string | null
           tags_ids: string | null
@@ -138,10 +250,10 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
-          latitude?: string | null
+          latitude?: number | null
           links?: string | null
           location: string
-          longitude?: string | null
+          longitude?: number | null
           our_team_ids?: string[] | null
           tags?: string | null
           tags_ids?: string | null
@@ -162,10 +274,10 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
-          latitude?: string | null
+          latitude?: number | null
           links?: string | null
           location?: string
-          longitude?: string | null
+          longitude?: number | null
           our_team_ids?: string[] | null
           tags?: string | null
           tags_ids?: string | null
@@ -418,9 +530,9 @@ export type Database = {
           job_consent: boolean | null
           job_documents_images: string[] | null
           job_full_description: string
-          job_latitude: string
+          job_latitude: number | null
           job_location: string
-          job_longitude: string
+          job_longitude: number | null
           job_short_description: string
           job_special_requirements: string
           job_start_date: string
@@ -445,9 +557,9 @@ export type Database = {
           job_consent?: boolean | null
           job_documents_images?: string[] | null
           job_full_description: string
-          job_latitude: string
+          job_latitude?: number | null
           job_location: string
-          job_longitude: string
+          job_longitude?: number | null
           job_short_description: string
           job_special_requirements: string
           job_start_date: string
@@ -472,9 +584,9 @@ export type Database = {
           job_consent?: boolean | null
           job_documents_images?: string[] | null
           job_full_description?: string
-          job_latitude?: string
+          job_latitude?: number | null
           job_location?: string
-          job_longitude?: string
+          job_longitude?: number | null
           job_short_description?: string
           job_special_requirements?: string
           job_start_date?: string
@@ -650,9 +762,9 @@ export type Database = {
           description: string | null
           id: string
           image_url: string[] | null
-          latitude: string | null
+          latitude: number | null
           location: string | null
-          longitude: string | null
+          longitude: number | null
           mentions: string[] | null
           tag_ids: string[] | null
           tag_people_ids: string[] | null
@@ -667,9 +779,9 @@ export type Database = {
           description?: string | null
           id?: string
           image_url?: string[] | null
-          latitude?: string | null
+          latitude?: number | null
           location?: string | null
-          longitude?: string | null
+          longitude?: number | null
           mentions?: string[] | null
           tag_ids?: string[] | null
           tag_people_ids?: string[] | null
@@ -684,9 +796,9 @@ export type Database = {
           description?: string | null
           id?: string
           image_url?: string[] | null
-          latitude?: string | null
+          latitude?: number | null
           location?: string | null
-          longitude?: string | null
+          longitude?: number | null
           mentions?: string[] | null
           tag_ids?: string[] | null
           tag_people_ids?: string[] | null
@@ -712,6 +824,7 @@ export type Database = {
           fcm_token: string | null
           full_name: string | null
           gender: string | null
+          hashed_password: string | null
           hobby: string | null
           id: string
           is_approved: boolean | null
@@ -720,9 +833,9 @@ export type Database = {
           is_onboarded: boolean | null
           is_otp_verified: boolean | null
           jwt_token: string | null
-          latitude: string | null
+          latitude: number | null
           location: string | null
-          longitude: string | null
+          longitude: number | null
           nationality: string | null
           otp: string | null
           otp_created_at: string | null
@@ -752,6 +865,7 @@ export type Database = {
           fcm_token?: string | null
           full_name?: string | null
           gender?: string | null
+          hashed_password?: string | null
           hobby?: string | null
           id?: string
           is_approved?: boolean | null
@@ -760,9 +874,9 @@ export type Database = {
           is_onboarded?: boolean | null
           is_otp_verified?: boolean | null
           jwt_token?: string | null
-          latitude?: string | null
+          latitude?: number | null
           location?: string | null
-          longitude?: string | null
+          longitude?: number | null
           nationality?: string | null
           otp?: string | null
           otp_created_at?: string | null
@@ -792,6 +906,7 @@ export type Database = {
           fcm_token?: string | null
           full_name?: string | null
           gender?: string | null
+          hashed_password?: string | null
           hobby?: string | null
           id?: string
           is_approved?: boolean | null
@@ -800,9 +915,9 @@ export type Database = {
           is_onboarded?: boolean | null
           is_otp_verified?: boolean | null
           jwt_token?: string | null
-          latitude?: string | null
+          latitude?: number | null
           location?: string | null
-          longitude?: string | null
+          longitude?: number | null
           nationality?: string | null
           otp?: string | null
           otp_created_at?: string | null
