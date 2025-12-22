@@ -1171,16 +1171,33 @@ export default function Events() {
                 <Label className="text-muted-foreground">Documents</Label>
                 {loadingDocuments ? <div className="p-4 text-center text-muted-foreground">Loading documents...</div> : eventDocuments.length === 0 ? <p className="text-muted-foreground mt-2">No documents uploaded</p> : <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-2">
                     {eventDocuments.map(doc => {
-                      const isPdf = doc.document_type === "application/pdf" || doc.document_url.toLowerCase().endsWith('.pdf');
-                      const isDoc = doc.document_type.includes("word") || doc.document_url.toLowerCase().endsWith('.doc') || doc.document_url.toLowerCase().endsWith('.docx');
-                      const isImage = doc.document_type.startsWith("image/");
-                      
-                      // Extract a readable file name from URL
+                      // Extract file extension from URL for better type detection
                       const urlParts = doc.document_url.split('/');
                       const rawFileName = urlParts[urlParts.length - 1] || 'document';
-                      // Remove timestamp prefix if present (e.g., "1234567890_0.pdf" -> "document.pdf")
-                      const fileExtension = rawFileName.split('.').pop() || '';
+                      const fileExtension = rawFileName.split('.').pop()?.toLowerCase() || '';
+                      
+                      // Detect file types from both MIME type and URL extension
+                      const isPdf = doc.document_type === "application/pdf" || fileExtension === 'pdf';
+                      const isDoc = doc.document_type.includes("word") || fileExtension === 'doc' || fileExtension === 'docx';
+                      const isImage = doc.document_type.startsWith("image/") || ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'].includes(fileExtension);
+                      
+                      // Create a user-friendly display file name
                       const displayFileName = fileExtension ? `Event_Document.${fileExtension}` : rawFileName;
+                      
+                      // Get file type label from extension (fallback for octet-stream)
+                      const getFileTypeLabel = () => {
+                        if (isPdf) return "PDF";
+                        if (isDoc) return fileExtension === 'docx' ? "DOCX" : "DOC";
+                        if (fileExtension && fileExtension !== 'octet-stream') {
+                          return fileExtension.toUpperCase();
+                        }
+                        // Only use MIME type if extension is not available
+                        const mimeSubtype = doc.document_type.split("/")[1];
+                        if (mimeSubtype && mimeSubtype !== 'octet-stream') {
+                          return mimeSubtype.toUpperCase();
+                        }
+                        return "FILE";
+                      };
                       
                       return (
                         <div key={doc.id} className="relative rounded-lg overflow-hidden border">
@@ -1220,7 +1237,7 @@ export default function Events() {
                             <div className="aspect-video flex flex-col items-center justify-center bg-muted p-2">
                               <FileText className="h-8 w-8 text-muted-foreground mb-2" />
                               <span className="text-xs text-muted-foreground mb-1 font-medium">
-                                {isPdf ? "PDF" : isDoc ? "DOC" : doc.document_type.split("/")[1]?.toUpperCase() || "DOC"}
+                                {getFileTypeLabel()}
                               </span>
                               <span className="text-xs text-muted-foreground mb-2 max-w-full truncate px-2" title={displayFileName}>
                                 {displayFileName}
