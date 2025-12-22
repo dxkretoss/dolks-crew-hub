@@ -1200,13 +1200,13 @@ export default function Events() {
                       };
                       
                       return (
-                        <div key={doc.id} className="relative rounded-lg overflow-hidden border">
+                        <div key={doc.id} className="relative rounded-lg overflow-hidden border h-[180px] flex flex-col">
                           {isImage ? (
-                            <div className="flex flex-col">
-                              <a href={doc.document_url} target="_blank" rel="noopener noreferrer" className="block aspect-video hover:opacity-80 transition-opacity">
+                            <>
+                              <a href={doc.document_url} target="_blank" rel="noopener noreferrer" className="block h-[120px] hover:opacity-80 transition-opacity">
                                 <img src={doc.document_url} alt="Event document" className="w-full h-full object-cover" />
                               </a>
-                              <div className="flex gap-2 p-2 bg-muted/50 justify-center">
+                              <div className="flex gap-2 p-2 bg-muted/50 justify-center flex-1 items-center">
                                 <Button
                                   size="sm"
                                   variant="outline"
@@ -1232,11 +1232,11 @@ export default function Events() {
                                   Download
                                 </Button>
                               </div>
-                            </div>
+                            </>
                           ) : (
-                            <div className="aspect-video flex flex-col items-center justify-center bg-muted p-2">
-                              <FileText className="h-8 w-8 text-muted-foreground mb-2" />
-                              <span className="text-xs text-muted-foreground mb-1 font-medium">
+                            <div className="flex flex-col items-center justify-center bg-muted p-2 h-full">
+                              <FileText className="h-6 w-6 text-muted-foreground mb-1" />
+                              <span className="text-xs text-muted-foreground font-medium">
                                 {getFileTypeLabel()}
                               </span>
                               <span className="text-xs text-muted-foreground mb-2 max-w-full truncate px-2" title={displayFileName}>
