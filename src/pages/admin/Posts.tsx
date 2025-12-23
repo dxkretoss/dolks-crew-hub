@@ -71,6 +71,8 @@ const Posts = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
   const [previewMedia, setPreviewMedia] = useState<{ url: string; isVideo: boolean } | null>(null);
+  const [deletingCommentId, setDeletingCommentId] = useState<string | null>(null);
+  const [isDeletingComment, setIsDeletingComment] = useState(false);
   const {
     toast
   } = useToast();
@@ -235,6 +237,48 @@ const Posts = () => {
     } finally {
       setIsDeleting(false);
       setDeletingPostId(null);
+    }
+  };
+
+  const handleDeleteComment = async () => {
+    if (!deletingCommentId || !viewingPost) return;
+    setIsDeletingComment(true);
+    try {
+      const { error } = await supabase
+        .from("post_comments")
+        .delete()
+        .eq("id", deletingCommentId);
+
+      if (error) throw error;
+
+      // Update the viewing post to remove the deleted comment
+      setViewingPost({
+        ...viewingPost,
+        comments: viewingPost.comments?.filter(c => c.id !== deletingCommentId),
+        total_comments: (viewingPost.total_comments || 1) - 1
+      });
+
+      // Update the posts list
+      setPosts(posts.map(p => 
+        p.id === viewingPost.id 
+          ? { ...p, total_comments: (p.total_comments || 1) - 1 }
+          : p
+      ));
+
+      toast({
+        title: "Success",
+        description: "Comment deleted successfully"
+      });
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+      toast({
+        title: "Error",
+        description: "Failed to delete comment",
+        variant: "destructive"
+      });
+    } finally {
+      setIsDeletingComment(false);
+      setDeletingCommentId(null);
     }
   };
   const filteredPosts = posts.filter(post => {
@@ -539,6 +583,14 @@ const Posts = () => {
                                 {format(new Date(comment.created_at), "MMM dd, yyyy HH:mm")}
                               </p>
                             </div>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                              onClick={() => setDeletingCommentId(comment.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
                           </div>
                           <p className="text-sm pl-11 whitespace-pre-wrap">
                             {comment.comment_text}
@@ -577,6 +629,27 @@ const Posts = () => {
             <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleDeletePost} disabled={isDeleting} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               {isDeleting ? <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Deleting...
+                </> : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Comment Confirmation Dialog */}
+      <AlertDialog open={!!deletingCommentId} onOpenChange={() => setDeletingCommentId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Comment</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this comment? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeletingComment}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteComment} disabled={isDeletingComment} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              {isDeletingComment ? <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Deleting...
                 </> : "Delete"}
