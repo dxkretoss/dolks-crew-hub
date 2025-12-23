@@ -9,11 +9,12 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Plus, Trash2, Edit, Check, X, Search, Users, Eye, Upload, Image as ImageIcon, Loader2 } from "lucide-react";
+import { Plus, Trash2, Edit, Check, X, Search, Users, Eye, Upload, Image as ImageIcon, Loader2, Download, FileText, Star } from "lucide-react";
 import { format } from "date-fns";
 import { z } from "zod";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import { ConvertibleImage } from "@/components/ConvertibleImage";
 interface Event {
   id: string;
   title: string;
@@ -26,12 +27,15 @@ interface Event {
   location: string | null;
   meeting_url: string | null;
   tags: string[] | null;
+  tag_ids: string[] | null;
   is_allowed: boolean | null;
+  is_featured: boolean | null;
   user_id: string;
   created_at: string;
   cover_picture: string | null;
   duration: string | null;
-  category_id: string | null;
+  category_id: string[] | null;
+  category_names: string | null;
 }
 interface EventDocument {
   id: string;
@@ -53,6 +57,12 @@ interface Tag {
   id: string;
   name: string;
 }
+
+const WHERE_TO_HOST_OPTIONS = [
+  { value: "online", label: "Online" },
+  { value: "in-person", label: "In Person" },
+  { value: "hybrid", label: "Hybrid" },
+];
 export default function Events() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
@@ -93,6 +103,7 @@ export default function Events() {
   const [eventDocuments, setEventDocuments] = useState<EventDocument[]>([]);
   const [loadingDocuments, setLoadingDocuments] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const itemsPerPage = 10;
   const {
     toast
@@ -103,22 +114,32 @@ export default function Events() {
     event_time: "",
     duration: "",
     short_description: "",
-    category_id: "",
+    category_ids: [] as string[],
     full_description: "",
     link_to_dolk_profile: false,
     where_to_host: "",
     location: "",
     meeting_url: "",
-    tags: [] as string[]
+    tag_ids: [] as string[]
   });
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
   const [coverPictureFile, setCoverPictureFile] = useState<File | null>(null);
   const [coverPicturePreview, setCoverPicturePreview] = useState<string | null>(null);
+  const [existingDocuments, setExistingDocuments] = useState<EventDocument[]>([]);
+  const [documentsToDelete, setDocumentsToDelete] = useState<string[]>([]);
   useEffect(() => {
+    fetchCurrentUser();
     fetchEvents();
     fetchCategories();
     fetchTags();
   }, []);
+
+  const fetchCurrentUser = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      setCurrentUserId(user.id);
+    }
+  };
   const fetchEvents = async () => {
     try {
       const {
@@ -232,27 +253,36 @@ export default function Events() {
       if (!user) throw new Error("User not authenticated");
 
       // Get tag names from selected tag IDs
-      const selectedTagNames = formData.tags.map(tagId => tags.find(t => t.id === tagId)?.name).filter(Boolean) as string[];
+      const selectedTagNames = formData.tag_ids.map(tagId => tags.find(t => t.id === tagId)?.name).filter(Boolean) as string[];
+      
+      // Get category names from selected category IDs
+      const selectedCategoryNames = formData.category_ids.map(catId => categories.find(c => c.id === catId)?.name).filter(Boolean) as string[];
+      
       let coverPictureUrl = editingEvent?.cover_picture || null;
-      const eventData = {
+      const eventData: any = {
         title: formData.title.trim(),
         event_date: formData.event_date,
         event_time: formData.event_time,
         duration: formData.duration.trim() || null,
         short_description: formData.short_description.trim(),
-        category_id: formData.category_id || null,
+        category_id: formData.category_ids.length > 0 ? formData.category_ids : null,
+        category_names: selectedCategoryNames.length > 0 ? JSON.stringify(selectedCategoryNames) : null,
         type: "event",
-        // Default type value
         full_description: formData.full_description.trim(),
         link_to_dolk_profile: formData.link_to_dolk_profile,
         where_to_host: formData.where_to_host || null,
         location: formData.location.trim() || null,
         meeting_url: formData.meeting_url.trim() || null,
         tags: selectedTagNames.length > 0 ? selectedTagNames : null,
-        user_id: user.id,
-        is_allowed: editingEvent ? null : true,
+        tag_ids: formData.tag_ids.length > 0 ? formData.tag_ids : null,
+        is_allowed: true,
         cover_picture: coverPictureUrl
       };
+      
+      // Only set user_id for new events, preserve original creator when editing
+      if (!editingEvent) {
+        eventData.user_id = user.id;
+      }
       let eventId: string;
       if (editingEvent) {
         // Upload cover picture if new one selected
@@ -260,6 +290,14 @@ export default function Events() {
           coverPictureUrl = await uploadCoverPicture(editingEvent.id);
           eventData.cover_picture = coverPictureUrl;
         }
+        
+        // Delete documents marked for deletion
+        if (documentsToDelete.length > 0) {
+          for (const docId of documentsToDelete) {
+            await supabase.from("event_documents").delete().eq("id", docId);
+          }
+        }
+        
         const {
           error
         } = await supabase.from("events").update(eventData).eq("id", editingEvent.id);
@@ -267,7 +305,7 @@ export default function Events() {
         eventId = editingEvent.id;
         toast({
           title: "Success",
-          description: "Event updated successfully. Pending admin approval."
+          description: "Event updated successfully."
         });
       } else {
         const {
@@ -452,24 +490,30 @@ export default function Events() {
     });
     await fetchEventDocuments(event.id);
   };
-  const handleEdit = (event: Event) => {
+  const handleEdit = async (event: Event) => {
     setEditingEvent(event);
 
-    // Find tag IDs from tag names
-    const tagIds = event.tags ? event.tags.map(tagName => tags.find(t => t.name === tagName)?.id).filter(Boolean) as string[] : [];
+    // Use tag_ids from event if available, otherwise find IDs from tag names
+    const tagIds = event.tag_ids || (event.tags ? event.tags.map(tagName => tags.find(t => t.name === tagName)?.id).filter(Boolean) as string[] : []);
+    
+    // Fetch existing documents for this event
+    const { data: docs } = await supabase.from("event_documents").select("*").eq("event_id", event.id);
+    setExistingDocuments(docs || []);
+    setDocumentsToDelete([]);
+    
     setFormData({
       title: event.title,
       event_date: event.event_date,
       event_time: event.event_time,
       duration: event.duration || "",
       short_description: event.short_description,
-      category_id: event.category_id || "",
+      category_ids: event.category_id || [],
       full_description: event.full_description,
       link_to_dolk_profile: event.link_to_dolk_profile,
       where_to_host: event.where_to_host || "",
       location: event.location || "",
       meeting_url: event.meeting_url || "",
-      tags: tagIds
+      tag_ids: tagIds
     });
     setCoverPicturePreview(event.cover_picture || null);
     setIsDialogOpen(true);
@@ -481,18 +525,20 @@ export default function Events() {
       event_time: "",
       duration: "",
       short_description: "",
-      category_id: "",
+      category_ids: [],
       full_description: "",
       link_to_dolk_profile: false,
       where_to_host: "",
       location: "",
       meeting_url: "",
-      tags: []
+      tag_ids: []
     });
     setEditingEvent(null);
     setSelectedFiles(null);
     setCoverPictureFile(null);
     setCoverPicturePreview(null);
+    setExistingDocuments([]);
+    setDocumentsToDelete([]);
   };
   const handleCoverPictureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -508,18 +554,41 @@ export default function Events() {
   const handleTagToggle = (tagId: string) => {
     setFormData(prev => ({
       ...prev,
-      tags: prev.tags.includes(tagId) ? prev.tags.filter(id => id !== tagId) : [...prev.tags, tagId]
+      tag_ids: prev.tag_ids.includes(tagId) ? prev.tag_ids.filter(id => id !== tagId) : [...prev.tag_ids, tagId]
     }));
   };
-  const getCategoryName = (categoryId: string | null) => {
-    if (!categoryId) return "N/A";
-    return categories.find(c => c.id === categoryId)?.name || "N/A";
+  
+  const handleCategoryToggle = (categoryId: string) => {
+    setFormData(prev => ({
+      ...prev,
+      category_ids: prev.category_ids.includes(categoryId) ? prev.category_ids.filter(id => id !== categoryId) : [...prev.category_ids, categoryId]
+    }));
+  };
+  
+  const handleDeleteExistingDocument = (docId: string) => {
+    setDocumentsToDelete(prev => [...prev, docId]);
+    setExistingDocuments(prev => prev.filter(doc => doc.id !== docId));
+  };
+  const getCategoryName = (categoryId: string[] | null) => {
+    if (!categoryId || categoryId.length === 0) return "N/A";
+    const categoryNames = categoryId
+      .map(id => categories.find(c => c.id === id)?.name)
+      .filter(Boolean);
+    return categoryNames.length > 0 ? categoryNames.join(", ") : "N/A";
   };
   const filteredEvents = events.filter(event => event.title.toLowerCase().includes(searchTerm.toLowerCase()));
-  const totalPages = Math.ceil(filteredEvents.length / itemsPerPage);
+  
+  // Sort events: featured first, then by created_at descending
+  const sortedEvents = [...filteredEvents].sort((a, b) => {
+    if (a.is_featured && !b.is_featured) return -1;
+    if (!a.is_featured && b.is_featured) return 1;
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  });
+  
+  const totalPages = Math.ceil(sortedEvents.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const currentEvents = filteredEvents.slice(startIndex, endIndex);
+  const currentEvents = sortedEvents.slice(startIndex, endIndex);
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
@@ -581,6 +650,29 @@ export default function Events() {
     if (isAllowed) return <span className="text-green-500">Approved</span>;
     return <span className="text-red-500">Rejected</span>;
   };
+
+  const handleToggleFeatured = async (event: Event) => {
+    try {
+      const { error } = await supabase
+        .from("events")
+        .update({ is_featured: !event.is_featured })
+        .eq("id", event.id);
+      
+      if (error) throw error;
+      
+      toast({
+        title: "Success",
+        description: event.is_featured ? "Event unfeatured" : "Event featured"
+      });
+      fetchEvents();
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  };
   return <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <div>
@@ -606,8 +698,7 @@ export default function Events() {
               <div>
                 <Label>Cover Picture</Label>
                 <div className="mt-2">
-                  {coverPicturePreview ? (
-                    <div className="relative w-full h-48 rounded-lg overflow-hidden border">
+                  {coverPicturePreview ? <div className="relative w-full h-48 rounded-lg overflow-hidden border">
                       <img src={coverPicturePreview} alt="Cover preview" className="w-full h-full object-cover" />
                       <label className="absolute top-2 right-2 cursor-pointer">
                         <Button type="button" variant="secondary" size="sm" asChild>
@@ -617,9 +708,7 @@ export default function Events() {
                         </Button>
                         <input type="file" className="hidden" accept="image/*" onChange={handleCoverPictureChange} />
                       </label>
-                    </div>
-                  ) : (
-                    <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
+                    </div> : <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer hover:bg-muted/50 transition-colors">
                       <div className="flex flex-col items-center justify-center pt-5 pb-6">
                         <ImageIcon className="w-10 h-10 mb-3 text-muted-foreground" />
                         <p className="mb-2 text-sm text-muted-foreground">
@@ -627,8 +716,7 @@ export default function Events() {
                         </p>
                       </div>
                       <input type="file" className="hidden" accept="image/*" onChange={handleCoverPictureChange} />
-                    </label>
-                  )}
+                    </label>}
                 </div>
               </div>
 
@@ -677,20 +765,15 @@ export default function Events() {
 
               {/* Category */}
               <div>
-                <Label htmlFor="category_id">Category</Label>
-                <Select value={formData.category_id} onValueChange={value => setFormData({
-                ...formData,
-                category_id: value
-              })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map(category => <SelectItem key={category.id} value={category.id}>
-                        {category.name}
-                      </SelectItem>)}
-                  </SelectContent>
-                </Select>
+                <Label>Category</Label>
+                <div className="mt-2 flex flex-wrap gap-2 p-3 border rounded-lg max-h-32 overflow-y-auto">
+                  {categories.length === 0 ? <p className="text-sm text-muted-foreground">No categories available</p> : categories.map(category => <div key={category.id} className="flex items-center space-x-2">
+                        <Checkbox id={`category-${category.id}`} checked={formData.category_ids.includes(category.id)} onCheckedChange={() => handleCategoryToggle(category.id)} />
+                        <label htmlFor={`category-${category.id}`} className="text-sm cursor-pointer">
+                          {category.name}
+                        </label>
+                      </div>)}
+                </div>
               </div>
 
               {/* Full Description */}
@@ -713,14 +796,17 @@ export default function Events() {
                     <SelectValue placeholder="Select hosting type" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="online">Online</SelectItem>
-                    <SelectItem value="in-person">In Person</SelectItem>
+                    {WHERE_TO_HOST_OPTIONS.map(option => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
 
-              {/* Location (for in-person) */}
-              {formData.where_to_host === "in-person" && <div>
+              {/* Location (for in-person or hybrid) */}
+              {(formData.where_to_host === "in-person" || formData.where_to_host === "hybrid") && <div>
                   <Label htmlFor="location">Location *</Label>
                   <Input id="location" value={formData.location} onChange={e => setFormData({
                 ...formData,
@@ -728,8 +814,8 @@ export default function Events() {
               })} placeholder="Enter event location" required />
                 </div>}
 
-              {/* Meeting URL (for online) */}
-              {formData.where_to_host === "online" && <div>
+              {/* Meeting URL (for online or hybrid) */}
+              {(formData.where_to_host === "online" || formData.where_to_host === "hybrid") && <div>
                   <Label htmlFor="meeting_url">Meeting URL</Label>
                   <Input id="meeting_url" type="url" value={formData.meeting_url} onChange={e => setFormData({
                 ...formData,
@@ -742,7 +828,7 @@ export default function Events() {
                 <Label>Tags</Label>
                 <div className="mt-2 flex flex-wrap gap-2 p-3 border rounded-lg max-h-32 overflow-y-auto">
                   {tags.length === 0 ? <p className="text-sm text-muted-foreground">No tags available</p> : tags.map(tag => <div key={tag.id} className="flex items-center space-x-2">
-                        <Checkbox id={`tag-${tag.id}`} checked={formData.tags.includes(tag.id)} onCheckedChange={() => handleTagToggle(tag.id)} />
+                        <Checkbox id={`tag-${tag.id}`} checked={formData.tag_ids.includes(tag.id)} onCheckedChange={() => handleTagToggle(tag.id)} />
                         <label htmlFor={`tag-${tag.id}`} className="text-sm cursor-pointer">
                           {tag.name}
                         </label>
@@ -759,29 +845,57 @@ export default function Events() {
                 <Label htmlFor="link_to_dolk_profile">Show Personal Details</Label>
               </div>
 
+              {/* Existing Documents (when editing) */}
+              {editingEvent && existingDocuments.length > 0 && (
+                <div>
+                  <Label>Existing Documents/Images</Label>
+                  <div className="mt-2 grid grid-cols-3 gap-2">
+                    {existingDocuments.map(doc => {
+                      const isImage = doc.document_type.startsWith("image/");
+                      return (
+                        <div key={doc.id} className="relative border rounded-lg overflow-hidden">
+                          {isImage ? (
+                            <img src={doc.document_url} alt="Document" className="w-full h-20 object-cover" />
+                          ) : (
+                            <div className="w-full h-20 flex items-center justify-center bg-muted">
+                              <FileText className="h-8 w-8 text-muted-foreground" />
+                            </div>
+                          )}
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="sm"
+                            className="absolute top-1 right-1 h-6 w-6 p-0"
+                            onClick={() => handleDeleteExistingDocument(doc.id)}
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               {/* Documents Upload */}
               <div>
-                <Label htmlFor="documents">Documents/Images (Multiple)</Label>
+                <Label htmlFor="documents">{editingEvent ? "Add New Documents/Images" : "Documents/Images (Multiple)"}</Label>
                 <Input id="documents" type="file" multiple accept="image/*,.pdf,.doc,.docx" onChange={e => setSelectedFiles(e.target.files)} className="mt-1" />
-                {selectedFiles && selectedFiles.length > 0 && (
-                  <p className="text-sm text-muted-foreground mt-1">{selectedFiles.length} file(s) selected</p>
-                )}
+                {selectedFiles && selectedFiles.length > 0 && <p className="text-sm text-muted-foreground mt-1">{selectedFiles.length} file(s) selected</p>}
               </div>
 
               <div className="flex justify-end space-x-2">
                 <Button type="button" variant="outline" onClick={() => {
-                  setIsDialogOpen(false);
-                  resetForm();
-                }} disabled={submitting}>
+                setIsDialogOpen(false);
+                resetForm();
+              }} disabled={submitting}>
                   Cancel
                 </Button>
                 <Button type="submit" disabled={submitting || uploading}>
-                  {submitting ? (
-                    <>
+                  {submitting ? <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       {editingEvent ? "Updating..." : "Creating..."}
-                    </>
-                  ) : editingEvent ? "Update" : "Create"}
+                    </> : editingEvent ? "Update" : "Create"}
                 </Button>
               </div>
             </form>
@@ -803,8 +917,9 @@ export default function Events() {
                 <TableRow>
                   <TableHead>Title</TableHead>
                   <TableHead>Category</TableHead>
-                  <TableHead>Date & Time</TableHead>
+                  <TableHead>Event Date & Time</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead>Featured</TableHead>
                   <TableHead>Interested</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
@@ -817,6 +932,16 @@ export default function Events() {
                       {format(new Date(event.event_date), "MMM dd, yyyy")} at {event.event_time}
                     </TableCell>
                     <TableCell>{getApprovalBadge(event.is_allowed)}</TableCell>
+                    <TableCell>
+                      <Button 
+                        size="sm" 
+                        variant={event.is_featured ? "default" : "outline"} 
+                        onClick={() => handleToggleFeatured(event)}
+                        className={event.is_featured ? "bg-yellow-500 hover:bg-yellow-600 text-white" : ""}
+                      >
+                        <Star className={`h-4 w-4 ${event.is_featured ? "fill-current" : ""}`} />
+                      </Button>
+                    </TableCell>
                     <TableCell>
                       <Button size="sm" variant="outline" onClick={() => handleViewInterestedUsers(event)}>
                         <Users className="h-4 w-4" />
@@ -861,7 +986,7 @@ export default function Events() {
           </div>}
       </div>
 
-      {!loading && filteredEvents.length > itemsPerPage && <div className="mt-4">
+      {!loading && sortedEvents.length > itemsPerPage && <div className="mt-4">
           <Pagination>
             <PaginationContent>
               <PaginationItem>
@@ -969,7 +1094,20 @@ export default function Events() {
                 </div>
                 <div>
                   <Label className="text-muted-foreground">Category</Label>
-                  <p className="font-medium">{getCategoryName(eventDetailsDialog.event.category_id)}</p>
+                  {eventDetailsDialog.event.category_id && eventDetailsDialog.event.category_id.length > 0 ? (
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      {eventDetailsDialog.event.category_id.map((catId, index) => {
+                        const categoryName = categories.find(c => c.id === catId)?.name || "Unknown";
+                        return (
+                          <span key={index} className="px-2 py-1 bg-primary/10 text-primary rounded-full text-sm font-medium">
+                            {categoryName}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <p className="font-medium">N/A</p>
+                  )}
                 </div>
                 <div>
                   <Label className="text-muted-foreground">Event Date</Label>
@@ -1006,7 +1144,7 @@ export default function Events() {
 
               {eventDetailsDialog.event.meeting_url && <div>
                   <Label className="text-muted-foreground">Meeting URL</Label>
-                  <a href={eventDetailsDialog.event.meeting_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium">
+                  <a href={eventDetailsDialog.event.meeting_url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium mx-[10px] my-0 px-0 py-0">
                     {eventDetailsDialog.event.meeting_url}
                   </a>
                 </div>}
@@ -1033,13 +1171,86 @@ export default function Events() {
               <div>
                 <Label className="text-muted-foreground">Documents</Label>
                 {loadingDocuments ? <div className="p-4 text-center text-muted-foreground">Loading documents...</div> : eventDocuments.length === 0 ? <p className="text-muted-foreground mt-2">No documents uploaded</p> : <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-2">
-                    {eventDocuments.map(doc => <a key={doc.id} href={doc.document_url} target="_blank" rel="noopener noreferrer" className="relative aspect-video rounded-lg overflow-hidden border hover:opacity-80 transition-opacity">
-                        {doc.document_type.startsWith("image/") ? <img src={doc.document_url} alt="Event document" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center bg-muted">
-                            <span className="text-sm text-muted-foreground">
-                              {doc.document_type.split("/")[1]?.toUpperCase() || "DOC"}
-                            </span>
-                          </div>}
-                      </a>)}
+                    {eventDocuments.map(doc => {
+                      // Extract file extension from URL for better type detection
+                      const urlParts = doc.document_url.split('/');
+                      const rawFileName = urlParts[urlParts.length - 1] || 'document';
+                      const fileExtension = rawFileName.split('.').pop()?.toLowerCase() || '';
+                      
+                      // Detect file types from both MIME type and URL extension
+                      const isPdf = doc.document_type === "application/pdf" || fileExtension === 'pdf';
+                      const isDoc = doc.document_type.includes("word") || fileExtension === 'doc' || fileExtension === 'docx';
+                      const isImage = doc.document_type.startsWith("image/") || ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp'].includes(fileExtension);
+                      
+                      // Create a user-friendly display file name
+                      const displayFileName = fileExtension ? `Event_Document.${fileExtension}` : rawFileName;
+                      
+                      // Get file type label from extension (fallback for octet-stream)
+                      const getFileTypeLabel = () => {
+                        if (isPdf) return "PDF";
+                        if (isDoc) return fileExtension === 'docx' ? "DOCX" : "DOC";
+                        if (fileExtension && fileExtension !== 'octet-stream') {
+                          return fileExtension.toUpperCase();
+                        }
+                        // Only use MIME type if extension is not available
+                        const mimeSubtype = doc.document_type.split("/")[1];
+                        if (mimeSubtype && mimeSubtype !== 'octet-stream') {
+                          return mimeSubtype.toUpperCase();
+                        }
+                        return "FILE";
+                      };
+                      
+                      return (
+                        <div key={doc.id} className="relative rounded-lg overflow-hidden border h-[180px] flex flex-col">
+                          {isImage ? (
+                            <a href={doc.document_url} target="_blank" rel="noopener noreferrer" className="block h-full hover:opacity-80 transition-opacity">
+                              <ConvertibleImage src={doc.document_url} alt="Event document" className="w-full h-full object-cover" />
+                            </a>
+                          ) : (
+                            <div className="flex flex-col items-center justify-center bg-muted p-2 h-full">
+                              <FileText className="h-6 w-6 text-muted-foreground mb-1" />
+                              <span className="text-xs text-muted-foreground font-medium">
+                                {getFileTypeLabel()}
+                              </span>
+                              <span className="text-xs text-muted-foreground mb-2 max-w-full truncate px-2" title={displayFileName}>
+                                {displayFileName}
+                              </span>
+                              <div className="flex gap-2">
+                                {(isPdf || isDoc) && (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => {
+                                      const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(doc.document_url)}&embedded=true`;
+                                      window.open(viewerUrl, '_blank');
+                                    }}
+                                  >
+                                    <Eye className="h-3 w-3 mr-1" />
+                                    View
+                                  </Button>
+                                )}
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => {
+                                    const link = document.createElement('a');
+                                    link.href = doc.document_url;
+                                    link.download = displayFileName;
+                                    link.target = '_blank';
+                                    document.body.appendChild(link);
+                                    link.click();
+                                    document.body.removeChild(link);
+                                  }}
+                                >
+                                  <Download className="h-3 w-3 mr-1" />
+                                  Download
+                                </Button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>}
               </div>
             </div>}

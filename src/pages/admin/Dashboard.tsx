@@ -1,12 +1,15 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, Briefcase, ClipboardList } from "lucide-react";
+import { Users, Briefcase, ClipboardList, Calendar, Lightbulb, FileText } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 const Dashboard = () => {
   const [crewCount, setCrewCount] = useState(0);
   const [serviceCount, setServiceCount] = useState(0);
   const [jobRequestCount, setJobRequestCount] = useState(0);
+  const [eventCount, setEventCount] = useState(0);
+  const [projectCount, setProjectCount] = useState(0);
+  const [postCount, setPostCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const {
     toast
@@ -47,9 +50,43 @@ const Dashboard = () => {
         head: true
       });
       if (jobError) throw jobError;
+
+      // Fetch events count
+      const {
+        count: eventTotal,
+        error: eventError
+      } = await supabase.from("events").select("*", {
+        count: "exact",
+        head: true
+      });
+      if (eventError) throw eventError;
+
+      // Fetch crewpreneur (projects) count
+      const {
+        count: projectTotal,
+        error: projectError
+      } = await supabase.from("projects").select("*", {
+        count: "exact",
+        head: true
+      });
+      if (projectError) throw projectError;
+
+      // Fetch posts count
+      const {
+        count: postTotal,
+        error: postError
+      } = await supabase.from("posts").select("*", {
+        count: "exact",
+        head: true
+      });
+      if (postError) throw postError;
+
       setCrewCount(crewTotal || 0);
       setServiceCount(serviceTotal || 0);
       setJobRequestCount(jobTotal || 0);
+      setEventCount(eventTotal || 0);
+      setProjectCount(projectTotal || 0);
+      setPostCount(postTotal || 0);
     } catch (error) {
       console.error("Error fetching counts:", error);
       toast({
@@ -98,6 +135,39 @@ const Dashboard = () => {
           <CardContent>
             <div className="text-2xl font-bold">{loading ? "..." : jobRequestCount}</div>
             <p className="text-xs text-muted-foreground mt-1">Received Job Requests</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Events</CardTitle>
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{loading ? "..." : eventCount}</div>
+            <p className="text-xs text-muted-foreground mt-1">Total Events</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Crewpreneur</CardTitle>
+            <Lightbulb className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{loading ? "..." : projectCount}</div>
+            <p className="text-xs text-muted-foreground mt-1">Total Projects</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Posts</CardTitle>
+            <FileText className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{loading ? "..." : postCount}</div>
+            <p className="text-xs text-muted-foreground mt-1">Total Posts</p>
           </CardContent>
         </Card>
       </div>

@@ -13,6 +13,8 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Search, Eye, Trash2, CheckCircle, XCircle, Loader2, Download } from "lucide-react";
 import { format } from "date-fns";
+import { ConvertibleImage } from "@/components/ConvertibleImage";
+import { ConvertibleAvatar } from "@/components/ConvertibleAvatar";
 
 interface Project {
   id: string;
@@ -29,14 +31,16 @@ interface Project {
   status: string;
   rejection_reason: string | null;
   category_id: string | null;
+  category_names: string | null;
   created_at: string;
   updated_at: string;
   profiles?: {
     full_name: string | null;
     email: string;
-  } | null;
-  categories?: {
-    name: string;
+    phone_number: string | null;
+    country_code: string | null;
+    profile_picture_url: string | null;
+    role: string | null;
   } | null;
 }
 
@@ -69,24 +73,13 @@ const Crewpreneur = () => {
         (projectsData || []).map(async (project) => {
           const { data: profileData } = await supabase
             .from("profiles")
-            .select("full_name, email")
-            .eq("id", project.user_id)
+            .select("full_name, email, phone_number, country_code, profile_picture_url, role")
+            .eq("user_id", project.user_id)
             .maybeSingle();
-
-          let categoryData = null;
-          if (project.category_id) {
-            const { data: catData } = await supabase
-              .from("categories")
-              .select("name")
-              .eq("id", project.category_id)
-              .maybeSingle();
-            categoryData = catData;
-          }
 
           return {
             ...project,
             profiles: profileData,
-            categories: categoryData,
           };
         })
       );
@@ -232,6 +225,21 @@ const Crewpreneur = () => {
     }
   };
 
+  const getCategoryNamesArray = (categoryNames: string | null): string[] => {
+    if (!categoryNames) return [];
+    try {
+      const parsed = JSON.parse(categoryNames);
+      return Array.isArray(parsed) ? parsed : [categoryNames];
+    } catch {
+      return categoryNames ? [categoryNames] : [];
+    }
+  };
+
+  const parseCategoryNames = (categoryNames: string | null): string => {
+    const names = getCategoryNamesArray(categoryNames);
+    return names.join(", ");
+  };
+
   const renderPageNumbers = () => {
     const pages: (number | string)[] = [];
     if (totalPages <= 7) {
@@ -304,7 +312,7 @@ const Crewpreneur = () => {
             <TableRow>
               <TableHead>Project Title</TableHead>
               <TableHead>Submitted By</TableHead>
-              <TableHead>Category</TableHead>
+              <TableHead>Short Description</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Created</TableHead>
               <TableHead className="text-right">Actions</TableHead>
@@ -320,7 +328,9 @@ const Crewpreneur = () => {
                   <TableCell className="max-w-[150px]">
                     <div className="break-words text-sm">{project.profiles?.full_name || project.profiles?.email || "N/A"}</div>
                   </TableCell>
-                  <TableCell>{project.categories?.name || project.type || "-"}</TableCell>
+                  <TableCell className="max-w-[250px]">
+                    <div className="break-words text-sm text-muted-foreground line-clamp-2">{project.short_description}</div>
+                  </TableCell>
                   <TableCell>{getStatusBadge(project.status)}</TableCell>
                   <TableCell className="text-sm text-muted-foreground">
                     {format(new Date(project.created_at), "MMM dd, yyyy")}
@@ -401,15 +411,53 @@ const Crewpreneur = () => {
                 <div>{getStatusBadge(viewingProject.status)}</div>
               </div>
 
+              {/* User Information Section */}
+              <div className="border rounded-lg p-4 bg-muted/30">
+                <h4 className="font-semibold mb-3">User Information</h4>
+                <div className="flex items-start gap-4">
+                  <ConvertibleAvatar
+                    src={viewingProject.profiles?.profile_picture_url}
+                    alt="Profile"
+                    fallback={viewingProject.profiles?.full_name?.charAt(0) || "U"}
+                    className="w-16 h-16"
+                  />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 flex-1">
+                    <div>
+                      <p className="text-xs text-muted-foreground">Full Name</p>
+                      <p className="text-sm font-medium">{viewingProject.profiles?.full_name || "N/A"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Email</p>
+                      <p className="text-sm font-medium">{viewingProject.profiles?.email || "N/A"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Contact Number</p>
+                      <p className="text-sm font-medium">
+                        {viewingProject.profiles?.phone_number 
+                          ? `${viewingProject.profiles?.country_code || ''} ${viewingProject.profiles.phone_number}`
+                          : "N/A"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">Role</p>
+                      <p className="text-sm font-medium">{viewingProject.profiles?.role || "N/A"}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <h4 className="font-semibold mb-1">Submitted By</h4>
-                  <p className="text-sm">{viewingProject.profiles?.full_name || "N/A"}</p>
-                  <p className="text-sm text-muted-foreground">{viewingProject.profiles?.email}</p>
-                </div>
-                <div>
                   <h4 className="font-semibold mb-1">Category</h4>
-                  <p className="text-sm">{viewingProject.categories?.name || viewingProject.type || "-"}</p>
+                  <div className="flex flex-wrap gap-1">
+                    {getCategoryNamesArray(viewingProject.category_names).length > 0 ? (
+                      getCategoryNamesArray(viewingProject.category_names).map((cat, idx) => (
+                        <Badge key={idx} variant="outline" className="bg-blue-100 text-blue-800 border-blue-300">{cat}</Badge>
+                      ))
+                    ) : (
+                      <span className="text-sm">{viewingProject.type || "-"}</span>
+                    )}
+                  </div>
                 </div>
                 <div>
                   <h4 className="font-semibold mb-1">Show Personal Details</h4>
@@ -457,7 +505,7 @@ const Crewpreneur = () => {
                         rel="noopener noreferrer"
                         className="relative aspect-video rounded-lg overflow-hidden border hover:opacity-80 transition-opacity"
                       >
-                        <img src={url} alt={`Picture ${index + 1}`} className="w-full h-full object-cover" />
+                        <ConvertibleImage src={url} alt={`Picture ${index + 1}`} className="w-full h-full object-cover" />
                       </a>
                     ))}
                   </div>
@@ -496,22 +544,37 @@ const Crewpreneur = () => {
                             </div>
                             <span className="text-sm truncate">{getDocumentName(url)}</span>
                           </div>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => {
-                              const link = document.createElement('a');
-                              link.href = url;
-                              link.download = getDocumentName(url);
-                              link.target = '_blank';
-                              document.body.appendChild(link);
-                              link.click();
-                              document.body.removeChild(link);
-                            }}
-                          >
-                            <Download className="h-4 w-4 mr-1" />
-                            Download
-                          </Button>
+                          <div className="flex gap-2">
+                            {url.toLowerCase().endsWith('.pdf') && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
+                                  window.open(viewerUrl, '_blank');
+                                }}
+                              >
+                                <Eye className="h-4 w-4 mr-1" />
+                                View
+                              </Button>
+                            )}
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                const link = document.createElement('a');
+                                link.href = url;
+                                link.download = getDocumentName(url);
+                                link.target = '_blank';
+                                document.body.appendChild(link);
+                                link.click();
+                                document.body.removeChild(link);
+                              }}
+                            >
+                              <Download className="h-4 w-4 mr-1" />
+                              Download
+                            </Button>
+                          </div>
                         </div>
                       ))}
                     </div>

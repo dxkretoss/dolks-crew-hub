@@ -11,8 +11,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
-import { Eye, CheckCircle, XCircle, Search, Calendar, MapPin, Euro, Pencil, Trash2 } from "lucide-react";
+import { Eye, CheckCircle, XCircle, Search, Calendar, MapPin, Euro, Pencil, Trash2, Download, FileText } from "lucide-react";
 import { format } from "date-fns";
+import { ConvertibleImage } from "@/components/ConvertibleImage";
+import { ConvertibleAvatar } from "@/components/ConvertibleAvatar";
 type JobRequest = {
   id: string;
   user_id: string;
@@ -23,8 +25,8 @@ type JobRequest = {
   job_full_description: string;
   job_start_date: string;
   job_location: string;
-  job_latitude: string;
-  job_longitude: string;
+  job_latitude: number | null;
+  job_longitude: number | null;
   job_complete_date: string;
   job_special_requirements: string;
   job_budget: string | null;
@@ -513,9 +515,56 @@ const JobRequests = () => {
                 <h4 className="font-semibold mb-2">Documents/Images</h4>
                 {selectedJob.job_documents_images && selectedJob.job_documents_images.length > 0 ? (
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {selectedJob.job_documents_images.map((url, index) => <a key={index} href={url} target="_blank" rel="noopener noreferrer" className="relative aspect-video rounded-lg overflow-hidden border hover:opacity-80 transition-opacity">
-                        <img src={url} alt={`Document ${index + 1}`} className="w-full h-full object-cover" />
-                      </a>)}
+                    {selectedJob.job_documents_images.map((url, index) => {
+                      const fileName = url.split('/').pop() || `Document ${index + 1}`;
+                      const extension = fileName.split('.').pop()?.toLowerCase() || '';
+                      const isDocument = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'csv'].includes(extension);
+                      
+                      if (isDocument) {
+                        return (
+                          <div key={index} className="flex items-center gap-3 p-3 border rounded-lg bg-muted/30">
+                            <FileText className="h-8 w-8 text-muted-foreground flex-shrink-0" />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium truncate">{fileName}</p>
+                              <Badge variant="outline" className="text-xs mt-1">{extension.toUpperCase()}</Badge>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  const viewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(url)}&embedded=true`;
+                                  window.open(viewerUrl, '_blank');
+                                }}
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  const link = document.createElement('a');
+                                  link.href = url;
+                                  link.download = fileName;
+                                  link.target = '_blank';
+                                  document.body.appendChild(link);
+                                  link.click();
+                                  document.body.removeChild(link);
+                                }}
+                              >
+                                <Download className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+                        );
+                      }
+                      
+                      return (
+                        <a key={index} href={url} target="_blank" rel="noopener noreferrer" className="relative aspect-video rounded-lg overflow-hidden border hover:opacity-80 transition-opacity">
+                          <ConvertibleImage src={url} alt={`Image ${index + 1}`} className="w-full h-full object-cover" />
+                        </a>
+                      );
+                    })}
                   </div>
                 ) : (
                   <p className="text-sm text-muted-foreground">No documents uploaded</p>
@@ -526,19 +575,12 @@ const JobRequests = () => {
                   <h4 className="mb-3 font-bold">User Information</h4>
                   <div className="space-y-3">
                     <div className="flex items-center gap-3">
-                      {selectedJob.user.profile_picture_url ? (
-                        <img 
-                          src={selectedJob.user.profile_picture_url} 
-                          alt={selectedJob.user.full_name || "User"} 
-                          className="w-14 h-14 rounded-full object-cover" 
-                        />
-                      ) : (
-                        <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center">
-                          <span className="text-lg font-medium text-muted-foreground">
-                            {selectedJob.user.full_name?.charAt(0) || "U"}
-                          </span>
-                        </div>
-                      )}
+                      <ConvertibleAvatar
+                        src={selectedJob.user.profile_picture_url}
+                        alt={selectedJob.user.full_name || "User"}
+                        fallback={selectedJob.user.full_name?.charAt(0) || "U"}
+                        className="w-14 h-14"
+                      />
                       <div>
                         <p className="font-medium">{selectedJob.user.full_name || "N/A"}</p>
                         {selectedJob.user.role && (

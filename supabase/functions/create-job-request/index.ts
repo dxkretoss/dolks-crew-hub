@@ -173,7 +173,7 @@ serve(async (req) => {
         job_tags_ids: job_tags_ids || null,
         job_tags_names: job_tags_names.length > 0 ? job_tags_names : null,
         job_consent: job_consent || false,
-        status: 'Pending',
+        status: 'Approved',
       })
       .select()
       .single();
@@ -195,7 +195,7 @@ serve(async (req) => {
       JSON.stringify({ 
         success: true, 
         job_request: jobRequest,
-        message: 'Job request created successfully and is pending admin approval'
+        message: 'Job request created successfully'
       }),
       {
         status: 200,
