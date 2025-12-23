@@ -1203,37 +1203,9 @@ export default function Events() {
                       return (
                         <div key={doc.id} className="relative rounded-lg overflow-hidden border h-[180px] flex flex-col">
                           {isImage ? (
-                            <>
-                              <a href={doc.document_url} target="_blank" rel="noopener noreferrer" className="block h-[120px] hover:opacity-80 transition-opacity">
-                                <ConvertibleImage src={doc.document_url} alt="Event document" className="w-full h-full object-cover" />
-                              </a>
-                              <div className="flex gap-2 p-2 bg-muted/50 justify-center flex-1 items-center">
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => window.open(doc.document_url, '_blank')}
-                                >
-                                  <Eye className="h-3 w-3 mr-1" />
-                                  View
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => {
-                                    const link = document.createElement('a');
-                                    link.href = doc.document_url;
-                                    link.download = displayFileName;
-                                    link.target = '_blank';
-                                    document.body.appendChild(link);
-                                    link.click();
-                                    document.body.removeChild(link);
-                                  }}
-                                >
-                                  <Download className="h-3 w-3 mr-1" />
-                                  Download
-                                </Button>
-                              </div>
-                            </>
+                            <a href={doc.document_url} target="_blank" rel="noopener noreferrer" className="block h-full hover:opacity-80 transition-opacity">
+                              <ConvertibleImage src={doc.document_url} alt="Event document" className="w-full h-full object-cover" />
+                            </a>
                           ) : (
                             <div className="flex flex-col items-center justify-center bg-muted p-2 h-full">
                               <FileText className="h-6 w-6 text-muted-foreground mb-1" />
