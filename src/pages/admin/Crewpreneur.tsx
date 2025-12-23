@@ -13,6 +13,8 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Search, Eye, Trash2, CheckCircle, XCircle, Loader2, Download } from "lucide-react";
 import { format } from "date-fns";
+import { ConvertibleImage } from "@/components/ConvertibleImage";
+import { ConvertibleAvatar } from "@/components/ConvertibleAvatar";
 
 interface Project {
   id: string;
@@ -413,13 +415,12 @@ const Crewpreneur = () => {
               <div className="border rounded-lg p-4 bg-muted/30">
                 <h4 className="font-semibold mb-3">User Information</h4>
                 <div className="flex items-start gap-4">
-                  {viewingProject.profiles?.profile_picture_url && (
-                    <img 
-                      src={viewingProject.profiles.profile_picture_url} 
-                      alt="Profile" 
-                      className="w-16 h-16 rounded-full object-cover border"
-                    />
-                  )}
+                  <ConvertibleAvatar
+                    src={viewingProject.profiles?.profile_picture_url}
+                    alt="Profile"
+                    fallback={viewingProject.profiles?.full_name?.charAt(0) || "U"}
+                    className="w-16 h-16"
+                  />
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 flex-1">
                     <div>
                       <p className="text-xs text-muted-foreground">Full Name</p>
@@ -504,7 +505,7 @@ const Crewpreneur = () => {
                         rel="noopener noreferrer"
                         className="relative aspect-video rounded-lg overflow-hidden border hover:opacity-80 transition-opacity"
                       >
-                        <img src={url} alt={`Picture ${index + 1}`} className="w-full h-full object-cover" />
+                        <ConvertibleImage src={url} alt={`Picture ${index + 1}`} className="w-full h-full object-cover" />
                       </a>
                     ))}
                   </div>

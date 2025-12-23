@@ -14,6 +14,7 @@ import { format } from "date-fns";
 import { z } from "zod";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
+import { ConvertibleImage } from "@/components/ConvertibleImage";
 interface Event {
   id: string;
   title: string;
@@ -1204,7 +1205,7 @@ export default function Events() {
                           {isImage ? (
                             <>
                               <a href={doc.document_url} target="_blank" rel="noopener noreferrer" className="block h-[120px] hover:opacity-80 transition-opacity">
-                                <img src={doc.document_url} alt="Event document" className="w-full h-full object-cover" />
+                                <ConvertibleImage src={doc.document_url} alt="Event document" className="w-full h-full object-cover" />
                               </a>
                               <div className="flex gap-2 p-2 bg-muted/50 justify-center flex-1 items-center">
                                 <Button

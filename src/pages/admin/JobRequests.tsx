@@ -13,6 +13,8 @@ import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import { Eye, CheckCircle, XCircle, Search, Calendar, MapPin, Euro, Pencil, Trash2, Download, FileText } from "lucide-react";
 import { format } from "date-fns";
+import { ConvertibleImage } from "@/components/ConvertibleImage";
+import { ConvertibleAvatar } from "@/components/ConvertibleAvatar";
 type JobRequest = {
   id: string;
   user_id: string;
@@ -559,7 +561,7 @@ const JobRequests = () => {
                       
                       return (
                         <a key={index} href={url} target="_blank" rel="noopener noreferrer" className="relative aspect-video rounded-lg overflow-hidden border hover:opacity-80 transition-opacity">
-                          <img src={url} alt={`Image ${index + 1}`} className="w-full h-full object-cover" />
+                          <ConvertibleImage src={url} alt={`Image ${index + 1}`} className="w-full h-full object-cover" />
                         </a>
                       );
                     })}
@@ -573,19 +575,12 @@ const JobRequests = () => {
                   <h4 className="mb-3 font-bold">User Information</h4>
                   <div className="space-y-3">
                     <div className="flex items-center gap-3">
-                      {selectedJob.user.profile_picture_url ? (
-                        <img 
-                          src={selectedJob.user.profile_picture_url} 
-                          alt={selectedJob.user.full_name || "User"} 
-                          className="w-14 h-14 rounded-full object-cover" 
-                        />
-                      ) : (
-                        <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center">
-                          <span className="text-lg font-medium text-muted-foreground">
-                            {selectedJob.user.full_name?.charAt(0) || "U"}
-                          </span>
-                        </div>
-                      )}
+                      <ConvertibleAvatar
+                        src={selectedJob.user.profile_picture_url}
+                        alt={selectedJob.user.full_name || "User"}
+                        fallback={selectedJob.user.full_name?.charAt(0) || "U"}
+                        className="w-14 h-14"
+                      />
                       <div>
                         <p className="font-medium">{selectedJob.user.full_name || "N/A"}</p>
                         {selectedJob.user.role && (
