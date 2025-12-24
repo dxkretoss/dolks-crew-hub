@@ -59,24 +59,42 @@ const ServiceDetail = () => {
       if (profileError) throw profileError;
 
       // Then delete from auth.users via edge function
-      const {
-        error: authError
-      } = await supabase.functions.invoke('delete-user', {
+      const { data, error: authError } = await supabase.functions.invoke('delete-user', {
         body: {
           userId: profile?.user_id
         }
       });
-      if (authError) throw authError;
+      
+      if (authError) {
+        console.error('Edge function error:', authError);
+        // Check if it's an auth error
+        if (authError.message?.includes('401') || authError.message?.includes('Session expired')) {
+          toast({
+            title: "Session Expired",
+            description: "Please log in again to continue",
+            variant: "destructive"
+          });
+          navigate("/admin-login");
+          return;
+        }
+        throw authError;
+      }
+      
+      // Check response for errors
+      if (data?.error) {
+        throw new Error(data.error);
+      }
+      
       toast({
         title: "Success",
-        description: "Service provider deleted successfully",
-        variant: "success"
+        description: "Service provider deleted successfully"
       });
       navigate("/admin/services");
     } catch (error: any) {
+      console.error('Delete error:', error);
       toast({
         title: "Error",
-        description: error.message,
+        description: error.message || "Failed to delete service provider",
         variant: "destructive"
       });
     } finally {
