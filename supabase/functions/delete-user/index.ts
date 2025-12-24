@@ -11,28 +11,61 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false
-        }
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+    if (!supabaseUrl || !supabaseServiceRoleKey) {
+      console.error('Missing environment variables');
+      throw new Error('Server configuration error');
+    }
+
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey, {
+      auth: {
+        autoRefreshToken: false,
+        persistSession: false
       }
-    );
+    });
 
     const authHeader = req.headers.get('Authorization');
+    console.log('Auth header present:', !!authHeader);
+    
     if (!authHeader) {
-      throw new Error('No authorization header');
+      console.error('No authorization header provided');
+      return new Response(
+        JSON.stringify({ error: 'No authorization header. Please log in again.' }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 401 
+        }
+      );
     }
 
     const token = authHeader.replace('Bearer ', '');
     const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
 
-    if (authError || !user) {
-      throw new Error('Unauthorized');
+    if (authError) {
+      console.error('Auth error:', authError.message);
+      return new Response(
+        JSON.stringify({ error: 'Session expired. Please log in again.' }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 401 
+        }
+      );
     }
+
+    if (!user) {
+      console.error('No user found for token');
+      return new Response(
+        JSON.stringify({ error: 'User not found. Please log in again.' }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 401 
+        }
+      );
+    }
+
+    console.log('Authenticated user:', user.id);
 
     // Check if user is admin
     const { data: roles, error: rolesError } = await supabaseAdmin
@@ -43,13 +76,26 @@ Deno.serve(async (req) => {
       .single();
 
     if (rolesError || !roles) {
-      throw new Error('Unauthorized: Admin access required');
+      console.error('User is not admin:', user.id);
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized: Admin access required' }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 403 
+        }
+      );
     }
 
     const { userId } = await req.json();
 
     if (!userId) {
-      throw new Error('User ID is required');
+      return new Response(
+        JSON.stringify({ error: 'User ID is required' }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400 
+        }
+      );
     }
 
     console.log(`Admin ${user.id} deleting user ${userId}`);
@@ -59,7 +105,13 @@ Deno.serve(async (req) => {
 
     if (deleteAuthError) {
       console.error('Error deleting auth user:', deleteAuthError);
-      throw deleteAuthError;
+      return new Response(
+        JSON.stringify({ error: deleteAuthError.message }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400 
+        }
+      );
     }
 
     console.log(`Successfully deleted user ${userId} from auth.users`);
@@ -79,7 +131,7 @@ Deno.serve(async (req) => {
       JSON.stringify({ error: errorMessage }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400 
+        status: 500 
       }
     );
   }
