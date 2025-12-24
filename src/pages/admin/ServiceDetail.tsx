@@ -6,7 +6,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Mail, Phone, Calendar, MapPin, User, Building2, Users as UsersIcon, Briefcase, Trash2 } from "lucide-react";
+import { ArrowLeft, Mail, Phone, Calendar, MapPin, User, Building2, Users as UsersIcon, Briefcase, Trash2, Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { ConvertibleImage } from "@/components/ConvertibleImage";
 import type { Tables } from "@/integrations/supabase/types";
@@ -123,9 +123,16 @@ const ServiceDetail = () => {
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-              <AlertDialogCancel>No</AlertDialogCancel>
+              <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
               <AlertDialogAction onClick={handleDelete} disabled={deleting} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                {deleting ? "Deleting..." : "Yes, Delete"}
+                {deleting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Deleting...
+                  </>
+                ) : (
+                  "Yes, Delete"
+                )}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
